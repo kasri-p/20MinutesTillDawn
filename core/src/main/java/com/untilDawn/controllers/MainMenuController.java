@@ -5,7 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.untilDawn.Main;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.MainMenu;
+import com.untilDawn.views.SignUpMenu;
 
 public class MainMenuController {
     private MainMenu view;
@@ -14,8 +16,8 @@ public class MainMenuController {
     public MainMenuController() {
     }
 
-    public void setView(MainMenu preGameMenu) {
-        this.view = preGameMenu;
+    public void setView(MainMenu mainMenu) {
+        this.view = mainMenu;
         initializeButtonListeners();
     }
 
@@ -25,8 +27,8 @@ public class MainMenuController {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     System.out.println("Play button clicked");
-                    // Add logic to start the game
-                    // For example: Main.getMain().setScreen(new GameScreen());
+                    Main.getMain().getClickSound().play();
+                    Main.getMain().setScreen(new SignUpMenu(GameAssetManager.getGameAssetManager().getSkin()));
                 }
             });
 
@@ -34,14 +36,15 @@ public class MainMenuController {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     System.out.println("Settings button clicked");
-                    // Add logic to open settings menu
-                    // For example: Main.getMain().setScreen(new SettingsScreen());
+                    Main.getMain().getClickSound().play();
+
                 }
             });
 
             view.getQuitButton().addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
+                    Main.getMain().getClickSound().play();
                     System.out.println("Exit button clicked");
                     Main.getMain().getScreen().dispose();
                     Gdx.app.exit();
