@@ -1,6 +1,5 @@
 package com.untilDawn.controllers;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -37,7 +36,7 @@ public class MainMenuController {
                 public void clicked(InputEvent event, float x, float y) {
                     System.out.println("Settings button clicked");
                     Main.getMain().getClickSound().play();
-
+                    // TODO: Settings functionality
                 }
             });
 

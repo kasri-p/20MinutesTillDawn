@@ -8,6 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.untilDawn.controllers.SignUpMenuController;
+
+// TODO: make the buttons right
 
 public class SignUpMenu implements Screen {
     private final Stage stage;
@@ -20,6 +23,7 @@ public class SignUpMenu implements Screen {
     private final TextButton backButton;
     private final Table table;
     private final Sound clickSound;
+    private SignUpMenuController controller;
 
     public SignUpMenu(Skin skin) {
         stage = new Stage(new ScreenViewport());
@@ -35,33 +39,21 @@ public class SignUpMenu implements Screen {
         errorLabel = new Label("", skin);
         errorLabel.setColor(Color.RED);
 
-        // Define a text-only style for the buttons
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
         textOnlyStyle.font = skin.getFont("font");
         textOnlyStyle.fontColor = Color.WHITE;
         textOnlyStyle.overFontColor = Color.LIGHT_GRAY;
         textOnlyStyle.downFontColor = Color.GRAY;
 
-        // Create buttons with the text-only style
         signUpButton = new TextButton("Sign Up", textOnlyStyle);
         skipButton = new TextButton("Skip", textOnlyStyle);
         backButton = new TextButton("Back", textOnlyStyle);
-
-        // Add a click listener to the sign-up button
-        signUpButton.addListener(event -> {
-            if (validateForm()) {
-                // Proceed with sign-up logic
-                errorLabel.setText("Sign-up successful!");
-                errorLabel.setColor(Color.GREEN);
-            }
-            return true;
-        });
 
         table = new Table();
         table.setFillParent(true);
         table.center();
 
-        // Add components to the table
+        table.add(new Label("Sign Up", skin, "title")).colspan(2).pad(20).row();
         table.add(new Label("Username:", skin)).pad(10);
         table.add(usernameField).width(200).pad(10);
         table.row();
@@ -79,36 +71,13 @@ public class SignUpMenu implements Screen {
         table.add(backButton).colspan(2).width(100).pad(10);
 
         stage.addActor(table);
-    }
 
-    private boolean validateForm() {
-        String username = usernameField.getText().trim();
-        String password = passwordField.getText().trim();
-        String securityAnswer = securityAnswerField.getText().trim();
-
-        if (username.isEmpty()) {
-            errorLabel.setText("Username cannot be empty.");
-            return false;
-        }
-        if (password.isEmpty()) {
-            errorLabel.setText("Password cannot be empty.");
-            return false;
-        }
-        if (password.length() < 6) {
-            errorLabel.setText("Password must be at least 6 characters.");
-            return false;
-        }
-        if (securityAnswer.isEmpty()) {
-            errorLabel.setText("Security answer cannot be empty.");
-            return false;
-        }
-
-        errorLabel.setText(""); // Clear error if validation passes
-        return true;
+        controller = new SignUpMenuController(this);
     }
 
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
@@ -138,6 +107,7 @@ public class SignUpMenu implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        clickSound.dispose();
     }
 
     public TextButton getSignUpButton() {
@@ -166,5 +136,9 @@ public class SignUpMenu implements Screen {
 
     public TextButton getBackButton() {
         return backButton;
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 }

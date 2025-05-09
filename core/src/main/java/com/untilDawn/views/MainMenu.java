@@ -106,5 +106,5 @@ public class MainMenu implements Screen {
     public TextButton getSettingsButton() {
         return settingsButton;
     }
-    
+
 }

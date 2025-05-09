@@ -18,8 +18,12 @@ public class User {
         this.username = username;
         this.password = password;
         this.email = email;
-        isGuest = false;
+        this.avatarPath = avatarPath;
+        this.isGuest = false;
+        this.SecurityQuestionIndex = 0;
+        this.SecurityAnswer = "";
     }
+
 
     public User() {
         this.username = "guest";

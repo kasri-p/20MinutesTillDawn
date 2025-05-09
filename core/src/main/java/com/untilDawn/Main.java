@@ -40,7 +40,7 @@ public class Main extends Game {
 
         menuMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/musics/PrettyDungeon.wav"));
         menuMusic.setLooping(true);
-        menuMusic.play(); // Start playing the music
+        menuMusic.play();
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
