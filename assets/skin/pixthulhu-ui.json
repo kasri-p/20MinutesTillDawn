@@ -212,7 +212,7 @@
   },
   "com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle": {
     "default": {
-      "font": "subtitle",
+      "font": "font",
       "fontColor": "field",
       "up": "button",
       "down": "button-pressed"

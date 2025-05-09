@@ -4,6 +4,8 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -24,6 +26,12 @@ public class Main extends Game {
         main = this;
         batch = new SpriteBatch();
         App.load();
+
+        Pixmap cursorPixmap = new Pixmap(Gdx.files.internal("images/cursor.png"));
+        Cursor customCursor = Gdx.graphics.newCursor(cursorPixmap, 0, 0);
+        Gdx.graphics.setCursor(customCursor);
+        cursorPixmap.dispose();
+
         MainMenuController controller = new MainMenuController();
         MainMenu mainMenu = new MainMenu(controller, GameAssetManager.getGameAssetManager().getSkin());
         controller.setView(mainMenu);
