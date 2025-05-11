@@ -6,11 +6,9 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.SignUpMenuController;
-
-// TODO: make the buttons right
+import com.untilDawn.models.utils.UIHelper;
 
 public class SignUpMenu implements Screen {
     private final Stage stage;
@@ -24,10 +22,13 @@ public class SignUpMenu implements Screen {
     private final Table table;
     private final Sound clickSound;
     private SignUpMenuController controller;
+    private Image[] leavesDecorations;
 
     public SignUpMenu(Skin skin) {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
+
+        leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
@@ -46,7 +47,7 @@ public class SignUpMenu implements Screen {
         textOnlyStyle.downFontColor = Color.GRAY;
 
         signUpButton = new TextButton("Sign Up", textOnlyStyle);
-        skipButton = new TextButton("Login as a quest", textOnlyStyle);
+        skipButton = new TextButton("Login as a Guest", textOnlyStyle);
         backButton = new TextButton("Back", textOnlyStyle);
 
         table = new Table();
@@ -62,13 +63,13 @@ public class SignUpMenu implements Screen {
         table.row();
         table.add(errorLabel).colspan(2).pad(10);
         table.row();
-        //TODO
         table.add(signUpButton).width(100).pad(10);
-        table.add(skipButton).width(100).pad(10);
+        table.add(skipButton).width(150).pad(10);
         table.row();
         table.add(backButton).colspan(2).width(100).pad(10);
 
         stage.addActor(table);
+        table.toFront();
 
         controller = new SignUpMenuController(this);
     }
@@ -80,7 +81,8 @@ public class SignUpMenu implements Screen {
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0, 1);
+        UIHelper.clearScreenWithBackgroundColor();
+
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
@@ -88,6 +90,15 @@ public class SignUpMenu implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+
+        if (leavesDecorations != null) {
+            leavesDecorations[0].remove();
+            leavesDecorations[1].remove();
+            leavesDecorations = UIHelper.addLeavesDecoration(stage);
+
+            leavesDecorations[0].toBack();
+            leavesDecorations[1].toBack();
+        }
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.LoginMenu;
 import com.untilDawn.views.SignUpMenu;
 import com.untilDawn.views.main.PreGameMenu;
+import com.untilDawn.views.window.ForgotPasswordWindow;
 
 public class LoginMenuController {
     private final LoginMenu view;
@@ -22,7 +23,7 @@ public class LoginMenuController {
         view.getLoginButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
+                playClick();
                 String username = view.getUsernameField().getText().trim();
                 String password = view.getPasswordField().getText().trim();
 
@@ -52,7 +53,7 @@ public class LoginMenuController {
         view.getRegisterButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
+                playClick();
                 Main.getMain().setScreen(new SignUpMenu(GameAssetManager.getGameAssetManager().getSkin()));
             }
         });
@@ -60,11 +61,18 @@ public class LoginMenuController {
         view.getForgotPasswordButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
-                // i'll implement this functionality later TODO
-                // Main.getMain().setScreen(new ForgotPasswordScreen(GameAssetManager.getGameAssetManager().getSkin()));
-                view.getErrorLabel().setText("This feature is coming soon!");
+                playClick();
+                ForgotPasswordWindow forgotPasswordWindow = new ForgotPasswordWindow(GameAssetManager.getGameAssetManager().getSkin(), view.getStage());
+                view.getStage().addActor(forgotPasswordWindow);
+//                view.getErrorLabel().setText("This feature is coming soon!");
             }
         });
     }
+
+    public void playClick() {
+        if (App.isSFX()) {
+            Main.getMain().getClickSound().play();
+        }
+    }
+
 }

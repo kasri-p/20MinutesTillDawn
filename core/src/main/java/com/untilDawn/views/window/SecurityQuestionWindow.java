@@ -1,5 +1,8 @@
 package com.untilDawn.views.window;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -15,10 +18,31 @@ public class SecurityQuestionWindow extends Window {
     private final TextButton confirmButton;
     private final User user;
     private Runnable onComplete;
+    private Image leftLeaves;
+    private Image rightLeaves;
+    private Texture leavesTexture;
 
     public SecurityQuestionWindow(Skin skin, User user, Stage stage) {
         super("Security Question", skin);
         this.user = user;
+
+        leavesTexture = new Texture(Gdx.files.internal("images/TitleLeaves.png"));
+
+        leftLeaves = new Image(leavesTexture);
+        float scale = stage.getHeight() / leavesTexture.getHeight();
+        float scaledWidth = leavesTexture.getWidth() * scale;
+        leftLeaves.setSize(scaledWidth, stage.getHeight());
+        leftLeaves.setPosition(0, 0);
+
+        rightLeaves = new Image(leavesTexture);
+        rightLeaves.setSize(scaledWidth, stage.getHeight());
+        rightLeaves.setPosition(stage.getWidth() - scaledWidth, 0);
+        rightLeaves.setScaleX(-1);
+
+        stage.addActor(leftLeaves);
+        stage.addActor(rightLeaves);
+        leftLeaves.toBack();
+        rightLeaves.toBack();
 
         String[] securityQuestions = {
             "What is your favorite music band?", // Guns n' Roses
@@ -27,6 +51,8 @@ public class SecurityQuestionWindow extends Window {
             "What is your favorite restaurant?",// Fresco
             "How many times did you fail driving test?" // 6
         };
+
+        setColor(new Color(0.15f, 0.15f, 0.25f, 0.95f));
 
         securityQuestionBox = new SelectBox<>(skin);
         securityQuestionBox.setItems(securityQuestions);
@@ -44,6 +70,12 @@ public class SecurityQuestionWindow extends Window {
             public void changed(ChangeEvent event, Actor actor) {
                 Main.getMain().getClickSound().play();
                 if (validateAndSave()) {
+                    leftLeaves.remove();
+                    rightLeaves.remove();
+                    if (leavesTexture != null) {
+                        leavesTexture.dispose();
+                    }
+
                     remove();
                     if (onComplete != null) {
                         onComplete.run();

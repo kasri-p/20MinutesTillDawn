@@ -1,0 +1,14 @@
+{
+  "samsam": {
+    "username": "samsam",
+    "password": "S@min1234",
+    "email": "",
+    "SecurityQuestionIndex": 4,
+    "SecurityAnswer": "6",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar1.png",
+    "deaths": 0,
+    "kills": 0
+  }
+}

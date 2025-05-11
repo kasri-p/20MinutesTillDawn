@@ -25,7 +25,7 @@ public class SignUpMenuController {
         view.getSignUpButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
+                playClick();
                 String username = view.getUsernameField().getText().trim();
                 String password = view.getPasswordField().getText().trim();
 
@@ -61,7 +61,7 @@ public class SignUpMenuController {
         view.getSkipButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
+                playClick();
                 User guestUser = new User();
                 App.setLoggedInUser(guestUser);
                 navigateToMainMenu();
@@ -71,7 +71,7 @@ public class SignUpMenuController {
         view.getBackButton().addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
+                playClick();
                 navigateToLoginMenu();
             }
         });
@@ -96,5 +96,11 @@ public class SignUpMenuController {
 
     private void navigateToLoginMenu() {
         Main.getMain().setScreen(new LoginMenu(GameAssetManager.getGameAssetManager().getSkin()));
+    }
+
+    public void playClick() {
+        if (App.isSFX()) {
+            Main.getMain().getClickSound().play();
+        }
     }
 }

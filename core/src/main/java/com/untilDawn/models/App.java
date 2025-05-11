@@ -11,6 +11,7 @@ import java.util.Map;
 public class App {
     private static Map<String, User> users;
     private static User loggedInUser;
+    private static boolean isSFX = true;
 
     public static void addUser(User user) {
         users.put(user.getUsername(), user);
@@ -39,7 +40,7 @@ public class App {
     public static void logout() {
         loggedInUser = null;
     }
-    
+
 
     public static String hashPassword(String password) {
         try {
@@ -57,5 +58,13 @@ public class App {
     public static boolean verifyPassword(String plainPassword, String storedHash) {
         String newHash = hashPassword(plainPassword);
         return newHash != null && newHash.equals(storedHash);
+    }
+
+    public static boolean isSFX() {
+        return isSFX;
+    }
+
+    public void toggleSFX() {
+        isSFX = !isSFX;
     }
 }

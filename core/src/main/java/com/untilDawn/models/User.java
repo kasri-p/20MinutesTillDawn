@@ -8,7 +8,6 @@ public class User {
     private String SecurityAnswer;
     private Game lastGame;
     private boolean isGuest;
-
     private int score;
     private String avatarPath;
     private int deaths;
@@ -29,6 +28,10 @@ public class User {
         this.username = "guest";
         this.password = "Guest#";
         isGuest = true;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     public String getUsername() {

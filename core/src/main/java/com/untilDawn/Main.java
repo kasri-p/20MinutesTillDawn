@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.untilDawn.controllers.StartMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
+import com.untilDawn.models.utils.UIHelper;
 import com.untilDawn.views.StartMenu;
 
 
@@ -59,9 +60,14 @@ public class Main extends Game {
     public void dispose() {
         App.save();
         batch.dispose();
+        UIHelper.dispose();
     }
 
     public Sound getClickSound() {
-        return clickSound;
+        if (App.isSFX()) {
+            return clickSound;
+        } else {
+            return null;
+        }
     }
 }

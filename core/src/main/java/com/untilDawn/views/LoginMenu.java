@@ -5,9 +5,9 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.LoginMenuController;
+import com.untilDawn.models.utils.UIHelper;
 
 public class LoginMenu implements Screen {
     private final Stage stage;
@@ -19,10 +19,14 @@ public class LoginMenu implements Screen {
     private final TextButton forgotPasswordButton;
     private final Table table;
     private LoginMenuController controller;
+    private Image[] leavesDecorations;
 
     public LoginMenu(Skin skin) {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
+
+        // Add leaves decoration
+        leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
         usernameField = new TextField("", skin);
         passwordField = new TextField("", skin);
@@ -55,7 +59,9 @@ public class LoginMenu implements Screen {
         table.add(registerButton).width(100).pad(10).row();
         table.add(forgotPasswordButton).colspan(2).width(200).pad(10);
 
+        // Make sure the table is on top of the leaves
         stage.addActor(table);
+        table.toFront();
 
         controller = new LoginMenuController(this);
     }
@@ -67,7 +73,9 @@ public class LoginMenu implements Screen {
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0, 1);
+        // Use the UIHelper to set the background color
+        UIHelper.clearScreenWithBackgroundColor();
+
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
@@ -75,6 +83,17 @@ public class LoginMenu implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+
+        // Reposition and resize the leaves decorations
+        if (leavesDecorations != null) {
+            leavesDecorations[0].remove();
+            leavesDecorations[1].remove();
+            leavesDecorations = UIHelper.addLeavesDecoration(stage);
+
+            // Make sure the leaves are behind the table
+            leavesDecorations[0].toBack();
+            leavesDecorations[1].toBack();
+        }
     }
 
     @Override
