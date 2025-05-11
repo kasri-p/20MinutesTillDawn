@@ -4,28 +4,30 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.Main;
-import com.untilDawn.controllers.MainMenuController;
+import com.untilDawn.controllers.StartMenuController;
 
-public class MainMenu implements Screen {
-    private final TextButton playButton;
+public class StartMenu implements Screen {
+    private final TextButton startButton;
     private final TextButton quitButton;
-    private final TextButton settingsButton;
     private final Label gameTitle;
     private final Sound clickSound;
     public Table table;
+    private Texture backgroundTexture;
+    private Image backgroundImage;
     private Stage stage;
 
-    public MainMenu(MainMenuController controller, Skin skin) {
-
+    public StartMenu(StartMenuController controller, Skin skin) {
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
+
+        backgroundTexture = new Texture(Gdx.files.internal("Images/background.png"));
+        backgroundImage = new Image(backgroundTexture);
+        backgroundImage.setFillParent(true);
 
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
         textOnlyStyle.font = skin.getFont("font");
@@ -33,10 +35,9 @@ public class MainMenu implements Screen {
         textOnlyStyle.overFontColor = new Color(Color.SALMON).mul(0.7f);
         textOnlyStyle.downFontColor = new Color(Color.SALMON).mul(0.5f);
 
-        this.playButton = new TextButton("Play", textOnlyStyle);
+        this.startButton = new TextButton("Start", textOnlyStyle);
         this.quitButton = new TextButton("Quit", textOnlyStyle);
-        this.settingsButton = new TextButton("Settings", textOnlyStyle);
-        this.gameTitle = new Label("20 Minutes\n Till Dawn", skin);
+        this.gameTitle = new Label("20 Minutes Till Dawn", skin, "title");
 
         this.table = new Table();
     }
@@ -46,16 +47,30 @@ public class MainMenu implements Screen {
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
+        gameTitle.setFontScale(0.8f);
         table.setFillParent(true);
-        table.center();
-        table.add(gameTitle);
-        table.row().pad(10, 0, 10, 0);
-        table.add(playButton).width(150).height(70);
-        table.row().pad(10, 0, 10, 0);
-        table.add(settingsButton).width(150).height(70);
-        table.row().pad(10, 0, 10, 0);
-        table.add(quitButton).width(150).height(70);
+        table.top();
 
+        table.add(gameTitle)
+            .padTop(100)
+            .colspan(2)
+            .center()
+            .row();
+        table.row();
+
+        table.add(startButton)
+            .colspan(2)
+            .center()
+            .padTop(200)
+            .row();
+
+        table.add(quitButton)
+            .colspan(2)
+            .center()
+            .padTop(50)
+            .row();
+
+        stage.addActor(backgroundImage);
         stage.addActor(table);
     }
 
@@ -63,6 +78,7 @@ public class MainMenu implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
         Main.getBatch().begin();
+        Main.getBatch().draw(backgroundTexture, 0, 0, stage.getWidth(), stage.getHeight());
         Main.getBatch().end();
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
@@ -70,6 +86,7 @@ public class MainMenu implements Screen {
 
     @Override
     public void resize(int width, int height) {
+//        stage.getViewport().update(width, height, true);
         stage.getViewport().update(width, height, true);
     }
 
@@ -95,16 +112,15 @@ public class MainMenu implements Screen {
         }
     }
 
-    public TextButton getPlayButton() {
-        return playButton;
+    public TextButton getStartButton() {
+        return startButton;
     }
 
     public TextButton getQuitButton() {
         return quitButton;
     }
 
-    public TextButton getSettingsButton() {
-        return settingsButton;
+    public Stage getStage() {
+        return stage;
     }
-
 }

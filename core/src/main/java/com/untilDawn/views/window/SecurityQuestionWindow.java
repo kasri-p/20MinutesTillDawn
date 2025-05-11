@@ -1,6 +1,7 @@
-package com.untilDawn.views;
+package com.untilDawn.views.window;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
@@ -15,7 +16,7 @@ public class SecurityQuestionWindow extends Window {
     private final User user;
     private Runnable onComplete;
 
-    public SecurityQuestionWindow(Skin skin, User user) {
+    public SecurityQuestionWindow(Skin skin, User user, Stage stage) {
         super("Security Question", skin);
         this.user = user;
 
@@ -38,13 +39,12 @@ public class SecurityQuestionWindow extends Window {
         add(new Label("Your answer:", skin)).left().row();
         add(securityAnswerField).fillX().row();
         add(confirmButton).width(100).align(Align.center).padTop(20).row();
-
         confirmButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 Main.getMain().getClickSound().play();
                 if (validateAndSave()) {
-                    remove(); // Close the window
+                    remove();
                     if (onComplete != null) {
                         onComplete.run();
                     }
@@ -52,9 +52,10 @@ public class SecurityQuestionWindow extends Window {
             }
         });
 
-        setSize(400, 300);
-        setPosition(50, 50);
-
+        setSize(600, 500);
+        float centerX = stage.getWidth() / 2 - getWidth() / 2;
+        float centerY = stage.getHeight() / 2 - getHeight() / 2;
+        setPosition(centerX, centerY);
         setModal(true);
         setMovable(false);
     }

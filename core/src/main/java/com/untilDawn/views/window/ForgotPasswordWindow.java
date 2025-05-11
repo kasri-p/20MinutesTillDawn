@@ -1,4 +1,4 @@
-package com.untilDawn.views;
+package com.untilDawn.views.window;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.models.User;
 
-public class ForgotPasswordMenu implements Screen {
+public class ForgotPasswordWindow implements Screen {
     private final Stage stage;
     private final TextField usernameField;
     private final TextField securityAnswerField;
@@ -29,7 +29,7 @@ public class ForgotPasswordMenu implements Screen {
         "What was your childhood nickname?"
     };
 
-    public ForgotPasswordMenu(Skin skin) {
+    public ForgotPasswordWindow(Skin skin) {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 

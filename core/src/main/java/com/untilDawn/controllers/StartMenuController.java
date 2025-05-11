@@ -5,38 +5,29 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.untilDawn.Main;
 import com.untilDawn.models.utils.GameAssetManager;
-import com.untilDawn.views.MainMenu;
 import com.untilDawn.views.SignUpMenu;
+import com.untilDawn.views.StartMenu;
 
-public class MainMenuController {
-    private MainMenu view;
+public class StartMenuController {
+    private StartMenu view;
     private boolean listenersInitialized = false;
 
-    public MainMenuController() {
+    public StartMenuController() {
     }
 
-    public void setView(MainMenu mainMenu) {
-        this.view = mainMenu;
+    public void setView(StartMenu startMenu) {
+        this.view = startMenu;
         initializeButtonListeners();
     }
 
     private void initializeButtonListeners() {
         if (view != null && !listenersInitialized) {
-            view.getPlayButton().addListener(new ClickListener() {
+            view.getStartButton().addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     System.out.println("Play button clicked");
                     Main.getMain().getClickSound().play();
                     Main.getMain().setScreen(new SignUpMenu(GameAssetManager.getGameAssetManager().getSkin()));
-                }
-            });
-
-            view.getSettingsButton().addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    System.out.println("Settings button clicked");
-                    Main.getMain().getClickSound().play();
-                    // TODO: Settings functionality
                 }
             });
 

@@ -7,10 +7,10 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.untilDawn.controllers.MainMenuController;
+import com.untilDawn.controllers.StartMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
-import com.untilDawn.views.MainMenu;
+import com.untilDawn.views.StartMenu;
 
 
 public class Main extends Game {
@@ -44,10 +44,10 @@ public class Main extends Game {
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
-        MainMenuController controller = new MainMenuController();
-        MainMenu mainMenu = new MainMenu(controller, GameAssetManager.getGameAssetManager().getSkin());
-        controller.setView(mainMenu);
-        setScreen(mainMenu);
+        StartMenuController controller = new StartMenuController();
+        StartMenu startMenu = new StartMenu(controller, GameAssetManager.getGameAssetManager().getSkin());
+        controller.setView(startMenu);
+        setScreen(startMenu);
     }
 
     @Override

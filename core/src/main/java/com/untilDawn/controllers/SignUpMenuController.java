@@ -7,9 +7,9 @@ import com.untilDawn.models.App;
 import com.untilDawn.models.User;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.LoginMenu;
-import com.untilDawn.views.MainMenu;
-import com.untilDawn.views.SecurityQuestionWindow;
 import com.untilDawn.views.SignUpMenu;
+import com.untilDawn.views.main.MainMenu;
+import com.untilDawn.views.window.SecurityQuestionWindow;
 
 import java.util.Random;
 
@@ -40,7 +40,7 @@ public class SignUpMenuController {
                 }
 
                 if (!isPasswordStrong(password)) {
-                    view.getErrorLabel().setText("Password must be at least 8 characters, include a special character, a number, and an uppercase letter.");
+                    view.getErrorLabel().setText("Password is too weak.");
                     return;
                 }
 
@@ -50,7 +50,7 @@ public class SignUpMenuController {
                 App.setLoggedInUser(newUser);
 
                 SecurityQuestionWindow securityWindow = new SecurityQuestionWindow(
-                    GameAssetManager.getGameAssetManager().getSkin(), newUser);
+                    GameAssetManager.getGameAssetManager().getSkin(), newUser, view.getStage());
                 securityWindow.setOnCompleteCallback(() -> {
                     navigateToMainMenu();
                 });
@@ -90,9 +90,7 @@ public class SignUpMenuController {
     }
 
     private void navigateToMainMenu() {
-        MainMenuController controller = new MainMenuController();
-        MainMenu mainMenu = new MainMenu(controller, GameAssetManager.getGameAssetManager().getSkin());
-        controller.setView(mainMenu);
+        MainMenu mainMenu = new MainMenu(GameAssetManager.getGameAssetManager().getSkin());
         Main.getMain().setScreen(mainMenu);
     }
 

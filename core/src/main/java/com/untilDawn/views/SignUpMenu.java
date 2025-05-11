@@ -46,7 +46,7 @@ public class SignUpMenu implements Screen {
         textOnlyStyle.downFontColor = Color.GRAY;
 
         signUpButton = new TextButton("Sign Up", textOnlyStyle);
-        skipButton = new TextButton("Skip", textOnlyStyle);
+        skipButton = new TextButton("Login as a quest", textOnlyStyle);
         backButton = new TextButton("Back", textOnlyStyle);
 
         table = new Table();
@@ -60,11 +60,9 @@ public class SignUpMenu implements Screen {
         table.add(new Label("Password:", skin)).pad(10);
         table.add(passwordField).width(200).pad(10);
         table.row();
-        table.add(new Label("Security Answer:", skin)).pad(10);
-        table.add(securityAnswerField).width(200).pad(10);
-        table.row();
         table.add(errorLabel).colspan(2).pad(10);
         table.row();
+        //TODO
         table.add(signUpButton).width(100).pad(10);
         table.add(skipButton).width(100).pad(10);
         table.row();

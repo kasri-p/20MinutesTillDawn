@@ -7,8 +7,8 @@ import com.untilDawn.models.App;
 import com.untilDawn.models.User;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.LoginMenu;
-import com.untilDawn.views.MainMenu;
 import com.untilDawn.views.SignUpMenu;
+import com.untilDawn.views.main.PreGameMenu;
 
 public class LoginMenuController {
     private final LoginMenu view;
@@ -44,10 +44,8 @@ public class LoginMenuController {
 
                 App.setLoggedInUser(user);
 
-                MainMenuController controller = new MainMenuController();
-                MainMenu mainMenu = new MainMenu(controller, GameAssetManager.getGameAssetManager().getSkin());
-                controller.setView(mainMenu);
-                Main.getMain().setScreen(mainMenu);
+                PreGameMenu preGameMenu = new PreGameMenu(GameAssetManager.getGameAssetManager().getSkin());
+                Main.getMain().setScreen(preGameMenu);
             }
         });
 
