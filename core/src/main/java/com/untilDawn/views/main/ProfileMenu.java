@@ -3,7 +3,6 @@ package com.untilDawn.views.main;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -18,17 +17,12 @@ public class ProfileMenu implements Screen {
     private final ProfileMenuController controller;
 
     public Table table;
-    private Texture backgroundTexture;
-    private Image backgroundImage;
     private Stage stage;
     private Image[] leavesDecorations;
 
     private Label title;
 
     public ProfileMenu(Skin skin) {
-        backgroundTexture = new Texture(Gdx.files.internal("Images/background.png"));
-        backgroundImage = new Image(backgroundTexture);
-        backgroundImage.setFillParent(true);
         title = new Label("Profile Menu", skin, "title");
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
         textOnlyStyle.font = skin.getFont("font");
@@ -108,9 +102,6 @@ public class ProfileMenu implements Screen {
     public void dispose() {
         if (stage != null) {
             stage.dispose();
-        }
-        if (backgroundTexture != null) {
-            backgroundTexture.dispose();
         }
     }
 

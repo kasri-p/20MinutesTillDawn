@@ -7,50 +7,54 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.untilDawn.Main;
 import com.untilDawn.controllers.StartMenuController;
+import com.untilDawn.models.App;
 import com.untilDawn.models.utils.UIHelper;
 
 public class StartMenu implements Screen {
     private final TextButton startButton;
     private final TextButton quitButton;
-    private final Label gameTitle;
+    private final TextButton languageButton;
     private final Sound clickSound;
-    private final float ANIMATION_FRAME_DURATION = 0.20f; // Adjust timing as needed
+    private final float ANIMATION_FRAME_DURATION = 0.20f;
     public Table table;
-    private Texture backgroundTexture;
-    private Image backgroundImage;
+    private Image logoImage;
     private Stage stage;
     private Image[] leavesDecorations;
     private Animation<TextureRegion> eyeBlinkAnimation;
     private float animationTime = 1f;
     private Image eyeImage;
+    private boolean isEnglish = true;
 
     public StartMenu(StartMenuController controller, Skin skin) {
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
-        // Keep the background texture for transition effects if needed
-        backgroundTexture = new Texture(Gdx.files.internal("Images/background.png"));
-        backgroundImage = new Image(backgroundTexture);
-        backgroundImage.setFillParent(true);
+        TextButton.TextButtonStyle boldButtonStyle = new TextButton.TextButtonStyle();
+        boldButtonStyle.font = skin.getFont("font");
+        boldButtonStyle.font.getData().setScale(1.1f);
+        boldButtonStyle.fontColor = new Color(Color.SALMON);
+        boldButtonStyle.overFontColor = new Color(Color.SALMON).mul(0.7f);
+        boldButtonStyle.downFontColor = new Color(Color.SALMON).mul(0.5f);
 
-        TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
-        textOnlyStyle.font = skin.getFont("font");
-        textOnlyStyle.fontColor = new Color(Color.SALMON);
-        textOnlyStyle.overFontColor = new Color(Color.SALMON).mul(0.7f);
-        textOnlyStyle.downFontColor = new Color(Color.SALMON).mul(0.5f);
-
-        this.startButton = new TextButton("Start", textOnlyStyle);
-        this.quitButton = new TextButton("Quit", textOnlyStyle);
-        this.gameTitle = new Label("20 Minutes Till Dawn", skin, "title");
+        this.startButton = new TextButton("Start", boldButtonStyle);
+        this.quitButton = new TextButton("Quit", boldButtonStyle);
+        this.languageButton = new TextButton("Language: English", boldButtonStyle);
+        Texture logoTexture = new Texture(Gdx.files.internal("Images/logo.png"));
+        this.logoImage = new Image(logoTexture);
 
         this.table = new Table();
 
-        // Create the eye blink animation
         createEyeBlinkAnimation();
     }
 
@@ -78,38 +82,73 @@ public class StartMenu implements Screen {
 
         leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
-        gameTitle.setFontScale(0.8f);
         table.setFillParent(true);
         table.top();
 
-        table.add(gameTitle)
+        eyeImage.setSize(500, 150);
+        eyeImage.setPosition(
+            (stage.getWidth() - eyeImage.getWidth()) / 2,
+            (stage.getHeight() - eyeImage.getHeight()) / 2
+        );
+        stage.addActor(eyeImage);
+
+        table.add(logoImage)
             .padTop(100)
             .colspan(2)
             .center()
             .row();
 
-
         table.add(startButton)
             .colspan(2)
             .center()
-            .padTop(50)
+            .padTop(150)
+            .width(250)
+            .height(60)
             .row();
 
-        table.add(eyeImage)
+        table.add(languageButton)
             .colspan(2)
             .center()
-            .padTop(0)
-            .size(300, 150) // Adjust size as needed
+            .padTop(20)
+            .width(250)
+            .height(60)
             .row();
 
         table.add(quitButton)
             .colspan(2)
             .center()
-            .padTop(0)
+            .padTop(20)
+            .width(250)
             .row();
 
-
         stage.addActor(table);
+
+        table.toFront();
+
+        languageButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                toggleLanguage();
+            }
+        });
+    }
+
+    private void toggleLanguage() {
+        if (App.isSFX()) {
+            Main.getMain().getClickSound().play();
+        }
+
+        isEnglish = !isEnglish;
+
+        if (isEnglish) {
+            languageButton.setText("Language: English");
+            startButton.setText("Start");
+            quitButton.setText("Quit");
+        } else {
+            languageButton.setText("Langue: Français");
+            startButton.setText("Commencer");
+            quitButton.setText("Quitter");
+        }
     }
 
     @Override
@@ -130,13 +169,15 @@ public class StartMenu implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
 
-        // Reposition and resize the leaves decorations when the screen is resized
+        eyeImage.setPosition(
+            (width - eyeImage.getWidth()) / 2,
+            (height - eyeImage.getHeight()) / 2
+        );
+
         if (leavesDecorations != null) {
-            // Remove old decorations
             leavesDecorations[0].remove();
             leavesDecorations[1].remove();
 
-            // Add new properly sized decorations
             leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
             leavesDecorations[0].toBack();
@@ -161,9 +202,11 @@ public class StartMenu implements Screen {
         if (stage != null) {
             stage.dispose();
         }
-        if (backgroundTexture != null) {
-            backgroundTexture.dispose();
+
+        if (logoImage != null && logoImage.getDrawable() instanceof TextureRegionDrawable) {
+            ((TextureRegionDrawable) logoImage.getDrawable()).getRegion().getTexture().dispose();
         }
+
 
         if (eyeBlinkAnimation != null) {
             for (TextureRegion region : eyeBlinkAnimation.getKeyFrames()) {
@@ -180,6 +223,14 @@ public class StartMenu implements Screen {
 
     public TextButton getQuitButton() {
         return quitButton;
+    }
+
+    public TextButton getLanguageButton() {
+        return languageButton;
+    }
+
+    public boolean isEnglish() {
+        return isEnglish;
     }
 
     public Stage getStage() {

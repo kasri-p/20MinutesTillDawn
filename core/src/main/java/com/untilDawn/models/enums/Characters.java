@@ -1,0 +1,33 @@
+package com.untilDawn.models.game;
+
+
+public enum Characters {
+    Shana("Shana", 4, 4),
+    Diamond("Diamond", 7, 1),
+    Scarlet("Scarlet", 3, 5),
+    Lilith("Lilith", 5, 3),
+    Dasher("Dasher", 2, 10),
+    Abby("Abby", 3, 4);
+    
+    private final String name;
+    private final int speed;
+    private final int hp;
+
+    Characters(String name, int speed, int hp) {
+        this.name = name;
+        this.speed = speed;
+        this.hp = hp;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+}

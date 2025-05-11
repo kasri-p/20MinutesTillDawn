@@ -22,6 +22,7 @@ public class SignUpMenu implements Screen {
     private final Table table;
     private final Sound clickSound;
     private SignUpMenuController controller;
+    
     private Image[] leavesDecorations;
 
     public SignUpMenu(Skin skin) {
