@@ -20,15 +20,14 @@ public class StartMenu implements Screen {
     private final TextButton quitButton;
     private final Label gameTitle;
     private final Sound clickSound;
-    private final float ANIMATION_FRAME_DURATION = 0.15f; // Adjust timing as needed
+    private final float ANIMATION_FRAME_DURATION = 0.20f; // Adjust timing as needed
     public Table table;
     private Texture backgroundTexture;
     private Image backgroundImage;
     private Stage stage;
     private Image[] leavesDecorations;
-    // Eye blink animation properties
     private Animation<TextureRegion> eyeBlinkAnimation;
-    private float animationTime = 0;
+    private float animationTime = 1f;
     private Image eyeImage;
 
     public StartMenu(StartMenuController controller, Skin skin) {
@@ -166,8 +165,7 @@ public class StartMenu implements Screen {
             backgroundTexture.dispose();
         }
 
-        // Dispose of animation textures
-        if (eyeBlinkAnimation != null && eyeBlinkAnimation.getKeyFrames().length > 0) {
+        if (eyeBlinkAnimation != null) {
             for (TextureRegion region : eyeBlinkAnimation.getKeyFrames()) {
                 if (region.getTexture() != null) {
                     region.getTexture().dispose();

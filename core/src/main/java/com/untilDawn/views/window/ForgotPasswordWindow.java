@@ -20,6 +20,7 @@ public class ForgotPasswordWindow extends Window {
     private final TextButton backButton;
     private final Table contentTable;
     private final Stage parentStage;
+    
     String[] securityQuestions = {
         "What is your favorite music band?", // Guns n' Roses
         "When did you parents met each-other?",

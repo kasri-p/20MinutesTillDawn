@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.untilDawn.controllers.ProfileMenuController;
 import com.untilDawn.models.utils.UIHelper;
 
 public class ProfileMenu implements Screen {
@@ -14,6 +15,7 @@ public class ProfileMenu implements Screen {
     private final TextButton changePasswordButton;
     private final TextButton deleteAccountButton;
     private final TextButton changeAvatarButton;
+    private final ProfileMenuController controller;
 
     public Table table;
     private Texture backgroundTexture;
@@ -39,7 +41,7 @@ public class ProfileMenu implements Screen {
         this.deleteAccountButton = new TextButton("Delete Account", textOnlyStyle);
         this.changeAvatarButton = new TextButton("Change Avatar", textOnlyStyle);
 
-
+        this.controller = new ProfileMenuController(this);
         this.table = new Table();
     }
 
@@ -115,5 +117,21 @@ public class ProfileMenu implements Screen {
 
     public Stage getStage() {
         return stage;
+    }
+
+    public TextButton getChangeUsernameButton() {
+        return changeUsernameButton;
+    }
+
+    public TextButton getChangePasswordButton() {
+        return changePasswordButton;
+    }
+
+    public TextButton getDeleteAccountButton() {
+        return deleteAccountButton;
+    }
+
+    public TextButton getChangeAvatarButton() {
+        return changeAvatarButton;
     }
 }
