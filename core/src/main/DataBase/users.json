@@ -10,5 +10,17 @@
     "avatarPath": "avatar1.png",
     "deaths": 0,
     "kills": 0
+  },
+  "Kambiz": {
+    "username": "Kambiz",
+    "password": "H@123456",
+    "email": "",
+    "SecurityQuestionIndex": 4,
+    "SecurityAnswer": "0",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar2.png",
+    "deaths": 0,
+    "kills": 0
   }
 }

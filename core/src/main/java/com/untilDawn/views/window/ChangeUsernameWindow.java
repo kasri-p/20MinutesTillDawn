@@ -13,6 +13,7 @@ import com.untilDawn.models.User;
 public class ChangeUsernameWindow extends Window {
     private final TextField newUserTextField;
     private final TextButton confirmButton;
+    private final TextButton cancelButton;
     private final Label messageLabel;
     private Runnable onComplete;
 
@@ -20,6 +21,7 @@ public class ChangeUsernameWindow extends Window {
         super("Change Username", skin);
         newUserTextField = new TextField("", skin);
         confirmButton = new TextButton("Change", skin);
+        cancelButton = new TextButton("Cancel", skin);
         messageLabel = new Label("", skin);
         messageLabel.setColor(Color.RED);
         messageLabel.setAlignment(Align.center);
@@ -29,21 +31,39 @@ public class ChangeUsernameWindow extends Window {
 
         defaults().pad(10).width(200);
 
-        add(newUserTextField).fillX().row();
+        Label instructionLabel = new Label("Enter new username:", skin);
+        instructionLabel.setAlignment(Align.left);
 
-        add(confirmButton).width(100).align(Align.center).padTop(20).row();
+        add(instructionLabel).left().row();
+        add(newUserTextField).fillX().row();
+        add(messageLabel).fillX().row();
+
+        // Create a table for buttons to place them side by side
+        Table buttonTable = new Table();
+        buttonTable.add(confirmButton).width(100).padRight(20);
+        buttonTable.add(cancelButton).width(100);
+
+        add(buttonTable).padTop(20).row();
 
         confirmButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Main.getMain().getClickSound().play();
-                remove();
+                playClick();
                 if (!checkUser()) {
                     return;
                 }
+                remove();
                 if (onComplete != null) {
                     onComplete.run();
                 }
+            }
+        });
+
+        cancelButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                playClick();
+                remove();
             }
         });
 
@@ -54,17 +74,42 @@ public class ChangeUsernameWindow extends Window {
         setModal(true);
     }
 
+    private void playClick() {
+        if (App.isSFX()) {
+            Main.getMain().getClickSound().play();
+        }
+    }
+
     public void setOnComplete(Runnable onComplete) {
         this.onComplete = onComplete;
     }
 
     private boolean checkUser() {
         String username = newUserTextField.getText();
+        if (App.getLoggedInUser().isGuest()) {
+            messageLabel.setText("Guest accounts cannot change usernames.");
+            return false;
+        }
+
+        if (username.isEmpty()) {
+            messageLabel.setText("Username cannot be empty.");
+            return false;
+        }
+
         User user = App.getUser(username);
         if (user != null) {
             messageLabel.setText("Username already exists.");
             return false;
         }
+
+        User currentUser = App.getLoggedInUser();
+        if (currentUser != null) {
+            App.addUser(null);
+
+            App.getUser(username).setUsername(newUserTextField.getText());
+            App.save();
+        }
+
         return true;
     }
 }

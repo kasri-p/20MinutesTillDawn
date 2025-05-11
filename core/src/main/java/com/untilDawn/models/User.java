@@ -38,6 +38,10 @@ public class User {
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -60,5 +64,9 @@ public class User {
 
     public void setSecurityQuestionIndex(int securityQuestionIndex) {
         SecurityQuestionIndex = securityQuestionIndex;
+    }
+
+    public boolean isGuest() {
+        return isGuest;
     }
 }

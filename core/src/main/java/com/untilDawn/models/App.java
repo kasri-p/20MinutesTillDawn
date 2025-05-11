@@ -41,7 +41,6 @@ public class App {
         loggedInUser = null;
     }
 
-
     public static String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -62,6 +61,10 @@ public class App {
 
     public static boolean isSFX() {
         return isSFX;
+    }
+
+    public static void removeUser(User user) {
+        users.remove(user.getUsername());
     }
 
     public void toggleSFX() {
