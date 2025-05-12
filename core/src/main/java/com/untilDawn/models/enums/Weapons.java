@@ -8,7 +8,7 @@ public enum Weapons {
 
     private final String name;
     private final int ammoMax;
-    private final int reloadTime; // in seconds
+    private final int reloadTime;
     private final int projectileCount;
     private final int damage;
 
