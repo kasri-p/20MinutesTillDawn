@@ -1,14 +1,14 @@
-package com.untilDawn.models.game;
+package com.untilDawn.models.enums;
 
 
 public enum Characters {
     Shana("Shana", 4, 4),
     Diamond("Diamond", 7, 1),
-    Scarlet("Scarlet", 3, 5),
+    Scarlett("Scarlett", 3, 5),
     Lilith("Lilith", 5, 3),
     Dasher("Dasher", 2, 10),
     Abby("Abby", 3, 4);
-    
+
     private final String name;
     private final int speed;
     private final int hp;

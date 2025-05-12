@@ -2,7 +2,6 @@ package com.untilDawn.views;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -26,19 +25,22 @@ public class StartMenu implements Screen {
     private final TextButton startButton;
     private final TextButton quitButton;
     private final TextButton languageButton;
-    private final Sound clickSound;
     private final float ANIMATION_FRAME_DURATION = 0.20f;
+    private final float PAUSE_DURATION = 2f;
     public Table table;
     private Image logoImage;
     private Stage stage;
     private Image[] leavesDecorations;
     private Animation<TextureRegion> eyeBlinkAnimation;
-    private float animationTime = 1f;
+    private float animationTime = 0f;
+    private float timeSinceLastAnimation = 0f;
+    private boolean isAnimating = false;
     private Image eyeImage;
     private boolean isEnglish = true;
+    private StartMenuController controller;
+    private TextureRegion firstFrame;
 
     public StartMenu(StartMenuController controller, Skin skin) {
-        clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
         TextButton.TextButtonStyle boldButtonStyle = new TextButton.TextButtonStyle();
         boldButtonStyle.font = skin.getFont("font");
@@ -54,8 +56,12 @@ public class StartMenu implements Screen {
         this.logoImage = new Image(logoTexture);
 
         this.table = new Table();
-
         createEyeBlinkAnimation();
+        this.controller = controller;
+
+        animationTime = 0f;
+        isAnimating = false;
+        timeSinceLastAnimation = 0f;
     }
 
     private void createEyeBlinkAnimation() {
@@ -72,7 +78,8 @@ public class StartMenu implements Screen {
 
         eyeBlinkAnimation = new Animation<>(ANIMATION_FRAME_DURATION, eyeFrames);
 
-        eyeImage = new Image(eyeFrames.first());
+        firstFrame = eyeFrames.first();
+        eyeImage = new Image(firstFrame);
     }
 
     @Override
@@ -131,6 +138,10 @@ public class StartMenu implements Screen {
                 toggleLanguage();
             }
         });
+
+        animationTime = 0f;
+        isAnimating = false;
+        timeSinceLastAnimation = 0f;
     }
 
     private void toggleLanguage() {
@@ -155,9 +166,27 @@ public class StartMenu implements Screen {
     public void render(float delta) {
         UIHelper.clearScreenWithBackgroundColor();
 
-        animationTime += delta;
+        TextureRegion currentFrame;
 
-        TextureRegion currentFrame = eyeBlinkAnimation.getKeyFrame(animationTime, true);
+        if (isAnimating) {
+            animationTime += delta;
+
+            if (animationTime >= eyeBlinkAnimation.getAnimationDuration()) {
+                animationTime = 0;
+                isAnimating = false;
+                timeSinceLastAnimation = 0;
+                currentFrame = firstFrame;
+            } else {
+                currentFrame = eyeBlinkAnimation.getKeyFrame(animationTime, false);
+            }
+        } else {
+            timeSinceLastAnimation += delta;
+            if (timeSinceLastAnimation >= PAUSE_DURATION) {
+                isAnimating = true;
+                animationTime = 0;
+            }
+            currentFrame = firstFrame;
+        }
 
         eyeImage.setDrawable(new TextureRegionDrawable(currentFrame));
 
@@ -206,7 +235,6 @@ public class StartMenu implements Screen {
         if (logoImage != null && logoImage.getDrawable() instanceof TextureRegionDrawable) {
             ((TextureRegionDrawable) logoImage.getDrawable()).getRegion().getTexture().dispose();
         }
-
 
         if (eyeBlinkAnimation != null) {
             for (TextureRegion region : eyeBlinkAnimation.getKeyFrames()) {

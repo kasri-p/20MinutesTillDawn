@@ -5,6 +5,7 @@ public class Game {
     private int score;
     private int level;
     private long duration;
+    private Player player;
 
     public Game() {
         this.score = 0;
@@ -34,5 +35,9 @@ public class Game {
 
     public void setDuration(long duration) {
         this.duration = duration;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

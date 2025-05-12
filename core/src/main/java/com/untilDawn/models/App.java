@@ -6,12 +6,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 
 public class App {
-    private static Map<String, User> users;
+    private static Map<String, User> users = new HashMap<>();
     private static User loggedInUser;
     private static boolean isSFX = true;
+    private static Map<User, Game> games = new HashMap<>();
 
     public static void addUser(User user) {
         users.put(user.getUsername(), user);
@@ -65,6 +67,19 @@ public class App {
 
     public static void removeUser(User user) {
         users.remove(user.getUsername());
+    }
+
+    public static Game getGame(User user) {
+        return games.get(user);
+    }
+
+    public static void addGame(Game game, User user) {
+        if (games.get(user) == null) {
+            games.put(user, game);
+        } else {
+            games.remove(user);
+            games.put(user, game);
+        }
     }
 
     public void toggleSFX() {
