@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 
 public class UIHelper {
-    private static final Color BACKGROUND_COLOR = new Color(0.1f, 0.1f, 0.2f, 1f); // Dark blue
+    private static final Color BACKGROUND_COLOR = Color.valueOf("301934");
 
     private static Texture leavesTexture;
 
