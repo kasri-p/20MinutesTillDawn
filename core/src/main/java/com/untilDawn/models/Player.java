@@ -13,5 +13,7 @@ public class Player {
         return character.getName();
     }
 
-    
+    public Characters getCharacter() {
+        return character;
+    }
 }
