@@ -30,4 +30,8 @@ public enum Characters {
     public int getHp() {
         return hp;
     }
+
+    public String getPath() {
+        return "Images/avatars/" + name + "/";
+    }
 }

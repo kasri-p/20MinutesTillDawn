@@ -7,6 +7,7 @@ import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.StartMenu;
 import com.untilDawn.views.main.MainMenu;
+import com.untilDawn.views.main.PreGameMenu;
 import com.untilDawn.views.main.ProfileMenu;
 
 public class MainMenuController {
@@ -30,6 +31,13 @@ public class MainMenuController {
             public void clicked(InputEvent event, float x, float y) {
                 playClick();
                 navigateToProfileMenu();
+            }
+        });
+        view.getPlayButton().addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                Main.getMain().setScreen(new PreGameMenu(GameAssetManager.getGameAssetManager().getSkin()));
             }
         });
     }

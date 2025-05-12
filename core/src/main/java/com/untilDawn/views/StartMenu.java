@@ -25,8 +25,8 @@ public class StartMenu implements Screen {
     private final TextButton startButton;
     private final TextButton quitButton;
     private final TextButton languageButton;
-    private final float ANIMATION_FRAME_DURATION = 0.20f;
-    private final float PAUSE_DURATION = 2f;
+    private final float ANIMATION_FRAME_DURATION = 0.17f;
+    private final float PAUSE_DURATION = 6f;
     public Table table;
     private Image logoImage;
     private Stage stage;
@@ -46,8 +46,8 @@ public class StartMenu implements Screen {
         boldButtonStyle.font = skin.getFont("font");
         boldButtonStyle.font.getData().setScale(1.1f);
         boldButtonStyle.fontColor = new Color(Color.SALMON);
-        boldButtonStyle.overFontColor = new Color(Color.SALMON).mul(0.7f);
-        boldButtonStyle.downFontColor = new Color(Color.SALMON).mul(0.5f);
+        boldButtonStyle.overFontColor = Color.valueOf("#f1cedb");
+        boldButtonStyle.downFontColor = new Color(Color.LIGHT_GRAY);
 
         this.startButton = new TextButton("Start", boldButtonStyle);
         this.quitButton = new TextButton("Quit", boldButtonStyle);
@@ -100,15 +100,17 @@ public class StartMenu implements Screen {
         stage.addActor(eyeImage);
 
         table.add(logoImage)
-            .padTop(100)
+            .padTop(150)
             .colspan(2)
             .center()
+            .width(500)
+            .height(200)
             .row();
 
         table.add(startButton)
             .colspan(2)
             .center()
-            .padTop(150)
+            .padTop(50)
             .width(250)
             .height(60)
             .row();

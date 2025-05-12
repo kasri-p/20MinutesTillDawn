@@ -72,13 +72,10 @@ public class ProfileMenu implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
 
-        // Reposition and resize the leaves decorations when the screen is resized
         if (leavesDecorations != null) {
-            // Remove old decorations
             leavesDecorations[0].remove();
             leavesDecorations[1].remove();
 
-            // Add new properly sized decorations
             leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
             leavesDecorations[0].toBack();
