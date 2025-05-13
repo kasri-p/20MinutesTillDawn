@@ -123,7 +123,6 @@ public class ChangePasswordWindow extends Window {
         // Save the new password
         String hashedPassword = App.hashPassword(newPassword);
         user.setPassword(hashedPassword);
-        App.save();
 
         return true;
     }

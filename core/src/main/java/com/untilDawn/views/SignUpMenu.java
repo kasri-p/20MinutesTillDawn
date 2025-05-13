@@ -22,7 +22,7 @@ public class SignUpMenu implements Screen {
     private final Table table;
     private final Sound clickSound;
     private SignUpMenuController controller;
-    
+
     private Image[] leavesDecorations;
 
     public SignUpMenu(Skin skin) {
@@ -49,7 +49,7 @@ public class SignUpMenu implements Screen {
 
         signUpButton = new TextButton("Sign Up", textOnlyStyle);
         skipButton = new TextButton("Login as a Guest", textOnlyStyle);
-        backButton = new TextButton("Back", textOnlyStyle);
+        backButton = new TextButton("Login", textOnlyStyle);
 
         table = new Table();
         table.setFillParent(true);
@@ -57,10 +57,10 @@ public class SignUpMenu implements Screen {
 
         table.add(new Label("Sign Up", skin, "title")).colspan(2).pad(20).row();
         table.add(new Label("Username:", skin)).pad(10);
-        table.add(usernameField).width(200).pad(10);
+        table.add(usernameField).prefWidth(300).pad(10);
         table.row();
         table.add(new Label("Password:", skin)).pad(10);
-        table.add(passwordField).width(200).pad(10);
+        table.add(passwordField).prefWidth(300).pad(10);
         table.row();
         table.add(errorLabel).colspan(2).pad(10);
         table.row();

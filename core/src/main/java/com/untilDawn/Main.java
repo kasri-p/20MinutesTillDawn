@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.untilDawn.controllers.DBController;
 import com.untilDawn.controllers.StartMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
@@ -32,7 +33,7 @@ public class Main extends Game {
     public void create() {
         main = this;
         batch = new SpriteBatch();
-        App.load();
+        DBController.connect();
 
         Pixmap cursorPixmap = new Pixmap(Gdx.files.internal("images/cursor.png"));
         Cursor customCursor = Gdx.graphics.newCursor(cursorPixmap, 0, 0);
@@ -58,7 +59,7 @@ public class Main extends Game {
 
     @Override
     public void dispose() {
-        App.save();
+//        DBController.disconnect();
         batch.dispose();
         UIHelper.dispose();
     }

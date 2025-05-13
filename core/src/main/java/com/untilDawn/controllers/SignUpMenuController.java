@@ -45,7 +45,7 @@ public class SignUpMenuController {
                 }
 
                 String hashedPassword = App.hashPassword(password);
-                User newUser = new User(username, hashedPassword, "", getRandomAvatar());
+                User newUser = new User(username, hashedPassword, getRandomAvatar());
                 App.addUser(newUser);
                 App.setLoggedInUser(newUser);
 

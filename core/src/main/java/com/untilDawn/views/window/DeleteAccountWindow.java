@@ -92,7 +92,6 @@ public class DeleteAccountWindow extends Window {
 
         App.removeUser(user);
         App.logout();
-        App.save();
 
         StartMenu startMenu = new StartMenu(new StartMenuController(), GameAssetManager.getGameAssetManager().getSkin());
         Main.getMain().setScreen(startMenu);

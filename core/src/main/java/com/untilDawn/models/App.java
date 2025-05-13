@@ -1,7 +1,5 @@
 package com.untilDawn.models;
 
-import com.untilDawn.models.utils.FileStorage;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,14 +19,6 @@ public class App {
 
     public static User getUser(String username) {
         return users.get(username);
-    }
-
-    public static void load() {
-        users = FileStorage.loadUsers();
-    }
-
-    public static void save() {
-        FileStorage.saveUsers(users);
     }
 
     public static User getLoggedInUser() {
@@ -80,6 +70,14 @@ public class App {
             games.remove(user);
             games.put(user, game);
         }
+    }
+
+    public static Map<String, User> getUsers() {
+        return users;
+    }
+
+    public static void setUsers(Map<String, User> users) {
+        App.users = users;
     }
 
     public void toggleSFX() {

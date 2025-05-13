@@ -3,7 +3,6 @@ package com.untilDawn.models;
 public class User {
     private String username;
     private String password;
-    private String email;
     private int SecurityQuestionIndex;
     private String SecurityAnswer;
     private Game lastGame;
@@ -13,10 +12,9 @@ public class User {
     private int deaths;
     private int kills;
 
-    public User(String username, String password, String email, String avatarPath) {
+    public User(String username, String password, String avatarPath) {
         this.username = username;
         this.password = password;
-        this.email = email;
         this.avatarPath = avatarPath;
         this.isGuest = false;
         this.SecurityQuestionIndex = 0;
@@ -32,6 +30,10 @@ public class User {
 
     public int getScore() {
         return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public String getUsername() {
@@ -68,5 +70,49 @@ public class User {
 
     public boolean isGuest() {
         return isGuest;
+    }
+
+    public void setGuest(boolean guest) {
+        isGuest = guest;
+    }
+
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
+    }
+
+    public int getDeaths() {
+        return deaths;
+    }
+
+    public void setDeaths(int deaths) {
+        this.deaths = deaths;
+    }
+
+    public int getKills() {
+        return kills;
+    }
+
+    public void setKills(int kills) {
+        this.kills = kills;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+            "username='" + username + '\'' +
+            ", password='" + password + '\'' +
+            ", SecurityQuestionIndex=" + SecurityQuestionIndex +
+            ", SecurityAnswer='" + SecurityAnswer + '\'' +
+            ", lastGame=" + lastGame +
+            ", isGuest=" + isGuest +
+            ", score=" + score +
+            ", avatarPath='" + avatarPath + '\'' +
+            ", deaths=" + deaths +
+            ", kills=" + kills +
+            '}';
     }
 }
