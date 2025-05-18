@@ -1,16 +1,27 @@
 package com.untilDawn.models;
 
+import com.untilDawn.models.enums.Weapons;
 
 public class Game {
     private int score;
     private int level;
-    private long duration;
     private Player player;
+    private Weapons selectedWeapon;
+    private int difficulty;
+    private int timeLimit; // in minutes
+
+    public Game(int timeLimit) {
+        this.score = 0;
+        this.level = 1;
+        this.difficulty = 1;
+        this.timeLimit = timeLimit;
+    }
 
     public Game() {
         this.score = 0;
         this.level = 1;
-        this.duration = 0;
+        this.difficulty = 1;
+        this.timeLimit = 5;
     }
 
     public int getScore() {
@@ -29,15 +40,35 @@ public class Game {
         this.level = level;
     }
 
-    public long getDuration() {
-        return duration;
-    }
-
-    public void setDuration(long duration) {
-        this.duration = duration;
-    }
-
     public Player getPlayer() {
         return player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public Weapons getSelectedWeapon() {
+        return selectedWeapon;
+    }
+
+    public void setSelectedWeapon(Weapons selectedWeapon) {
+        this.selectedWeapon = selectedWeapon;
+    }
+
+    public int getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(int difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public int getTimeLimit() {
+        return timeLimit;
+    }
+
+    public void setTimeLimit(int timeLimit) {
+        this.timeLimit = timeLimit;
     }
 }

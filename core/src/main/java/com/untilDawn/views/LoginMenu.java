@@ -73,7 +73,6 @@ public class LoginMenu implements Screen {
 
     @Override
     public void render(float delta) {
-        // Use the UIHelper to set the background color
         UIHelper.clearScreenWithBackgroundColor();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));

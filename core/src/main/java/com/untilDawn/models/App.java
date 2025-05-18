@@ -14,6 +14,7 @@ public class App {
     private static User loggedInUser;
     private static boolean isSFX = true;
     private static Map<User, Game> games = new HashMap<>();
+    private static Game currentGame;
 
     // Settings
     private static String language = "en";
@@ -208,6 +209,10 @@ public class App {
 
     public static void setBlackAndWhiteEnabled(boolean enabled) {
         blackAndWhiteEnabled = enabled;
+    }
+
+    public static void setGame(Game game) {
+        currentGame = game;
     }
 
     public void toggleSFX() {

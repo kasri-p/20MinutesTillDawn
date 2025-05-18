@@ -4,7 +4,7 @@ package com.untilDawn.models.enums;
 public enum Weapons {
     Revolver("Revolver", 6, 1, 1, 20),
     Shotgun("Shotgun", 2, 1, 4, 10),
-    Dual_Smg("Dual SMGs", 24, 2, 1, 8);
+    Dual_Smg("Dual Smg", 24, 2, 1, 8);
 
     private final String name;
     private final int ammoMax;

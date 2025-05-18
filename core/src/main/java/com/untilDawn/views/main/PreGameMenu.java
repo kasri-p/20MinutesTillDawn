@@ -24,13 +24,19 @@ public class PreGameMenu implements Screen {
     private final Stage stage;
     private final Skin skin;
     private final PreGameMeuController controller;
-    private int NUM_SELECTORS = 5;
+    private int NUM_CHARACTER_SELECTORS = 5;
+    private int NUM_WEAPON_SELECTORS = 3;
 
     private Table mainTable;
-    private Image[] selectorBubbles;
-    private Image[] selectorHighlights;
+    private Image[] characterBubbles;
+    private Image[] characterHighlights;
+    private Image[] weaponBubbles;
+    private Image[] weaponHighlights;
     private Image characterPortrait;
+    private Image weaponPortrait;
     private Label characterInfoLabel;
+    private Label weaponInfoLabel;
+    private TextButton playButton;
 
     private Texture selectorTexture;
     private Texture selectorHighlightTexture;
@@ -39,7 +45,11 @@ public class PreGameMenu implements Screen {
     private Animation<TextureRegion>[] characterAnimations;
     private float animationTime = 0f;
 
-    private int selectedSelector = -1;
+    private float widthFactor;
+    private float heightFactor;
+
+    private int selectedCharacter = -1;
+    private int selectedWeapon = -1;
     private Characters[] availableCharacters = {
         Characters.Shana,
         Characters.Diamond,
@@ -58,7 +68,12 @@ public class PreGameMenu implements Screen {
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
+        // Calculate scaling factors based on screen size
+        widthFactor = Gdx.graphics.getWidth() / 1920f; // Assuming 1920x1080 as reference
+        heightFactor = Gdx.graphics.getHeight() / 1080f;
+
         this.controller = new PreGameMeuController();
+        controller.setView(this);
 
         this.selectorTexture = new Texture(Gdx.files.internal("Images/selectorBubble/SelectorBubble1.png"));
         this.selectorHighlightTexture = new Texture(Gdx.files.internal("Images/selectorBubble/SelectorBubble1.png"));
@@ -94,30 +109,75 @@ public class PreGameMenu implements Screen {
         float FRAME_DURATION = 0.13f;
         return new Animation<>(FRAME_DURATION, frames);
     }
-    
+
     private void createUI() {
         mainTable = new Table();
         mainTable.setFillParent(true);
-        mainTable.top().padTop(50);
+        mainTable.top().padTop(20 * heightFactor);
 
         Label titleLabel = new Label("Game Setup", skin, "title");
         titleLabel.setAlignment(Align.center);
-        mainTable.add(titleLabel).expandX().pad(20).row();
+        titleLabel.setFontScale(Math.min(widthFactor, heightFactor) * 0.9f);
+        mainTable.add(titleLabel).expandX().pad(10 * heightFactor).row();
 
         Table contentTable = new Table();
 
-        Table bubblesTable = new Table();
-        createSelectorBubbles(bubblesTable);
-        contentTable.add(bubblesTable).width(stage.getWidth() * 0.6f).padRight(20);
+        // Left side: Character and Weapon bubbles
+        Table selectorsTable = new Table();
 
-        Table portraitTable = new Table();
-        createPortraitSection(portraitTable);
-        contentTable.add(portraitTable).width(stage.getWidth() * 0.4f).top();
+        // Character selection section
+        Label charactersLabel = new Label("Select Character", skin);
+        charactersLabel.setAlignment(Align.center);
+        charactersLabel.setFontScale(Math.min(widthFactor, heightFactor) * 0.9f);
+        selectorsTable.add(charactersLabel).colspan(3).pad(5 * heightFactor).row();
+
+        Table characterBubblesTable = new Table();
+        createCharacterBubbles(characterBubblesTable);
+        selectorsTable.add(characterBubblesTable).colspan(3).pad(5 * heightFactor).row();
+
+        // Weapon selection section
+        Label weaponsLabel = new Label("Select Weapon", skin);
+        weaponsLabel.setAlignment(Align.center);
+        weaponsLabel.setFontScale(Math.min(widthFactor, heightFactor) * 0.9f);
+        selectorsTable.add(weaponsLabel).colspan(3).pad(5 * heightFactor).row();
+
+        Table weaponBubblesTable = new Table();
+        createWeaponBubbles(weaponBubblesTable);
+        selectorsTable.add(weaponBubblesTable).colspan(3).pad(5 * heightFactor).row();
+
+        // Add play button
+        TextButton.TextButtonStyle playButtonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
+        playButtonStyle.fontColor = Color.SALMON;
+        playButtonStyle.overFontColor = Color.valueOf("#f1cedb");
+        playButtonStyle.downFontColor = Color.LIGHT_GRAY;
+
+        playButton = new TextButton("PLAY", playButtonStyle);
+        playButton.getLabel().setFontScale(1.3f * Math.min(widthFactor, heightFactor));
+        playButton.setDisabled(true); // Initially disabled until both selections are made
+
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!playButton.isDisabled()) {
+                    controller.playClick();
+                    controller.startGame();
+                }
+            }
+        });
+
+        selectorsTable.add(playButton).colspan(3).width(180 * widthFactor).height(50 * heightFactor).pad(15 * heightFactor).row();
+
+        contentTable.add(selectorsTable).width(stage.getWidth() * 0.55f).padRight(10 * widthFactor);
+
+        // Right side: Info panels
+        Table infoTable = new Table();
+        createInfoSection(infoTable);
+        contentTable.add(infoTable).width(stage.getWidth() * 0.35f).top();
 
         mainTable.add(contentTable).expandX().row();
 
         TextButton backButton = new TextButton("Back", skin);
-        backButton.getLabel().setFontScale(1.2f);
+        backButton.getLabel().setFontScale(1.1f * Math.min(widthFactor, heightFactor));
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -126,91 +186,198 @@ public class PreGameMenu implements Screen {
             }
         });
 
+        // Scale down the panel height
+        float panelHeight = 150 * heightFactor;
+
         Image panel = new Image(panelTexture);
         panel.setScale(1, -1);
         panel.setOrigin(panel.getWidth() / 2, panel.getHeight() / 2);
-        mainTable.add(panel).expandX().fillX().row();
-        mainTable.add(backButton);
 
         Table panelContainer = new Table();
         panelContainer.setFillParent(true);
-        panelContainer.padTop(stage.getHeight() - 220);
-        panelContainer.add(panel).expandX().fillX().height(200);
+        panelContainer.padTop(stage.getHeight() - panelHeight - 20);
+        panelContainer.add(panel).expandX().fillX().height(panelHeight);
+
+        mainTable.add(backButton).pad(10 * heightFactor);
 
         stage.addActor(panelContainer);
         stage.addActor(mainTable);
     }
 
-    private void createSelectorBubbles(Table bubblesTable) {
-        NUM_SELECTORS = availableCharacters.length;
-        selectorBubbles = new Image[NUM_SELECTORS];
-        selectorHighlights = new Image[NUM_SELECTORS];
+    private void createCharacterBubbles(Table bubblesTable) {
+        NUM_CHARACTER_SELECTORS = availableCharacters.length;
+        characterBubbles = new Image[NUM_CHARACTER_SELECTORS];
+        characterHighlights = new Image[NUM_CHARACTER_SELECTORS];
 
-        for (int i = 0; i < NUM_SELECTORS; i++) {
+        // Calculate the bubble size based on screen dimensions
+        float bubbleSize = 50 * Math.min(widthFactor, heightFactor);
+        float stackSize = 80 * Math.min(widthFactor, heightFactor);
+        float padding = 5 * Math.min(widthFactor, heightFactor);
+
+        for (int i = 0; i < NUM_CHARACTER_SELECTORS; i++) {
             final int index = i;
             Stack selectorStack = new Stack();
 
-            selectorHighlights[i] = new Image(selectorHighlightTexture);
-            selectorHighlights[i].setSize(60, 60);
-            selectorHighlights[i].setColor(new Color(1f, 0.8f, 0.2f, 1f));
-            selectorHighlights[i].setVisible(false);
+            characterHighlights[i] = new Image(selectorHighlightTexture);
+            characterHighlights[i].setSize(bubbleSize, bubbleSize);
+            characterHighlights[i].setColor(new Color(1f, 0.8f, 0.2f, 1f));
+            characterHighlights[i].setVisible(false);
 
-            selectorBubbles[i] = new Image();
-            selectorBubbles[i].setSize(60, 60);
+            characterBubbles[i] = new Image();
+            characterBubbles[i].setSize(bubbleSize, bubbleSize);
 
-            selectorStack.add(selectorHighlights[i]);
-            selectorStack.add(selectorBubbles[i]);
+            selectorStack.add(characterHighlights[i]);
+            selectorStack.add(characterBubbles[i]);
 
             selectorStack.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     controller.playClick();
-                    selectBubble(index);
-
+                    selectCharacter(index);
                     controller.onCharacterSelected(availableCharacters[index].getName());
+                    updatePlayButtonState();
                 }
             });
 
             if (i % 3 == 0 && i > 0) {
                 bubblesTable.row();
             }
-            bubblesTable.add(selectorStack).width(120).height(120).pad(10);
+            bubblesTable.add(selectorStack).width(stackSize).height(stackSize).pad(padding);
         }
     }
 
-    private void createPortraitSection(Table portraitTable) {
+    private void createWeaponBubbles(Table bubblesTable) {
+        NUM_WEAPON_SELECTORS = availableWeapons.length;
+        weaponBubbles = new Image[NUM_WEAPON_SELECTORS];
+        weaponHighlights = new Image[NUM_WEAPON_SELECTORS];
+
+        // Calculate the bubble size based on screen dimensions
+        float bubbleSize = 50 * Math.min(widthFactor, heightFactor);
+        float stackSize = 80 * Math.min(widthFactor, heightFactor);
+        float padding = 5 * Math.min(widthFactor, heightFactor);
+
+        for (int i = 0; i < NUM_WEAPON_SELECTORS; i++) {
+            final int index = i;
+            Stack selectorStack = new Stack();
+
+            weaponHighlights[i] = new Image(selectorHighlightTexture);
+            weaponHighlights[i].setSize(bubbleSize, bubbleSize);
+            weaponHighlights[i].setColor(new Color(1f, 0.2f, 0.2f, 1f));
+            weaponHighlights[i].setVisible(false);
+
+            // Create a weapon icon using the weapon name
+            weaponBubbles[i] = new Image();
+            weaponBubbles[i].setSize(bubbleSize, bubbleSize);
+
+            String weaponIconPath = "Images/weapons/" + availableWeapons[i].getName() + "/still.png";
+            if (Gdx.files.internal(weaponIconPath).exists()) {
+                Texture weaponTex = new Texture(Gdx.files.internal(weaponIconPath));
+                weaponBubbles[i].setDrawable(new TextureRegionDrawable(new TextureRegion(weaponTex)));
+            } else {
+                Texture placeholderTex = new Texture(Gdx.files.internal("Images/selectorBubble/SelectorBubble1.png"));
+                weaponBubbles[i].setDrawable(new TextureRegionDrawable(new TextureRegion(placeholderTex)));
+                System.out.println("Warning: Weapon icon not found: " + weaponIconPath);
+            }
+
+            selectorStack.add(weaponHighlights[i]);
+            selectorStack.add(weaponBubbles[i]);
+
+            selectorStack.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    controller.playClick();
+                    selectWeapon(index);
+                    controller.onWeaponSelected(availableWeapons[index].getName());
+                    updatePlayButtonState();
+                }
+            });
+
+            bubblesTable.add(selectorStack).width(stackSize).height(stackSize).pad(padding);
+        }
+    }
+
+    private void createInfoSection(Table infoTable) {
+        // Calculate portrait sizes based on screen dimensions
+        float characterPortraitSize = 150 * Math.min(widthFactor, heightFactor);
+        float weaponPortraitWidth = 150 * widthFactor;
+        float weaponPortraitHeight = 75 * heightFactor;
+        float infoWidth = 180 * widthFactor;
+        float padding = 5 * Math.min(widthFactor, heightFactor);
+
+        // Character portrait section
+        Table characterPortraitTable = new Table();
         characterPortrait = new Image();
         characterPortrait.setVisible(false);
 
         characterInfoLabel = new Label("", skin);
         characterInfoLabel.setWrap(true);
         characterInfoLabel.setAlignment(Align.center);
+        characterInfoLabel.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
         characterInfoLabel.setVisible(false);
 
-        portraitTable.add(characterPortrait).size(250, 300).padBottom(20).row();
-        portraitTable.add(characterInfoLabel).width(250).row();
+        Label characterHeader = new Label("Character", skin, "title");
+        characterHeader.setAlignment(Align.center);
+        characterHeader.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
+
+        characterPortraitTable.add(characterHeader).padBottom(padding).row();
+        characterPortraitTable.add(characterPortrait).size(characterPortraitSize, characterPortraitSize).padBottom(padding).row();
+        characterPortraitTable.add(characterInfoLabel).width(infoWidth).row();
+
+        // Weapon portrait section
+        Table weaponPortraitTable = new Table();
+        weaponPortrait = new Image();
+        weaponPortrait.setVisible(false);
+
+        weaponInfoLabel = new Label("", skin);
+        weaponInfoLabel.setWrap(true);
+        weaponInfoLabel.setAlignment(Align.center);
+        weaponInfoLabel.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
+        weaponInfoLabel.setVisible(false);
+
+        Label weaponHeader = new Label("Weapon", skin, "title");
+        weaponHeader.setAlignment(Align.center);
+        weaponHeader.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
+
+        weaponPortraitTable.add(weaponHeader).padBottom(padding).row();
+        weaponPortraitTable.add(weaponPortrait).size(weaponPortraitWidth, weaponPortraitHeight).padBottom(padding).row();
+        weaponPortraitTable.add(weaponInfoLabel).width(infoWidth).row();
+
+        // Add both sections to the info table
+        infoTable.add(characterPortraitTable).padBottom(10 * heightFactor).row();
+        infoTable.add(weaponPortraitTable).row();
     }
 
-    private void selectBubble(int index) {
-        if (selectedSelector == index) {
-            selectorHighlights[index].setVisible(false);
-            selectedSelector = -1;
-
+    private void selectCharacter(int index) {
+        if (selectedCharacter == index) {
+            characterHighlights[index].setVisible(false);
+            selectedCharacter = -1;
             characterPortrait.setVisible(false);
             characterInfoLabel.setVisible(false);
-
-            System.out.println("Selector " + index + " deselected");
         } else {
-            if (selectedSelector != -1) {
-                selectorHighlights[selectedSelector].setVisible(false);
+            if (selectedCharacter != -1) {
+                characterHighlights[selectedCharacter].setVisible(false);
             }
 
-            selectorHighlights[index].setVisible(true);
-            selectedSelector = index;
-
+            characterHighlights[index].setVisible(true);
+            selectedCharacter = index;
             updateCharacterPortrait(index);
+        }
+    }
 
-            System.out.println("Selector " + index + " selected: " + availableCharacters[index].getName());
+    private void selectWeapon(int index) {
+        if (selectedWeapon == index) {
+            weaponHighlights[index].setVisible(false);
+            selectedWeapon = -1;
+            weaponPortrait.setVisible(false);
+            weaponInfoLabel.setVisible(false);
+        } else {
+            if (selectedWeapon != -1) {
+                weaponHighlights[selectedWeapon].setVisible(false);
+            }
+
+            weaponHighlights[index].setVisible(true);
+            selectedWeapon = index;
+            updateWeaponPortrait(index);
         }
     }
 
@@ -236,6 +403,39 @@ public class PreGameMenu implements Screen {
         characterInfoLabel.setVisible(true);
     }
 
+    private void updateWeaponPortrait(int index) {
+        Weapons weapon = availableWeapons[index];
+        String portraitPath = "Images/weapons/" + weapon.getName().replace(" ", "") + "_large.png";
+
+        if (Gdx.files.internal(portraitPath).exists()) {
+            Texture portraitTexture = new Texture(Gdx.files.internal(portraitPath));
+            weaponPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(portraitTexture)));
+        } else {
+            Texture placeholderTex = new Texture(Gdx.files.internal("Images/selectorBubble/SelectorBubble.png"));
+            weaponPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(placeholderTex)));
+            System.out.println("Warning: Portrait not found for " + weapon.getName() + ": " + portraitPath);
+        }
+
+        weaponPortrait.setVisible(true);
+
+        String info = weapon.getName() + "\n" +
+            "Damage: " + weapon.getDamage() + "\n" +
+            "Ammo: " + weapon.getAmmoMax() + "\n" +
+            "Reload Time: " + weapon.getReloadTime() + "s";
+        weaponInfoLabel.setText(info);
+        weaponInfoLabel.setVisible(true);
+    }
+
+    private void updatePlayButtonState() {
+        if (selectedCharacter != -1 && selectedWeapon != -1) {
+            playButton.setDisabled(false);
+            playButton.getLabel().setColor(Color.WHITE);
+        } else {
+            playButton.setDisabled(true);
+            playButton.getLabel().setColor(Color.GRAY);
+        }
+    }
+
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
@@ -247,16 +447,23 @@ public class PreGameMenu implements Screen {
 
         animationTime += delta;
 
-        for (int i = 0; i < NUM_SELECTORS; i++) {
+        // Update character animations
+        for (int i = 0; i < NUM_CHARACTER_SELECTORS; i++) {
             if (i < characterAnimations.length && characterAnimations[i] != null) {
                 TextureRegion currentFrame = characterAnimations[i].getKeyFrame(animationTime, true);
-                selectorBubbles[i].setDrawable(new TextureRegionDrawable(currentFrame));
+                characterBubbles[i].setDrawable(new TextureRegionDrawable(currentFrame));
             }
         }
 
-        if (selectedSelector != -1) {
+        // Add pulsing effect to selected items
+        if (selectedCharacter != -1) {
             float pulse = 0.7f + 0.3f * (float) Math.sin(animationTime * 3);
-            selectorHighlights[selectedSelector].setColor(1f, 1f, 0f, pulse);
+            characterHighlights[selectedCharacter].setColor(1f, 1f, 0f, pulse);
+        }
+
+        if (selectedWeapon != -1) {
+            float pulse = 0.7f + 0.3f * (float) Math.sin(animationTime * 3);
+            weaponHighlights[selectedWeapon].setColor(1f, 0f, 0f, pulse);
         }
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -266,6 +473,10 @@ public class PreGameMenu implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+
+        // Update scaling factors when resizing
+        widthFactor = width / 1920f;
+        heightFactor = height / 1080f;
     }
 
     @Override
@@ -313,23 +524,57 @@ public class PreGameMenu implements Screen {
                 texture.dispose();
             }
         }
+
+        if (weaponPortrait != null && weaponPortrait.getDrawable() instanceof TextureRegionDrawable) {
+            Texture texture = ((TextureRegionDrawable) weaponPortrait.getDrawable()).getRegion().getTexture();
+            if (texture != null) {
+                texture.dispose();
+            }
+        }
+
+        // Dispose weapon bubble textures
+        if (weaponBubbles != null) {
+            for (Image bubble : weaponBubbles) {
+                if (bubble != null && bubble.getDrawable() instanceof TextureRegionDrawable) {
+                    Texture texture = ((TextureRegionDrawable) bubble.getDrawable()).getRegion().getTexture();
+                    if (texture != null) {
+                        texture.dispose();
+                    }
+                }
+            }
+        }
     }
 
-    public Image[] getSelectorBubbles() {
-        return selectorBubbles;
+    public Image[] getCharacterBubbles() {
+        return characterBubbles;
+    }
+
+    public Image[] getWeaponBubbles() {
+        return weaponBubbles;
     }
 
     public Stage getStage() {
         return stage;
     }
 
-    public int getSelectedSelector() {
-        return selectedSelector;
+    public int getSelectedCharacter() {
+        return selectedCharacter;
     }
 
-    public Characters getSelectedCharacter() {
-        if (selectedSelector >= 0 && selectedSelector < availableCharacters.length) {
-            return availableCharacters[selectedSelector];
+    public int getSelectedWeapon() {
+        return selectedWeapon;
+    }
+
+    public Characters getSelectedCharacterObject() {
+        if (selectedCharacter >= 0 && selectedCharacter < availableCharacters.length) {
+            return availableCharacters[selectedCharacter];
+        }
+        return null;
+    }
+
+    public Weapons getSelectedWeaponObject() {
+        if (selectedWeapon >= 0 && selectedWeapon < availableWeapons.length) {
+            return availableWeapons[selectedWeapon];
         }
         return null;
     }

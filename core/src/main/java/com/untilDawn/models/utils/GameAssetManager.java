@@ -5,8 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class GameAssetManager {
     private static GameAssetManager gameAssetManager;
-
-
+    private final String bullet = "Images/bullet.png";
     private Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
 
     public static GameAssetManager getGameAssetManager() {
@@ -18,5 +17,9 @@ public class GameAssetManager {
 
     public Skin getSkin() {
         return skin;
+    }
+
+    public String getBullet() {
+        return bullet;
     }
 }
