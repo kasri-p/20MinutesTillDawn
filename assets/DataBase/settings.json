@@ -1,0 +1,17 @@
+{
+  "autoReloadEnabled": false,
+  "keybinds": {
+    "Move Left": "A",
+    "Pause": "ESC",
+    "Move Down": "S",
+    "Reload": "R",
+    "Move Up": "W",
+    "Shoot": "SPACE",
+    "Move Right": "D"
+  },
+  "isSFX": false,
+  "language": "en",
+  "currentMusicTrack": "For Whom The Bell Tolls",
+  "musicVolume": 0.26999998,
+  "blackAndWhiteEnabled": true
+}

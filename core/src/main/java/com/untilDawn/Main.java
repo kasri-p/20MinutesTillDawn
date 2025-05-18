@@ -38,7 +38,6 @@ public class Main extends Game {
         Gdx.graphics.setCursor(customCursor);
         cursorPixmap.dispose();
 
-        // Load menu music based on saved settings
         loadMenuMusic();
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
@@ -51,11 +50,13 @@ public class Main extends Game {
         String musicPath = "sounds/musics/PrettyDungeon.wav";
         String currentTrack = App.getCurrentMusicTrack();
 
-        // Check if we have a custom track saved
         if (currentTrack != null && !currentTrack.equals("Pretty Dungeon")) {
             String customPath = "sounds/musics/" + currentTrack.replace(" ", "") + ".wav";
+            String currentMusicPath = "sounds/musics/" + currentTrack.replace(" ", "") + ".mp3";
             if (Gdx.files.internal(customPath).exists()) {
                 musicPath = customPath;
+            } else if (Gdx.files.internal(currentMusicPath).exists()) {
+                musicPath = currentMusicPath;
             }
         }
 

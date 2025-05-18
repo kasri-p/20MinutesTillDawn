@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.SettingsMenuController;
@@ -20,138 +21,133 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SettingsMenu implements Screen {
+    private final Color BUTTON_COLOR = Color.valueOf("EC2F7B");
     private Stage stage;
     private Skin skin;
     private Table mainTable;
     private SettingsMenuController controller;
     private Image[] leavesDecorations;
-
-    // Music settings
+    private ScrollPane scrollPane;
     private Slider musicVolumeSlider;
     private SelectBox<String> musicSelectBox;
     private Label volumeValueLabel;
 
-    // SFX settings
     private CheckBox sfxCheckBox;
 
-    // Keyboard controls
     private Table keybindTable;
     private Map<String, TextButton> keybindButtons;
 
-    // Bonus features
     private CheckBox autoReloadCheckBox;
     private CheckBox blackAndWhiteCheckBox;
 
-    // Navigation buttons
     private TextButton backButton;
     private TextButton applyButton;
 
-    // Current editing keybind
     private String currentEditingKeybind = null;
 
-    // Available music tracks
     private Array<String> availableMusicTracks;
     private Map<String, String> musicFiles;
 
     public SettingsMenu(Skin skin) {
         this.skin = skin;
         this.stage = new Stage(new ScreenViewport());
-        this.controller = new SettingsMenuController(this);
+        Gdx.input.setInputProcessor(stage);
 
-        // Initialize controls and table
         createUI();
 
-        // Load settings from App/storage
         loadSettings();
+
+        this.controller = new SettingsMenuController(this);
+
+        setupListeners();
     }
 
     private void createUI() {
-        // Set up main table
-        mainTable = new Table();
-        mainTable.setFillParent(true);
-        mainTable.top().pad(30);
+        leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
-        // Add title
+        mainTable = new Table();
+
+        Table rootTable = new Table();
+        rootTable.setFillParent(true);
+
+        scrollPane = new ScrollPane(mainTable, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false);
+
         Label titleLabel = new Label("Settings", skin, "title");
         mainTable.add(titleLabel).colspan(2).pad(20).row();
 
-        // Create music controls
-        createMusicControls();
+        float screenWidth = Gdx.graphics.getWidth();
+        float columnWidth = (screenWidth * 0.85f) / 2;
 
-        // Create SFX controls
-        createSFXControls();
+        Table leftColumn = new Table();
+        Table rightColumn = new Table();
 
-        // Create keyboard control settings
-        createKeyboardControls();
+        createMusicControls(leftColumn);
+        createSFXControls(leftColumn);
+        createBonusFeatures(leftColumn);
 
-        // Create bonus features
-        createBonusFeatures();
+        createKeyboardControls(rightColumn);
 
-        // Add navigation buttons
+        mainTable.add(leftColumn).width(columnWidth).top().padRight(20);
+        mainTable.add(rightColumn).width(columnWidth).top().padLeft(20).row();
+
         createNavigationButtons();
 
-        // Add the main table to the stage
-        stage.addActor(mainTable);
+        mainTable.left().top();
+
+        rootTable.add(scrollPane).width(screenWidth * 0.9f).height(Gdx.graphics.getHeight() * 0.9f);
+
+        stage.addActor(rootTable);
+
+        for (Image leaf : leavesDecorations) {
+            leaf.toBack();
+        }
+
+        rootTable.toFront();
     }
 
-    private void createMusicControls() {
-        // Music volume label and slider
+    private void createMusicControls(Table targetTable) {
+        setupMusicTracks();
+
+        Label musicTitle = new Label("Audio Settings", skin);
+        musicTitle.setColor(Color.YELLOW);
+        targetTable.add(musicTitle).colspan(2).pad(15).row();
+
         Label musicVolumeLabel = new Label("Music Volume:", skin);
         musicVolumeSlider = new Slider(0, 1, 0.01f, false, skin);
+        musicVolumeSlider.setColor(BUTTON_COLOR);
         volumeValueLabel = new Label("50%", skin);
 
         Table volumeTable = new Table();
-        volumeTable.add(musicVolumeSlider).width(300).pad(5);
-        volumeTable.add(volumeValueLabel).width(60).pad(5);
+        volumeTable.add(musicVolumeSlider).width(220).pad(5);
+        volumeTable.add(volumeValueLabel).width(50).pad(5).left();
 
-        mainTable.add(musicVolumeLabel).right().pad(10);
-        mainTable.add(volumeTable).left().pad(10).row();
+        targetTable.add(musicVolumeLabel).right().pad(10);
+        targetTable.add(volumeTable).left().pad(10).row();
 
-        // Set up music tracks
-        setupMusicTracks();
-
-        // Music selection
         Label musicSelectLabel = new Label("Music Track:", skin);
         musicSelectBox = new SelectBox<>(skin);
         musicSelectBox.setItems(availableMusicTracks);
+        musicSelectBox.setColor(BUTTON_COLOR);
 
-        mainTable.add(musicSelectLabel).right().pad(10);
-        mainTable.add(musicSelectBox).left().width(300).pad(10).row();
-
-        // Add listeners
-        musicVolumeSlider.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                float value = musicVolumeSlider.getValue();
-                volumeValueLabel.setText(Math.round(value * 100) + "%");
-                controller.onVolumeChanged(value);
-            }
-        });
-
-        musicSelectBox.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                String selected = musicSelectBox.getSelected();
-                controller.onMusicTrackChanged(selected, musicFiles.get(selected));
-            }
-        });
+        targetTable.add(musicSelectLabel).right().pad(10);
+        targetTable.add(musicSelectBox).left().width(220).pad(10).row();
     }
 
     private void setupMusicTracks() {
         availableMusicTracks = new Array<>();
         musicFiles = new HashMap<>();
 
-        // Add the default music
         availableMusicTracks.add("Pretty Dungeon");
         musicFiles.put("Pretty Dungeon", "sounds/musics/PrettyDungeon.wav");
 
-        // Scan the music directory for more tracks
         FileHandle dir = Gdx.files.internal("sounds/musics");
         if (dir.exists() && dir.isDirectory()) {
             for (FileHandle file : dir.list()) {
                 if (file.extension().equals("wav") || file.extension().equals("mp3")) {
                     String trackName = file.nameWithoutExtension();
-                    if (!trackName.equals("PrettyDungeon")) { // Skip the default one as we already added it
+                    if (!trackName.equals("PrettyDungeon")) {
                         String formattedName = formatTrackName(trackName);
                         availableMusicTracks.add(formattedName);
                         musicFiles.put(formattedName, file.path());
@@ -162,11 +158,9 @@ public class SettingsMenu implements Screen {
     }
 
     private String formatTrackName(String trackName) {
-        // Convert camelCase or snake_case to Title Case
         String formatted = trackName.replaceAll("([a-z])([A-Z])", "$1 $2")
             .replaceAll("_", " ");
 
-        // Capitalize first letter of each word
         StringBuilder result = new StringBuilder();
         for (String word : formatted.split("\\s")) {
             if (!word.isEmpty()) {
@@ -179,146 +173,112 @@ public class SettingsMenu implements Screen {
         return result.toString().trim();
     }
 
-    private void createSFXControls() {
-        // SFX checkbox
+    private void createSFXControls(Table targetTable) {
         Label sfxLabel = new Label("Sound Effects:", skin);
         sfxCheckBox = new CheckBox("Enabled", skin);
+        sfxCheckBox.setColor(BUTTON_COLOR);
 
-        mainTable.add(sfxLabel).right().pad(10);
-        mainTable.add(sfxCheckBox).left().pad(10).row();
+        targetTable.add(sfxLabel).right().pad(10);
+        targetTable.add(sfxCheckBox).left().pad(10).row();
 
-        // Add listener
-        sfxCheckBox.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.onSFXToggled(sfxCheckBox.isChecked());
-            }
-        });
+        targetTable.add().height(15).row();
     }
 
-    private void createKeyboardControls() {
-        // Keyboard controls section title
+    private void createKeyboardControls(Table targetTable) {
         Label keybindTitle = new Label("Keyboard Controls", skin);
         keybindTitle.setColor(Color.YELLOW);
-        mainTable.add(keybindTitle).colspan(2).pad(20).row();
+        targetTable.add(keybindTitle).colspan(2).pad(15).row();
 
-        // Create keybind table
         keybindTable = new Table();
         keybindButtons = new HashMap<>();
 
-        // Add keybind rows
         addKeybindRow("Move Up", "W");
         addKeybindRow("Move Down", "S");
         addKeybindRow("Move Left", "A");
         addKeybindRow("Move Right", "D");
-        addKeybindRow("Shoot", "SPACE");
+        addKeybindRow("Auto Shoot", "SPACE");
         addKeybindRow("Reload", "R");
         addKeybindRow("Pause", "ESC");
 
-        mainTable.add(keybindTable).colspan(2).pad(10).row();
+        targetTable.add(keybindTable).colspan(2).pad(10).row();
     }
 
     private void addKeybindRow(String action, String defaultKey) {
         Label actionLabel = new Label(action + ":", skin);
         TextButton keyButton = new TextButton(defaultKey, skin);
+        keyButton.setColor(BUTTON_COLOR);
 
-        // Store in map for later access
+        actionLabel.setAlignment(Align.right);
+
         keybindButtons.put(action, keyButton);
 
-        // Add button listener
         keyButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                controller.playClick();
                 startKeyBindCapture(action);
             }
         });
 
-        keybindTable.add(actionLabel).right().padRight(15).padBottom(5);
-        keybindTable.add(keyButton).width(100).padBottom(5).row();
+        Table rowTable = new Table();
+        rowTable.add(actionLabel).width(150).right().padRight(15);
+        rowTable.add(keyButton).width(100).left();
+
+        keybindTable.add(rowTable).fillX().padBottom(10).row();
     }
 
-    private void createBonusFeatures() {
-        // Bonus features section title
+    private void createBonusFeatures(Table targetTable) {
         Label bonusTitle = new Label("Advanced Options", skin);
         bonusTitle.setColor(Color.YELLOW);
-        mainTable.add(bonusTitle).colspan(2).pad(20).row();
+        targetTable.add(bonusTitle).colspan(2).pad(15).row();
 
-        // Auto-reload checkbox
         Label autoReloadLabel = new Label("Auto-Reload:", skin);
         autoReloadCheckBox = new CheckBox("Enabled", skin);
+        autoReloadCheckBox.setColor(BUTTON_COLOR);
 
-        mainTable.add(autoReloadLabel).right().pad(10);
-        mainTable.add(autoReloadCheckBox).left().pad(10).row();
+        Table autoReloadTable = new Table();
+        autoReloadTable.add(autoReloadLabel).width(150).right().pad(20);
+        autoReloadTable.add(autoReloadCheckBox).left().pad(50).row();
 
-        // Black and white mode checkbox
-        Label blackAndWhiteLabel = new Label("Black & White Mode:", skin);
+        targetTable.add(autoReloadTable).colspan(2).padBottom(10).row();
+
+        Label blackAndWhiteLabel = new Label("Black & White:", skin);
         blackAndWhiteCheckBox = new CheckBox("Enabled", skin);
+        blackAndWhiteCheckBox.setColor(BUTTON_COLOR);
 
-        mainTable.add(blackAndWhiteLabel).right().pad(10);
-        mainTable.add(blackAndWhiteCheckBox).left().pad(10).row();
+        Table bwTable = new Table();
+        bwTable.add(blackAndWhiteLabel).width(150).right().pad(20);
+        bwTable.add(blackAndWhiteCheckBox).left().pad(50);
 
-        // Add listeners
-        autoReloadCheckBox.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.onAutoReloadToggled(autoReloadCheckBox.isChecked());
-            }
-        });
-
-        blackAndWhiteCheckBox.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.onBlackAndWhiteToggled(blackAndWhiteCheckBox.isChecked());
-            }
-        });
+        targetTable.add(bwTable).colspan(2).padBottom(15).row();
     }
 
     private void createNavigationButtons() {
         Table buttonTable = new Table();
 
-        // Back button
         backButton = new TextButton("Back", skin);
-        backButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                controller.playClick();
-                controller.onBackClicked();
-            }
-        });
+        backButton.setColor(BUTTON_COLOR);
 
-        // Apply button
         applyButton = new TextButton("Apply Changes", skin);
-        applyButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                controller.playClick();
-                controller.onApplyClicked();
-            }
-        });
+        applyButton.setColor(BUTTON_COLOR);
 
-        buttonTable.add(backButton).width(150).pad(10);
-        buttonTable.add(applyButton).width(150).pad(10);
+        buttonTable.add(backButton).width(150).padRight(20).pad(10);
+        buttonTable.add(applyButton).width(150).padLeft(20).pad(10);
 
-        mainTable.add(buttonTable).colspan(2).pad(20).row();
+        mainTable.add(buttonTable).colspan(2).pad(20).padBottom(40).row();
     }
 
     private void loadSettings() {
-        // Set music volume from App settings
         float musicVolume = App.getMusicVolume();
         musicVolumeSlider.setValue(musicVolume);
         volumeValueLabel.setText(Math.round(musicVolume * 100) + "%");
 
-        // Set selected music track
         String currentTrack = App.getCurrentMusicTrack();
         if (currentTrack != null && availableMusicTracks.contains(currentTrack, false)) {
             musicSelectBox.setSelected(currentTrack);
         }
 
-        // Set SFX enabled/disabled
         sfxCheckBox.setChecked(App.isSFX());
 
-        // Set keybinds from App settings
         Map<String, String> keybinds = App.getKeybinds();
         if (keybinds != null) {
             for (Map.Entry<String, String> entry : keybinds.entrySet()) {
@@ -328,33 +288,30 @@ public class SettingsMenu implements Screen {
             }
         }
 
-        // Set bonus features
         autoReloadCheckBox.setChecked(App.isAutoReloadEnabled());
         blackAndWhiteCheckBox.setChecked(App.isBlackAndWhiteEnabled());
     }
 
     public void startKeyBindCapture(String action) {
         currentEditingKeybind = action;
-        keybindButtons.get(action).setText("Press a key...");
+        keybindButtons.get(action).setText("Press key...");
 
-        // Highlight the button being edited
         keybindButtons.get(action).setColor(Color.YELLOW);
     }
 
     public void setKeybind(String action, String key) {
         if (keybindButtons.containsKey(action)) {
             keybindButtons.get(action).setText(key);
-            keybindButtons.get(action).setColor(Color.WHITE);
+            keybindButtons.get(action).setColor(BUTTON_COLOR);
         }
         currentEditingKeybind = null;
     }
 
     public void cancelKeyBindCapture() {
         if (currentEditingKeybind != null && keybindButtons.containsKey(currentEditingKeybind)) {
-            // Reset to previous key
             String previousKey = App.getKeybinds().getOrDefault(currentEditingKeybind, "UNDEFINED");
             keybindButtons.get(currentEditingKeybind).setText(previousKey);
-            keybindButtons.get(currentEditingKeybind).setColor(Color.WHITE);
+            keybindButtons.get(currentEditingKeybind).setColor(BUTTON_COLOR);
             currentEditingKeybind = null;
         }
     }
@@ -362,28 +319,15 @@ public class SettingsMenu implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-
-        // Add leaves decoration
-        leavesDecorations = UIHelper.addLeavesDecoration(stage);
-
-        // Make sure leaves are at the back
-        for (Image leaf : leavesDecorations) {
-            leaf.toBack();
-        }
-
-        // Bring the main table to front
-        mainTable.toFront();
     }
 
     @Override
     public void render(float delta) {
         UIHelper.clearScreenWithBackgroundColor();
 
-        // Process key input for keybinding
         if (currentEditingKeybind != null && Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ANY_KEY)) {
             int keyCode = -1;
 
-            // Find which key was pressed
             for (int i = 0; i < 256; i++) {
                 if (Gdx.input.isKeyJustPressed(i)) {
                     keyCode = i;
@@ -393,7 +337,17 @@ public class SettingsMenu implements Screen {
 
             if (keyCode != -1) {
                 String keyName = com.badlogic.gdx.Input.Keys.toString(keyCode);
-                controller.onKeybindChanged(currentEditingKeybind, keyName);
+                if (com.badlogic.gdx.utils.SharedLibraryLoader.isMac) {
+                    if (keyName.equals("META")) keyName = "CMD";
+                    else if (keyName.equals("CONTROL")) keyName = "CTRL";
+                    else if (keyName.equals("ALT")) keyName = "OPT";
+                }
+
+                if (controller != null) {
+                    controller.onKeybindChanged(currentEditingKeybind, keyName);
+                } else {
+                    setKeybind(currentEditingKeybind, keyName);
+                }
             }
         }
 
@@ -405,18 +359,19 @@ public class SettingsMenu implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
 
-        // Reposition leaves decoration
         if (leavesDecorations != null) {
             for (Image leaf : leavesDecorations) {
                 leaf.remove();
             }
             leavesDecorations = UIHelper.addLeavesDecoration(stage);
 
-            // Make sure leaves are at the back
             for (Image leaf : leavesDecorations) {
                 leaf.toBack();
             }
         }
+
+        scrollPane.setWidth(width * 0.9f);
+        scrollPane.setHeight(height * 0.9f);
     }
 
     @Override
@@ -438,7 +393,6 @@ public class SettingsMenu implements Screen {
         }
     }
 
-    // Getters for controller access
     public Slider getMusicVolumeSlider() {
         return musicVolumeSlider;
     }
@@ -463,7 +417,71 @@ public class SettingsMenu implements Screen {
         return blackAndWhiteCheckBox;
     }
 
-    public Stage getStage() {
-        return stage;
+    private void setupListeners() {
+        musicVolumeSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                float value = musicVolumeSlider.getValue();
+                volumeValueLabel.setText(Math.round(value * 100) + "%");
+                controller.onVolumeChanged(value);
+            }
+        });
+
+        musicSelectBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                String selected = musicSelectBox.getSelected();
+                controller.onMusicTrackChanged(selected, musicFiles.get(selected));
+            }
+        });
+
+        sfxCheckBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onSFXToggled(sfxCheckBox.isChecked());
+            }
+        });
+
+        for (final Map.Entry<String, TextButton> entry : keybindButtons.entrySet()) {
+            entry.getValue().getListeners().clear();
+
+            entry.getValue().addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    controller.playClick();
+                    startKeyBindCapture(entry.getKey());
+                }
+            });
+        }
+
+        autoReloadCheckBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onAutoReloadToggled(autoReloadCheckBox.isChecked());
+            }
+        });
+
+        blackAndWhiteCheckBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.onBlackAndWhiteToggled(blackAndWhiteCheckBox.isChecked());
+            }
+        });
+
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                controller.playClick();
+                controller.onBackClicked();
+            }
+        });
+
+        applyButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                controller.playClick();
+                controller.onApplyClicked();
+            }
+        });
     }
 }

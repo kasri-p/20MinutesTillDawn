@@ -91,11 +91,9 @@ public class SettingsMenuController {
     }
 
     public void onAutoReloadToggled(boolean enabled) {
-        // Will be applied when user clicks "Apply"
     }
 
     public void onBlackAndWhiteToggled(boolean enabled) {
-        // Will be applied when user clicks "Apply"
     }
 
     public void onBackClicked() {
