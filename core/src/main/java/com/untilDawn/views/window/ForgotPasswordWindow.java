@@ -20,7 +20,7 @@ public class ForgotPasswordWindow extends Window {
     private final TextButton backButton;
     private final Table contentTable;
     private final Stage parentStage;
-    
+
     String[] securityQuestions = {
         "What is your favorite music band?", // Guns n' Roses
         "When did you parents met each-other?",
@@ -215,8 +215,8 @@ public class ForgotPasswordWindow extends Window {
             messageLabel.setText("Passwords do not match");
             return;
         }
-
-        user.setPassword(newPassword);
+        String hashedPassword = App.hashPassword(newPassword);
+        user.setPassword(hashedPassword);
         messageLabel.setColor(Color.GREEN);
         messageLabel.setText("Password reset successful! You can now log in.");
 

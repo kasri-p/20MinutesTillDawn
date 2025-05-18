@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.untilDawn.Main;
+import com.untilDawn.models.App;
 import com.untilDawn.models.User;
 
 public class SecurityQuestionWindow extends Window {
@@ -101,6 +102,7 @@ public class SecurityQuestionWindow extends Window {
         user.setSecurityQuestionIndex(securityQuestionBox.getSelectedIndex());
         user.setSecurityAnswer(answer);
 
+        App.save();
         return true;
     }
 

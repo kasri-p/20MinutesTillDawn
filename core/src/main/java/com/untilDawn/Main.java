@@ -7,8 +7,6 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.untilDawn.controllers.DBController;
-import com.untilDawn.controllers.StartMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
@@ -33,7 +31,7 @@ public class Main extends Game {
     public void create() {
         main = this;
         batch = new SpriteBatch();
-        DBController.connect();
+        App.load();
 
         Pixmap cursorPixmap = new Pixmap(Gdx.files.internal("images/cursor.png"));
         Cursor customCursor = Gdx.graphics.newCursor(cursorPixmap, 0, 0);
@@ -46,9 +44,7 @@ public class Main extends Game {
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
-        StartMenuController controller = new StartMenuController();
-        StartMenu startMenu = new StartMenu(controller, GameAssetManager.getGameAssetManager().getSkin());
-        controller.setView(startMenu);
+        StartMenu startMenu = new StartMenu(GameAssetManager.getGameAssetManager().getSkin());
         setScreen(startMenu);
     }
 
@@ -59,7 +55,7 @@ public class Main extends Game {
 
     @Override
     public void dispose() {
-//        DBController.disconnect();
+        App.save();
         batch.dispose();
         UIHelper.dispose();
     }

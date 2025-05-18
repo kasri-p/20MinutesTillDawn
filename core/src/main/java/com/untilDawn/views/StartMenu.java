@@ -19,6 +19,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.StartMenuController;
 import com.untilDawn.models.App;
+import com.untilDawn.models.enums.Language;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
 
 public class StartMenu implements Screen {
@@ -27,8 +29,8 @@ public class StartMenu implements Screen {
     private final TextButton languageButton;
     private final float ANIMATION_FRAME_DURATION = 0.17f;
     private final float PAUSE_DURATION = 6f;
+    private final Image logoImage;
     public Table table;
-    private Image logoImage;
     private Stage stage;
     private Image[] leavesDecorations;
     private Animation<TextureRegion> eyeBlinkAnimation;
@@ -40,7 +42,7 @@ public class StartMenu implements Screen {
     private StartMenuController controller;
     private TextureRegion firstFrame;
 
-    public StartMenu(StartMenuController controller, Skin skin) {
+    public StartMenu(Skin skin) {
 
         TextButton.TextButtonStyle boldButtonStyle = new TextButton.TextButtonStyle();
         boldButtonStyle.font = skin.getFont("font");
@@ -49,7 +51,7 @@ public class StartMenu implements Screen {
         boldButtonStyle.overFontColor = Color.valueOf("#f1cedb");
         boldButtonStyle.downFontColor = new Color(Color.LIGHT_GRAY);
 
-        this.startButton = new TextButton("Start", boldButtonStyle);
+        this.startButton = new TextButton(Language.Start.getText(), boldButtonStyle);
         this.quitButton = new TextButton("Quit", boldButtonStyle);
         this.languageButton = new TextButton("Language: English", boldButtonStyle);
         Texture logoTexture = new Texture(Gdx.files.internal("Images/logo.png"));
@@ -57,7 +59,7 @@ public class StartMenu implements Screen {
 
         this.table = new Table();
         createEyeBlinkAnimation();
-        this.controller = controller;
+        this.controller = new StartMenuController(this);
 
         animationTime = 0f;
         isAnimating = false;
@@ -150,18 +152,8 @@ public class StartMenu implements Screen {
         if (App.isSFX()) {
             Main.getMain().getClickSound().play();
         }
-
-        isEnglish = !isEnglish;
-
-        if (isEnglish) {
-            languageButton.setText("Language: English");
-            startButton.setText("Start");
-            quitButton.setText("Quit");
-        } else {
-            languageButton.setText("Langue: Français");
-            startButton.setText("Commencer");
-            quitButton.setText("Quitter");
-        }
+        App.changeLanguage();
+        Main.getMain().setScreen(new StartMenu(GameAssetManager.getGameAssetManager().getSkin()));
     }
 
     @Override

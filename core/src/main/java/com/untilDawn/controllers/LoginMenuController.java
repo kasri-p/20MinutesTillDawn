@@ -8,7 +8,7 @@ import com.untilDawn.models.User;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.LoginMenu;
 import com.untilDawn.views.SignUpMenu;
-import com.untilDawn.views.main.PreGameMenu;
+import com.untilDawn.views.main.MainMenu;
 import com.untilDawn.views.window.ForgotPasswordWindow;
 
 public class LoginMenuController {
@@ -45,8 +45,8 @@ public class LoginMenuController {
 
                 App.setLoggedInUser(user);
 
-                PreGameMenu preGameMenu = new PreGameMenu(GameAssetManager.getGameAssetManager().getSkin());
-                Main.getMain().setScreen(preGameMenu);
+                MainMenu mainMenu = new MainMenu(GameAssetManager.getGameAssetManager().getSkin());
+                Main.getMain().setScreen(mainMenu);
             }
         });
 
@@ -64,7 +64,6 @@ public class LoginMenuController {
                 playClick();
                 ForgotPasswordWindow forgotPasswordWindow = new ForgotPasswordWindow(GameAssetManager.getGameAssetManager().getSkin(), view.getStage());
                 view.getStage().addActor(forgotPasswordWindow);
-//                view.getErrorLabel().setText("This feature is coming soon!");
             }
         });
     }

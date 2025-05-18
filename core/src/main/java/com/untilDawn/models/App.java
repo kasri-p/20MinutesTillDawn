@@ -1,5 +1,7 @@
 package com.untilDawn.models;
 
+import com.untilDawn.models.utils.FileStorage;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -13,12 +15,23 @@ public class App {
     private static boolean isSFX = true;
     private static Map<User, Game> games = new HashMap<>();
 
+    private static String language = "en";
+
+
     public static void addUser(User user) {
         users.put(user.getUsername(), user);
     }
 
     public static User getUser(String username) {
         return users.get(username);
+    }
+
+    public static void load() {
+        users = FileStorage.loadUsers();
+    }
+
+    public static void save() {
+        FileStorage.saveUsers(users);
     }
 
     public static User getLoggedInUser() {
@@ -78,6 +91,18 @@ public class App {
 
     public static void setUsers(Map<String, User> users) {
         App.users = users;
+    }
+
+    public static String getLanguage() {
+        return language;
+    }
+
+    public static void changeLanguage() {
+        if (language.equals("en")) {
+            language = "fr";
+        } else {
+            language = "en";
+        }
     }
 
     public void toggleSFX() {

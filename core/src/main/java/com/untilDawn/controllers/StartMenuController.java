@@ -13,13 +13,11 @@ public class StartMenuController {
     private StartMenu view;
     private boolean listenersInitialized = false;
 
-    public StartMenuController() {
-    }
-
-    public void setView(StartMenu startMenu) {
+    public StartMenuController(StartMenu startMenu) {
         this.view = startMenu;
         initializeButtonListeners();
     }
+
 
     private void initializeButtonListeners() {
         if (view != null && !listenersInitialized) {

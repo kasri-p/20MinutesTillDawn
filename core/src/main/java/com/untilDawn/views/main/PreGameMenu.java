@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.PreGameMeuController;
 import com.untilDawn.models.enums.Characters;
+import com.untilDawn.models.enums.Weapons;
 import com.untilDawn.models.utils.UIHelper;
 
 public class PreGameMenu implements Screen {
@@ -45,6 +46,11 @@ public class PreGameMenu implements Screen {
         Characters.Scarlett,
         Characters.Lilith,
         Characters.Dasher
+    };
+    private Weapons[] availableWeapons = {
+        Weapons.Revolver,
+        Weapons.Shotgun,
+        Weapons.Dual_Smg
     };
 
     public PreGameMenu(Skin skin) {
@@ -76,7 +82,7 @@ public class PreGameMenu implements Screen {
         Array<TextureRegion> frames = new Array<>();
 
         for (int i = 0; i < 5; i++) {
-            String framePath = "Images/avatars/" + characterName + "/idle" + i + ".png";
+            String framePath = "Images/characters/" + characterName + "/idle" + i + ".png";
 
             if (Gdx.files.internal(framePath).exists()) {
                 Texture frameTex = new Texture(Gdx.files.internal(framePath));
@@ -88,7 +94,7 @@ public class PreGameMenu implements Screen {
         float FRAME_DURATION = 0.13f;
         return new Animation<>(FRAME_DURATION, frames);
     }
-
+    
     private void createUI() {
         mainTable = new Table();
         mainTable.setFillParent(true);
@@ -145,12 +151,12 @@ public class PreGameMenu implements Screen {
             Stack selectorStack = new Stack();
 
             selectorHighlights[i] = new Image(selectorHighlightTexture);
-            selectorHighlights[i].setSize(60, 60); // Make them smaller
+            selectorHighlights[i].setSize(60, 60);
             selectorHighlights[i].setColor(new Color(1f, 0.8f, 0.2f, 1f));
             selectorHighlights[i].setVisible(false);
 
             selectorBubbles[i] = new Image();
-            selectorBubbles[i].setSize(60, 60); // Make them smaller
+            selectorBubbles[i].setSize(60, 60);
 
             selectorStack.add(selectorHighlights[i]);
             selectorStack.add(selectorBubbles[i]);
@@ -210,13 +216,13 @@ public class PreGameMenu implements Screen {
 
     private void updateCharacterPortrait(int index) {
         Characters character = availableCharacters[index];
-        String portraitPath = "Images/avatars/" + character.getName() + "/portrait.png";
+        String portraitPath = "Images/characters/" + character.getName() + "/portrait.png";
 
         if (Gdx.files.internal(portraitPath).exists()) {
             Texture portraitTexture = new Texture(Gdx.files.internal(portraitPath));
             characterPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(portraitTexture)));
         } else {
-            Texture placeholderTex = new Texture(Gdx.files.internal("Images/avatars/placeholder.png"));
+            Texture placeholderTex = new Texture(Gdx.files.internal("Images/characters/placeholder.png"));
             characterPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(placeholderTex)));
             System.out.println("Warning: Portrait not found for " + character.getName() + ": " + portraitPath);
         }

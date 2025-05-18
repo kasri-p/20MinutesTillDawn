@@ -23,7 +23,7 @@ public class MainMenuController {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 playClick();
-                Main.getMain().setScreen(new StartMenu(new StartMenuController(), GameAssetManager.getGameAssetManager().getSkin()));
+                Main.getMain().setScreen(new StartMenu(GameAssetManager.getGameAssetManager().getSkin()));
             }
         });
         view.getProfileButton().addListener(new ClickListener() {

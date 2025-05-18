@@ -7,7 +7,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.untilDawn.Main;
-import com.untilDawn.controllers.StartMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.User;
 import com.untilDawn.models.utils.GameAssetManager;
@@ -92,8 +91,9 @@ public class DeleteAccountWindow extends Window {
 
         App.removeUser(user);
         App.logout();
+        App.save();
 
-        StartMenu startMenu = new StartMenu(new StartMenuController(), GameAssetManager.getGameAssetManager().getSkin());
+        StartMenu startMenu = new StartMenu(GameAssetManager.getGameAssetManager().getSkin());
         Main.getMain().setScreen(startMenu);
 
         return true;
