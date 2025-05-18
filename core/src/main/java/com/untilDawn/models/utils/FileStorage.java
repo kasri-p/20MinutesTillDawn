@@ -15,6 +15,7 @@ import java.util.Map;
 
 public class FileStorage {
     private static final String USER_DATA_FILE = "/Users/kasra/Desktop/AP/20MinutesTillDawn/core/src/main/DataBase/users.json";
+    private static final String SETTINGS_DATA_FILE = "/Users/kasra/Desktop/AP/20MinutesTillDawn/core/src/main/DataBase/settings.json";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static boolean saveUsers(Map<String, User> users) {
@@ -42,6 +43,37 @@ public class FileStorage {
             }.getType();
             Map<String, User> users = gson.fromJson(reader, userMapType);
             return users != null ? users : new HashMap<>();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
+    }
+
+    public static boolean saveSettings(Map<String, Object> settings) {
+        try {
+            File file = new File(SETTINGS_DATA_FILE);
+
+            try (FileWriter writer = new FileWriter(file)) {
+                gson.toJson(settings, writer);
+                return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static Map<String, Object> loadSettings() {
+        File file = new File(SETTINGS_DATA_FILE);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+
+        try (FileReader reader = new FileReader(file)) {
+            Type settingsMapType = new TypeToken<Map<String, Object>>() {
+            }.getType();
+            Map<String, Object> settings = gson.fromJson(reader, settingsMapType);
+            return settings != null ? settings : new HashMap<>();
         } catch (IOException e) {
             e.printStackTrace();
             return new HashMap<>();

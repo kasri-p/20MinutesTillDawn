@@ -9,6 +9,7 @@ import com.untilDawn.views.StartMenu;
 import com.untilDawn.views.main.MainMenu;
 import com.untilDawn.views.main.PreGameMenu;
 import com.untilDawn.views.main.ProfileMenu;
+import com.untilDawn.views.main.SettingsMenu;
 
 public class MainMenuController {
     MainMenu view;
@@ -40,6 +41,13 @@ public class MainMenuController {
                 Main.getMain().setScreen(new PreGameMenu(GameAssetManager.getGameAssetManager().getSkin()));
             }
         });
+        view.getSettingsButton().addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                navigateToSettingsMenu();
+            }
+        });
     }
 
     public void playClick() {
@@ -51,5 +59,10 @@ public class MainMenuController {
     private void navigateToProfileMenu() {
         ProfileMenu profileMenu = new ProfileMenu(GameAssetManager.getGameAssetManager().getSkin());
         Main.getMain().setScreen(profileMenu);
+    }
+
+    private void navigateToSettingsMenu() {
+        SettingsMenu settingsMenu = new SettingsMenu(GameAssetManager.getGameAssetManager().getSkin());
+        Main.getMain().setScreen(settingsMenu);
     }
 }

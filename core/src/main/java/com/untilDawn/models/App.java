@@ -15,8 +15,24 @@ public class App {
     private static boolean isSFX = true;
     private static Map<User, Game> games = new HashMap<>();
 
+    // Settings
     private static String language = "en";
+    private static float musicVolume = 0.5f;
+    private static String currentMusicTrack = "Pretty Dungeon";
+    private static Map<String, String> keybinds = new HashMap<>();
+    private static boolean autoReloadEnabled = false;
+    private static boolean blackAndWhiteEnabled = false;
 
+    static {
+        // Initialize default keybinds
+        keybinds.put("Move Up", "W");
+        keybinds.put("Move Down", "S");
+        keybinds.put("Move Left", "A");
+        keybinds.put("Move Right", "D");
+        keybinds.put("Shoot", "SPACE");
+        keybinds.put("Reload", "R");
+        keybinds.put("Pause", "ESC");
+    }
 
     public static void addUser(User user) {
         users.put(user.getUsername(), user);
@@ -28,10 +44,54 @@ public class App {
 
     public static void load() {
         users = FileStorage.loadUsers();
+
+        // Load settings
+        Map<String, Object> settings = FileStorage.loadSettings();
+        if (settings != null) {
+            if (settings.containsKey("musicVolume")) {
+                musicVolume = ((Number) settings.get("musicVolume")).floatValue();
+            }
+
+            if (settings.containsKey("isSFX")) {
+                isSFX = (Boolean) settings.get("isSFX");
+            }
+
+            if (settings.containsKey("currentMusicTrack")) {
+                currentMusicTrack = (String) settings.get("currentMusicTrack");
+            }
+
+            if (settings.containsKey("language")) {
+                language = (String) settings.get("language");
+            }
+
+            if (settings.containsKey("keybinds")) {
+                keybinds = (Map<String, String>) settings.get("keybinds");
+            }
+
+            if (settings.containsKey("autoReloadEnabled")) {
+                autoReloadEnabled = (Boolean) settings.get("autoReloadEnabled");
+            }
+
+            if (settings.containsKey("blackAndWhiteEnabled")) {
+                blackAndWhiteEnabled = (Boolean) settings.get("blackAndWhiteEnabled");
+            }
+        }
     }
 
     public static void save() {
         FileStorage.saveUsers(users);
+
+        // Save settings
+        Map<String, Object> settings = new HashMap<>();
+        settings.put("musicVolume", musicVolume);
+        settings.put("isSFX", isSFX);
+        settings.put("currentMusicTrack", currentMusicTrack);
+        settings.put("language", language);
+        settings.put("keybinds", keybinds);
+        settings.put("autoReloadEnabled", autoReloadEnabled);
+        settings.put("blackAndWhiteEnabled", blackAndWhiteEnabled);
+
+        FileStorage.saveSettings(settings);
     }
 
     public static User getLoggedInUser() {
@@ -66,6 +126,10 @@ public class App {
 
     public static boolean isSFX() {
         return isSFX;
+    }
+
+    public static void setSFX(boolean enabled) {
+        isSFX = enabled;
     }
 
     public static void removeUser(User user) {
@@ -103,6 +167,47 @@ public class App {
         } else {
             language = "en";
         }
+    }
+
+    // Settings getters and setters
+    public static float getMusicVolume() {
+        return musicVolume;
+    }
+
+    public static void setMusicVolume(float volume) {
+        musicVolume = volume;
+    }
+
+    public static String getCurrentMusicTrack() {
+        return currentMusicTrack;
+    }
+
+    public static void setCurrentMusicTrack(String track) {
+        currentMusicTrack = track;
+    }
+
+    public static Map<String, String> getKeybinds() {
+        return keybinds;
+    }
+
+    public static void setKeybinds(Map<String, String> newKeybinds) {
+        keybinds = new HashMap<>(newKeybinds);
+    }
+
+    public static boolean isAutoReloadEnabled() {
+        return autoReloadEnabled;
+    }
+
+    public static void setAutoReloadEnabled(boolean enabled) {
+        autoReloadEnabled = enabled;
+    }
+
+    public static boolean isBlackAndWhiteEnabled() {
+        return blackAndWhiteEnabled;
+    }
+
+    public static void setBlackAndWhiteEnabled(boolean enabled) {
+        blackAndWhiteEnabled = enabled;
     }
 
     public void toggleSFX() {
