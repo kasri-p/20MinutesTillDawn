@@ -75,7 +75,7 @@ public class GameAssetManager {
 
     public Animation<Texture> getPlayerWalkAnimation() {
         String framePath = "Images/characters/" + App.getGame().getPlayer().getCharacter().getName() + "/walk";
-
+    
         return null;
     }
 

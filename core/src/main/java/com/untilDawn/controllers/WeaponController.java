@@ -16,16 +16,31 @@ public class WeaponController {
     private ArrayList<Bullet> bullets = new ArrayList<>();
     private float screenCenterX;
     private float screenCenterY;
+    private PlayerController playerController;
 
     public WeaponController(Weapon weapon) {
         this.weapon = weapon;
         updateScreenCenter();
-        ensureWeaponCentered();
+    }
+
+    public void setPlayerController(PlayerController playerController) {
+        this.playerController = playerController;
     }
 
     public void update() {
         // Update screen center values in case of resize
         updateScreenCenter();
+
+        // Position the weapon at the player's position
+        if (playerController != null) {
+            float playerX = playerController.getPlayer().getPosX();
+            float playerY = playerController.getPlayer().getPosY();
+
+            weapon.getSprite().setPosition(
+                playerX - weapon.getSprite().getWidth() / 2,
+                playerY - weapon.getSprite().getHeight() / 2
+            );
+        }
 
         // Draw the weapon sprite
         weapon.getSprite().draw(Main.getBatch());
@@ -42,35 +57,47 @@ public class WeaponController {
     public void handleWeaponRotation(int x, int y) {
         Sprite weaponSprite = weapon.getSprite();
 
-        // Convert screen coordinates to world coordinates
-        // This is necessary because the mouse coordinates are in screen space
-        // but we need them in world space relative to the camera
-        float worldX = x - screenCenterX;
-        float worldY = screenCenterY - y; // Y is inverted in screen coordinates
+        // Get the player's position
+        float playerX = 0;
+        float playerY = 0;
 
-        // Calculate angle between cursor and center (which is now at 0,0 in world coordinates)
-        float angle = (float) Math.atan2(worldY, worldX);
+        if (playerController != null) {
+            playerX = playerController.getPlayer().getPosX();
+            playerY = playerController.getPlayer().getPosY();
+        }
 
-        // Convert to degrees and rotate the weapon
-        weaponSprite.setRotation((float) Math.toDegrees(angle) - 90);
+        // Calculate angle between cursor and player position
+        float angle = (float) Math.atan2(y - playerY, x - playerX);
+        float degrees = (float) Math.toDegrees(angle);
 
-        // Make sure weapon stays centered regardless of rotation
-        ensureWeaponCentered();
-    }
+        boolean shouldFlip = (degrees > 90 && degrees < 270) || (degrees < -90 && degrees > -270);
 
-    private void ensureWeaponCentered() {
-        // Position the weapon at the origin (0,0) which will be the center
-        // of the camera's view since the camera is following the player
-        weapon.getSprite().setPosition(
-            -weapon.getSprite().getWidth() / 2,
-            -weapon.getSprite().getHeight() / 2
-        );
+        if (weaponSprite.isFlipY() != shouldFlip) {
+            weaponSprite.setFlip(false, shouldFlip);
+        }
+
+        weaponSprite.setRotation(degrees);
     }
 
     public void handleWeaponShoot(int x, int y) {
         GameAssetManager.getGameAssetManager().playShot();
-        bullets.add(new Bullet(x, y));
+        Bullet newBullet = new Bullet(x, y);
+        Vector2 direction = new Vector2(
+            x - playerController.getPlayer().getPosX(),
+            y - playerController.getPlayer().getPosY()
+        ).nor();
+
+        newBullet.setDirection(direction);
+        bullets.add(newBullet);
         weapon.setAmmo(weapon.getAmmo() - 1);
+
+        if (playerController != null && !bullets.isEmpty()) {
+            Bullet bullet = bullets.get(bullets.size() - 1);
+            bullet.getSprite().setPosition(
+                playerController.getPlayer().getPosX() - bullet.getSprite().getWidth() / 2,
+                playerController.getPlayer().getPosY() - bullet.getSprite().getHeight() / 2
+            );
+        }
     }
 
     public void updateBullets() {
@@ -78,36 +105,33 @@ public class WeaponController {
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
 
-            // Draw the bullet
             bullet.getSprite().draw(Main.getBatch());
 
-            // Calculate direction vector from center (0,0 in world coordinates) to target
-            Vector2 direction = new Vector2(
-                bullet.getX() - screenCenterX,
-                screenCenterY - bullet.getY()  // Y is inverted in screen coordinates
-            ).nor();
+            bullet.getSprite().setX(bullet.getSprite().getX() + bullet.getDirection().x * 5);
+            bullet.getSprite().setY(bullet.getSprite().getY() + bullet.getDirection().y * 5);
 
-            // Update bullet position
-            bullet.getSprite().setX(bullet.getSprite().getX() + direction.x * 5);
-            bullet.getSprite().setY(bullet.getSprite().getY() + direction.y * 5);
+            float playerX = 0;
+            float playerY = 0;
 
-            // Remove bullets that have gone too far from the player
-            if (isBulletTooFar(bullet)) {
+            if (playerController != null) {
+                playerX = playerController.getPlayer().getPosX();
+                playerY = playerController.getPlayer().getPosY();
+            }
+
+            if (isBulletTooFar(bullet, playerX, playerY)) {
                 iterator.remove();
             }
         }
     }
 
-    private boolean isBulletTooFar(Bullet bullet) {
-        // Check if bullet has gone too far from the player
+    private boolean isBulletTooFar(Bullet bullet, float playerX, float playerY) {
         float bulletX = bullet.getSprite().getX();
         float bulletY = bullet.getSprite().getY();
 
-        // Calculate distance from origin (player position)
-        float distanceSquared = bulletX * bulletX + bulletY * bulletY;
+        float distanceSquared = (bulletX - playerX) * (bulletX - playerX) +
+            (bulletY - playerY) * (bulletY - playerY);
 
-        // Set a maximum distance - bullets disappear after this range
-        float maxDistanceSquared = 1000 * 1000; // 1000 pixels range
+        float maxDistanceSquared = 1000 * 1000;
 
         return distanceSquared > maxDistanceSquared;
     }
@@ -118,6 +142,5 @@ public class WeaponController {
 
     public void handleResize(int width, int height) {
         updateScreenCenter();
-        ensureWeaponCentered();
     }
 }

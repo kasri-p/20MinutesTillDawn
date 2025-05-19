@@ -3,6 +3,7 @@ package com.untilDawn.controllers;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Game;
+import com.untilDawn.models.Player;
 import com.untilDawn.models.User;
 import com.untilDawn.models.enums.Characters;
 import com.untilDawn.models.enums.Weapons;
@@ -68,7 +69,6 @@ public class PreGameMeuController {
     public void startGame() {
         playClick();
 
-        // Validate selections
         if (selectedCharacter == null) {
             System.out.println("No character selected!");
             return;
@@ -79,20 +79,17 @@ public class PreGameMeuController {
             return;
         }
 
-        // Create player and game objects
-//        Player player = new Player(selectedCharacter, selectedWeapon);
+        Player player = new Player(selectedCharacter);
 
         Game game = new Game();
-//        game.setPlayer(player);
+        game.setPlayer(player);
 
-        // Save game configuration
         User currentUser = App.getLoggedInUser();
         if (currentUser != null) {
             App.addGame(game, currentUser);
         }
         App.setGame(game);
 
-        // TODO: Start the actual game when the GameView is implemented
         System.out.println("Starting game with character: " + selectedCharacter.getName() +
             ", weapon: " + selectedWeapon.getName() +
             ", time: " + selectedTime + " minutes, difficulty: " + selectedDifficulty);
@@ -100,12 +97,9 @@ public class PreGameMeuController {
     }
 
     private void showGameStartMessage() {
-        // This is a placeholder. In a real implementation, you would navigate to the game screen.
-        // For now, we'll just go back to the main menu
         Main.getMain().setScreen(new GameView(GameAssetManager.getGameAssetManager().getSkin()));
     }
 
-    // Getter methods for selected options
     public Characters getSelectedCharacter() {
         return selectedCharacter;
     }

@@ -16,9 +16,9 @@ public class Weapon {
         texture = new Texture(Gdx.files.internal("Images/weapons/" + weapon.getName().toLowerCase() + "/still.png"));
         this.sprite = new Sprite(new Sprite(texture));
         sprite.setSize(50, 50);
-        sprite.setOriginCenter(); // Set the origin to the center for proper rotation
+        sprite.setOriginCenter();
     }
-    
+
 
     public Sprite getSprite() {
         return sprite;

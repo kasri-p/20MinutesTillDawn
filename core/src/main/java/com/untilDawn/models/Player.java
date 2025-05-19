@@ -16,11 +16,13 @@ public class Player {
     private float speed = 5;
     private boolean isPlayerIdle = true;
     private boolean isPlayerRunning = false;
+    private Characters character;
 
-    public Player() {
+    public Player(Characters character) {
         playerSprite.setSize(playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
         playerSprite.setOriginCenter(); // Set the origin to the center for proper rotation
         rect = new CollisionRect(0, 0, playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
+        this.character = character;
     }
 
     public float getSpeed() {
@@ -101,6 +103,6 @@ public class Player {
     }
 
     public Characters getCharacter() {
-        return Characters.Shana;
+        return character;
     }
 }

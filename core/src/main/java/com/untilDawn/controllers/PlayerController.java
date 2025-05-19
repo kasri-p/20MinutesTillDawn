@@ -2,11 +2,10 @@ package com.untilDawn.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.utils.Array;
 import com.untilDawn.Main;
 import com.untilDawn.models.Player;
+import com.untilDawn.models.utils.GameAssetManager;
 
 public class PlayerController {
     private Player player;
@@ -25,14 +24,11 @@ public class PlayerController {
     }
 
     public void update() {
-        // Draw the player sprite centered on screen
-        // Note: With the camera following the player's logical position,
-        // we can simply draw the player at the origin (0,0) which will be
-        // the center of the camera's view
         player.getPlayerSprite().setPosition(
-            -player.getPlayerSprite().getWidth() / 2,
-            -player.getPlayerSprite().getHeight() / 2
+            player.getPosX() - player.getPlayerSprite().getWidth() / 2,
+            player.getPosY() - player.getPlayerSprite().getHeight() / 2
         );
+
         player.getPlayerSprite().draw(Main.getBatch());
 
         if (player.isPlayerIdle()) {
@@ -43,6 +39,7 @@ public class PlayerController {
     }
 
     public void handlePlayerInput() {
+//        App.getGame().getPlayer().setPlayerRunning(true);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             player.setPosY(player.getPosY() + player.getSpeed());
         }
@@ -59,33 +56,10 @@ public class PlayerController {
             }
             recentlyFilipped = true;
         }
-        // Note: We no longer move the sprite's position here.
-        // The sprite stays centered, and the world moves around it.
     }
 
     public void idleAnimation() {
-        Array<Texture> frames = new Array<>();
-
-        for (int i = 0; i < 4; i++) {
-            String framePath = "Images/characters/" + "Abby" + "/run" + i + ".png";
-
-            if (Gdx.files.internal(framePath).exists()) {
-                Texture frameTex = new Texture(Gdx.files.internal(framePath));
-                frames.add(frameTex);
-            }
-        }
-
-        Animation<Texture> animation = new Animation<>(0.1f, frames);
-
-        player.getPlayerSprite().setRegion(animation.getKeyFrame(player.getTime()));
-
-        if (!animation.isAnimationFinished(player.getTime())) {
-            player.setTime(player.getTime() + Gdx.graphics.getDeltaTime());
-        } else {
-            player.setTime(0);
-        }
-
-        animation.setPlayMode(Animation.PlayMode.LOOP);
+        GameAssetManager.getGameAssetManager().getPlayerIdleAnimation().setPlayMode(Animation.PlayMode.LOOP);
     }
 
     public Player getPlayer() {
