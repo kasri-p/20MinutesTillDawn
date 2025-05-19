@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.Array;
 import com.untilDawn.Main;
 import com.untilDawn.models.Player;
@@ -11,46 +12,83 @@ import com.untilDawn.models.Player;
 public class PlayerController {
     private Player player;
     private boolean recentlyFlipped = false;
+    private float screenCenterX;
+    private float screenCenterY;
+
+    // Speed scaling factor for different screen sizes
+    private float speedScaleFactor = 1.0f;
 
     public PlayerController(Player player) {
         this.player = player;
+        updateScreenCenter();
+        centerPlayerSprite();
+    }
+
+    private void updateScreenCenter() {
+        screenCenterX = Gdx.graphics.getWidth() / 2f;
+        screenCenterY = Gdx.graphics.getHeight() / 2f;
+
+        // Adjust speed scaling based on screen size
+        speedScaleFactor = Math.min(
+            Gdx.graphics.getWidth() / 1920f,
+            Gdx.graphics.getHeight() / 1080f
+        );
+        if (speedScaleFactor < 0.1f) speedScaleFactor = 0.1f;
+    }
+
+    private void centerPlayerSprite() {
+        if (player != null && player.getPlayerSprite() != null) {
+            Sprite sprite = player.getPlayerSprite();
+            sprite.setPosition(
+                screenCenterX - sprite.getWidth() / 2,
+                screenCenterY - sprite.getHeight() / 2
+            );
+        }
     }
 
     public void update() {
+        // Update screen center values
+        updateScreenCenter();
+
+        // Draw the player sprite
         player.getPlayerSprite().draw(Main.getBatch());
 
+        // Handle animations
         if (player.isPlayerIdle()) {
             idleAnimation();
         }
 
+        // Handle input
         handlePlayerInput();
     }
 
-
     public void handlePlayerInput() {
+        float effectiveSpeed = player.getSpeed() * speedScaleFactor;
+
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            player.setPosY(player.getPosY() - player.getSpeed());
+            player.setPosY(player.getPosY() - effectiveSpeed);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            player.setPosX(player.getPosX() - player.getSpeed());
+            player.setPosX(player.getPosX() - effectiveSpeed);
             if (recentlyFlipped) {
                 player.getPlayerSprite().flip(true, false);
                 recentlyFlipped = false;
             }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            player.setPosY(player.getPosY() + player.getSpeed());
+            player.setPosY(player.getPosY() + effectiveSpeed);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            player.setPosX(player.getPosX() + player.getSpeed());
-            if (recentlyFlipped) {
+            player.setPosX(player.getPosX() + effectiveSpeed);
+            if (!recentlyFlipped) {
                 player.getPlayerSprite().flip(true, false);
-
+                recentlyFlipped = true;
             }
-            recentlyFlipped = true;
         }
-    }
 
+        // Make sure player sprite stays centered on screen
+        centerPlayerSprite();
+    }
 
     public void idleAnimation() {
         Array<Texture> frames = new Array<>();
@@ -77,11 +115,18 @@ public class PlayerController {
         animation.setPlayMode(Animation.PlayMode.LOOP);
     }
 
+    // Call this method when the screen is resized
+    public void handleResize(int width, int height) {
+        updateScreenCenter();
+        centerPlayerSprite();
+    }
+
     public Player getPlayer() {
         return player;
     }
 
     public void setPlayer(Player player) {
         this.player = player;
+        centerPlayerSprite();
     }
 }

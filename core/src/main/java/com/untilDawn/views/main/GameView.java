@@ -13,17 +13,21 @@ import com.untilDawn.controllers.GameController;
 public class GameView implements Screen, InputProcessor {
     private Stage stage;
     private GameController controller;
+    private float aspectRatio;
+    private float oldWidth;
+    private float oldHeight;
 
     public GameView(Skin skin) {
         this.stage = new Stage();
         this.controller = new GameController(this);
+        this.oldWidth = Gdx.graphics.getWidth();
+        this.oldHeight = Gdx.graphics.getHeight();
+        this.aspectRatio = oldWidth / oldHeight;
     }
-
 
     @Override
     public void show() {
         stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
         Gdx.input.setInputProcessor(this);
     }
 
@@ -39,7 +43,15 @@ public class GameView implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        
+        // Update the viewport
+        stage.getViewport().update(width, height, true);
+
+        // Let the controller handle all resize operations
+        controller.handleResize(width, height);
+
+        // Store new dimensions for future reference
+        oldWidth = width;
+        oldHeight = height;
     }
 
     @Override
@@ -108,5 +120,4 @@ public class GameView implements Screen, InputProcessor {
     public boolean scrolled(float amountX, float amountY) {
         return false;
     }
-
 }
