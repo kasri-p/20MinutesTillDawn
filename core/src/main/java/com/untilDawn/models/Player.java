@@ -18,9 +18,9 @@ public class Player {
     private boolean isPlayerRunning = false;
 
     public Player() {
-        playerSprite.setPosition((float) Gdx.graphics.getWidth() / 2, (float) Gdx.graphics.getHeight() / 2);
         playerSprite.setSize(playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
-        rect = new CollisionRect((float) Gdx.graphics.getWidth() / 2, (float) Gdx.graphics.getHeight(), playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
+        playerSprite.setOriginCenter(); // Set the origin to the center for proper rotation
+        rect = new CollisionRect(0, 0, playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
     }
 
     public float getSpeed() {

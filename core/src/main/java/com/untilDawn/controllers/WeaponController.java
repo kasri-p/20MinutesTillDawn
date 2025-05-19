@@ -2,7 +2,6 @@ package com.untilDawn.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.Main;
 import com.untilDawn.models.Bullet;
@@ -21,6 +20,7 @@ public class WeaponController {
     public WeaponController(Weapon weapon) {
         this.weapon = weapon;
         updateScreenCenter();
+        ensureWeaponCentered();
     }
 
     public void update() {
@@ -46,7 +46,7 @@ public class WeaponController {
         float angle = (float) Math.atan2(y - screenCenterY, x - screenCenterX);
 
         // Convert to degrees and rotate the weapon
-        weaponSprite.setRotation((float) (Math.PI - angle * MathUtils.radiansToDegrees));
+        weaponSprite.setRotation((float) (Math.toDegrees(angle) - 90));  // Adjusted for orientation
 
         // Make sure weapon stays centered regardless of rotation
         ensureWeaponCentered();

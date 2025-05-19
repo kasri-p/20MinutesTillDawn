@@ -33,16 +33,13 @@ public class PlayerController {
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.setPosX(player.getPosX() - player.getSpeed());
-            if (recentlyFilipped) {
-                player.getPlayerSprite().flip(true, false);
-            }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             player.setPosY(player.getPosY() + player.getSpeed());
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             player.setPosX(player.getPosX() + player.getSpeed());
-            if (recentlyFilipped) {
+            if (!recentlyFilipped) {
                 player.getPlayerSprite().flip(true, false);
             }
             recentlyFilipped = true;

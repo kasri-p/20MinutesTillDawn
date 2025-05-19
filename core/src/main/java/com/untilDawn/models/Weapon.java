@@ -15,10 +15,10 @@ public class Weapon {
         this.weapon = Weapons.Revolver;
         texture = new Texture(Gdx.files.internal("Images/weapons/" + weapon.getName().toLowerCase() + "/still.png"));
         this.sprite = new Sprite(new Sprite(texture));
-        sprite.setX((float) Gdx.graphics.getWidth() / 2);
-        sprite.setY((float) Gdx.graphics.getHeight() / 2);
         sprite.setSize(50, 50);
+        sprite.setOriginCenter(); // Set the origin to the center for proper rotation
     }
+    
 
     public Sprite getSprite() {
         return sprite;
