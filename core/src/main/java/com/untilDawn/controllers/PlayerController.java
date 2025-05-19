@@ -11,12 +11,28 @@ import com.untilDawn.models.Player;
 public class PlayerController {
     private Player player;
     private boolean recentlyFilipped = false;
+    private float screenCenterX;
+    private float screenCenterY;
 
     public PlayerController(Player player) {
         this.player = player;
+        updateScreenCenter();
+    }
+
+    private void updateScreenCenter() {
+        screenCenterX = Gdx.graphics.getWidth() / 2f;
+        screenCenterY = Gdx.graphics.getHeight() / 2f;
     }
 
     public void update() {
+        // Draw the player sprite centered on screen
+        // Note: With the camera following the player's logical position,
+        // we can simply draw the player at the origin (0,0) which will be
+        // the center of the camera's view
+        player.getPlayerSprite().setPosition(
+            -player.getPlayerSprite().getWidth() / 2,
+            -player.getPlayerSprite().getHeight() / 2
+        );
         player.getPlayerSprite().draw(Main.getBatch());
 
         if (player.isPlayerIdle()) {
@@ -26,26 +42,26 @@ public class PlayerController {
         handlePlayerInput();
     }
 
-
     public void handlePlayerInput() {
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            player.setPosY(player.getPosY() - player.getSpeed());
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            player.setPosX(player.getPosX() - player.getSpeed());
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             player.setPosY(player.getPosY() + player.getSpeed());
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.setPosX(player.getPosX() + player.getSpeed());
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+            player.setPosY(player.getPosY() - player.getSpeed());
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            player.setPosX(player.getPosX() - player.getSpeed());
             if (!recentlyFilipped) {
                 player.getPlayerSprite().flip(true, false);
             }
             recentlyFilipped = true;
         }
+        // Note: We no longer move the sprite's position here.
+        // The sprite stays centered, and the world moves around it.
     }
-
 
     public void idleAnimation() {
         Array<Texture> frames = new Array<>();

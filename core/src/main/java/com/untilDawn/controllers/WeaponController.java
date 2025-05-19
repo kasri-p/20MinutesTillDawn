@@ -42,20 +42,28 @@ public class WeaponController {
     public void handleWeaponRotation(int x, int y) {
         Sprite weaponSprite = weapon.getSprite();
 
-        // Calculate angle between cursor and center of screen
-        float angle = (float) Math.atan2(y - screenCenterY, x - screenCenterX);
+        // Convert screen coordinates to world coordinates
+        // This is necessary because the mouse coordinates are in screen space
+        // but we need them in world space relative to the camera
+        float worldX = x - screenCenterX;
+        float worldY = screenCenterY - y; // Y is inverted in screen coordinates
+
+        // Calculate angle between cursor and center (which is now at 0,0 in world coordinates)
+        float angle = (float) Math.atan2(worldY, worldX);
 
         // Convert to degrees and rotate the weapon
-        weaponSprite.setRotation((float) (Math.toDegrees(angle) - 90));  // Adjusted for orientation
+        weaponSprite.setRotation((float) Math.toDegrees(angle) - 90);
 
         // Make sure weapon stays centered regardless of rotation
         ensureWeaponCentered();
     }
 
     private void ensureWeaponCentered() {
+        // Position the weapon at the origin (0,0) which will be the center
+        // of the camera's view since the camera is following the player
         weapon.getSprite().setPosition(
-            screenCenterX - weapon.getSprite().getWidth() / 2,
-            screenCenterY - weapon.getSprite().getHeight() / 2
+            -weapon.getSprite().getWidth() / 2,
+            -weapon.getSprite().getHeight() / 2
         );
     }
 
@@ -73,33 +81,35 @@ public class WeaponController {
             // Draw the bullet
             bullet.getSprite().draw(Main.getBatch());
 
-            // Calculate direction vector from center of screen to target
+            // Calculate direction vector from center (0,0 in world coordinates) to target
             Vector2 direction = new Vector2(
-                screenCenterX - bullet.getX(),
-                screenCenterY - bullet.getY()
+                bullet.getX() - screenCenterX,
+                screenCenterY - bullet.getY()  // Y is inverted in screen coordinates
             ).nor();
 
             // Update bullet position
-            bullet.getSprite().setX(bullet.getSprite().getX() - direction.x * 5);
+            bullet.getSprite().setX(bullet.getSprite().getX() + direction.x * 5);
             bullet.getSprite().setY(bullet.getSprite().getY() + direction.y * 5);
 
-            // Remove bullets that have gone off screen
-            if (isOffScreen(bullet)) {
+            // Remove bullets that have gone too far from the player
+            if (isBulletTooFar(bullet)) {
                 iterator.remove();
             }
         }
     }
 
-    private boolean isOffScreen(Bullet bullet) {
+    private boolean isBulletTooFar(Bullet bullet) {
+        // Check if bullet has gone too far from the player
         float bulletX = bullet.getSprite().getX();
         float bulletY = bullet.getSprite().getY();
-        float bulletWidth = bullet.getSprite().getWidth();
-        float bulletHeight = bullet.getSprite().getHeight();
 
-        return bulletX + bulletWidth < 0 ||
-            bulletX > Gdx.graphics.getWidth() ||
-            bulletY + bulletHeight < 0 ||
-            bulletY > Gdx.graphics.getHeight();
+        // Calculate distance from origin (player position)
+        float distanceSquared = bulletX * bulletX + bulletY * bulletY;
+
+        // Set a maximum distance - bullets disappear after this range
+        float maxDistanceSquared = 1000 * 1000; // 1000 pixels range
+
+        return distanceSquared > maxDistanceSquared;
     }
 
     public Weapon getWeapon() {
