@@ -211,6 +211,10 @@ public class App {
         blackAndWhiteEnabled = enabled;
     }
 
+    public static Game getGame() {
+        return currentGame;
+    }
+
     public static void setGame(Game game) {
         currentGame = game;
     }

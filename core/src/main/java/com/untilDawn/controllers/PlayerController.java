@@ -10,6 +10,7 @@ import com.untilDawn.models.Player;
 
 public class PlayerController {
     private Player player;
+    private boolean recentlyFlipped = false;
 
     public PlayerController(Player player) {
         this.player = player;
@@ -32,13 +33,21 @@ public class PlayerController {
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.setPosX(player.getPosX() - player.getSpeed());
+            if (recentlyFlipped) {
+                player.getPlayerSprite().flip(true, false);
+                recentlyFlipped = false;
+            }
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             player.setPosY(player.getPosY() + player.getSpeed());
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             player.setPosX(player.getPosX() + player.getSpeed());
-            player.getPlayerSprite().flip(true, false);
+            if (recentlyFlipped) {
+                player.getPlayerSprite().flip(true, false);
+
+            }
+            recentlyFlipped = true;
         }
     }
 
@@ -47,7 +56,7 @@ public class PlayerController {
         Array<Texture> frames = new Array<>();
 
         for (int i = 0; i < 4; i++) {
-            String framePath = "Images/characters/" + "Shana" + "/run" + i + ".png";
+            String framePath = "Images/characters/" + "Abby" + "/run" + i + ".png";
 
             if (Gdx.files.internal(framePath).exists()) {
                 Texture frameTex = new Texture(Gdx.files.internal(framePath));

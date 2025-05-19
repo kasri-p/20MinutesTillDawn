@@ -7,7 +7,8 @@ public enum Characters {
     Scarlett("Scarlett", 3, 5),
     Lilith("Lilith", 5, 3),
     Dasher("Dasher", 2, 10),
-    Abby("Abby", 3, 4);
+    Abby("Abby", 3, 4),
+    Raven("Raven", 6, 2);
 
     private final String name;
     private final int speed;

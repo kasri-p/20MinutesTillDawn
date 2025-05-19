@@ -55,7 +55,8 @@ public class PreGameMenu implements Screen {
         Characters.Diamond,
         Characters.Scarlett,
         Characters.Lilith,
-        Characters.Dasher
+        Characters.Dasher,
+        Characters.Raven
     };
     private Weapons[] availableWeapons = {
         Weapons.Revolver,
@@ -68,8 +69,7 @@ public class PreGameMenu implements Screen {
         this.stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        // Calculate scaling factors based on screen size
-        widthFactor = Gdx.graphics.getWidth() / 1920f; // Assuming 1920x1080 as reference
+        widthFactor = Gdx.graphics.getWidth() / 1920f;
         heightFactor = Gdx.graphics.getHeight() / 1080f;
 
         this.controller = new PreGameMeuController();
@@ -96,7 +96,7 @@ public class PreGameMenu implements Screen {
     private Animation<TextureRegion> createCharacterIdleAnimation(String characterName) {
         Array<TextureRegion> frames = new Array<>();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             String framePath = "Images/characters/" + characterName + "/idle" + i + ".png";
 
             if (Gdx.files.internal(framePath).exists()) {
@@ -122,7 +122,6 @@ public class PreGameMenu implements Screen {
 
         Table contentTable = new Table();
 
-        // Left side: Character and Weapon bubbles
         Table selectorsTable = new Table();
 
         // Character selection section
@@ -145,7 +144,6 @@ public class PreGameMenu implements Screen {
         createWeaponBubbles(weaponBubblesTable);
         selectorsTable.add(weaponBubblesTable).colspan(3).pad(5 * heightFactor).row();
 
-        // Add play button
         TextButton.TextButtonStyle playButtonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
         playButtonStyle.fontColor = Color.SALMON;
         playButtonStyle.overFontColor = Color.valueOf("#f1cedb");
@@ -169,7 +167,6 @@ public class PreGameMenu implements Screen {
 
         contentTable.add(selectorsTable).width(stage.getWidth() * 0.55f).padRight(10 * widthFactor);
 
-        // Right side: Info panels
         Table infoTable = new Table();
         createInfoSection(infoTable);
         contentTable.add(infoTable).width(stage.getWidth() * 0.35f).top();
@@ -186,7 +183,6 @@ public class PreGameMenu implements Screen {
             }
         });
 
-        // Scale down the panel height
         float panelHeight = 150 * heightFactor;
 
         Image panel = new Image(panelTexture);
@@ -265,7 +261,6 @@ public class PreGameMenu implements Screen {
             weaponHighlights[i].setColor(new Color(1f, 0.2f, 0.2f, 1f));
             weaponHighlights[i].setVisible(false);
 
-            // Create a weapon icon using the weapon name
             weaponBubbles[i] = new Image();
             weaponBubbles[i].setSize(bubbleSize, bubbleSize);
 
@@ -297,14 +292,12 @@ public class PreGameMenu implements Screen {
     }
 
     private void createInfoSection(Table infoTable) {
-        // Calculate portrait sizes based on screen dimensions
         float characterPortraitSize = 150 * Math.min(widthFactor, heightFactor);
         float weaponPortraitWidth = 150 * widthFactor;
         float weaponPortraitHeight = 75 * heightFactor;
         float infoWidth = 180 * widthFactor;
         float padding = 5 * Math.min(widthFactor, heightFactor);
 
-        // Character portrait section
         Table characterPortraitTable = new Table();
         characterPortrait = new Image();
         characterPortrait.setVisible(false);
@@ -323,7 +316,6 @@ public class PreGameMenu implements Screen {
         characterPortraitTable.add(characterPortrait).size(characterPortraitSize, characterPortraitSize).padBottom(padding).row();
         characterPortraitTable.add(characterInfoLabel).width(infoWidth).row();
 
-        // Weapon portrait section
         Table weaponPortraitTable = new Table();
         weaponPortrait = new Image();
         weaponPortrait.setVisible(false);
@@ -342,7 +334,6 @@ public class PreGameMenu implements Screen {
         weaponPortraitTable.add(weaponPortrait).size(weaponPortraitWidth, weaponPortraitHeight).padBottom(padding).row();
         weaponPortraitTable.add(weaponInfoLabel).width(infoWidth).row();
 
-        // Add both sections to the info table
         infoTable.add(characterPortraitTable).padBottom(10 * heightFactor).row();
         infoTable.add(weaponPortraitTable).row();
     }
@@ -447,7 +438,6 @@ public class PreGameMenu implements Screen {
 
         animationTime += delta;
 
-        // Update character animations
         for (int i = 0; i < NUM_CHARACTER_SELECTORS; i++) {
             if (i < characterAnimations.length && characterAnimations[i] != null) {
                 TextureRegion currentFrame = characterAnimations[i].getKeyFrame(animationTime, true);
@@ -455,7 +445,6 @@ public class PreGameMenu implements Screen {
             }
         }
 
-        // Add pulsing effect to selected items
         if (selectedCharacter != -1) {
             float pulse = 0.7f + 0.3f * (float) Math.sin(animationTime * 3);
             characterHighlights[selectedCharacter].setColor(1f, 1f, 0f, pulse);
@@ -474,7 +463,6 @@ public class PreGameMenu implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
 
-        // Update scaling factors when resizing
         widthFactor = width / 1920f;
         heightFactor = height / 1080f;
     }
@@ -532,7 +520,6 @@ public class PreGameMenu implements Screen {
             }
         }
 
-        // Dispose weapon bubble textures
         if (weaponBubbles != null) {
             for (Image bubble : weaponBubbles) {
                 if (bubble != null && bubble.getDrawable() instanceof TextureRegionDrawable) {

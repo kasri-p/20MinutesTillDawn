@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.Main;
 import com.untilDawn.models.Bullet;
 import com.untilDawn.models.Weapon;
+import com.untilDawn.models.utils.GameAssetManager;
 
 import java.util.ArrayList;
 
@@ -35,6 +36,7 @@ public class WeaponController {
     }
 
     public void handleWeaponShoot(int x, int y) {
+        GameAssetManager.getGameAssetManager().playShot();
         bullets.add(new Bullet(x, y));
         weapon.setAmmo(weapon.getAmmo() - 1);
     }

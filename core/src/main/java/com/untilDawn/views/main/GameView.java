@@ -24,6 +24,7 @@ public class GameView implements Screen, InputProcessor {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(this);
     }
 
     @Override
@@ -38,7 +39,7 @@ public class GameView implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-
+        
     }
 
     @Override

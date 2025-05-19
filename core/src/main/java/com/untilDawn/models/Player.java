@@ -3,6 +3,7 @@ package com.untilDawn.models;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.untilDawn.models.enums.Characters;
 
 public class Player {
     private Texture playerTexture = new Texture(Gdx.files.internal("Images/characters/Shana/run0.png"));
@@ -99,4 +100,7 @@ public class Player {
         this.time = time;
     }
 
+    public Characters getCharacter() {
+        return Characters.Shana;
+    }
 }
