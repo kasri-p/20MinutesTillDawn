@@ -42,10 +42,8 @@ public class WeaponController {
             );
         }
 
-        // Draw the weapon sprite
         weapon.getSprite().draw(Main.getBatch());
 
-        // Update and handle bullets
         updateBullets();
     }
 
@@ -57,7 +55,6 @@ public class WeaponController {
     public void handleWeaponRotation(int x, int y) {
         Sprite weaponSprite = weapon.getSprite();
 
-        // Get the player's position
         float playerX = 0;
         float playerY = 0;
 
@@ -66,7 +63,6 @@ public class WeaponController {
             playerY = playerController.getPlayer().getPosY();
         }
 
-        // Calculate angle between cursor and player position
         float angle = (float) Math.atan2(y - playerY, x - playerX);
         float degrees = (float) Math.toDegrees(angle);
 
@@ -81,21 +77,27 @@ public class WeaponController {
 
     public void handleWeaponShoot(int x, int y) {
         GameAssetManager.getGameAssetManager().playShot();
-        Bullet newBullet = new Bullet(x, y);
+
+        float playerX = playerController.getPlayer().getPosX();
+        float playerY = playerController.getPlayer().getPosY();
+
+        Bullet newBullet = new Bullet((int) playerX, (int) playerY);
+
         Vector2 direction = new Vector2(
-            x - playerController.getPlayer().getPosX(),
-            y - playerController.getPlayer().getPosY()
+            x - playerX,
+            y - playerY
         ).nor();
 
         newBullet.setDirection(direction);
         bullets.add(newBullet);
         weapon.setAmmo(weapon.getAmmo() - 1);
 
-        if (playerController != null && !bullets.isEmpty()) {
+
+        if (!bullets.isEmpty()) {
             Bullet bullet = bullets.get(bullets.size() - 1);
             bullet.getSprite().setPosition(
-                playerController.getPlayer().getPosX() - bullet.getSprite().getWidth() / 2,
-                playerController.getPlayer().getPosY() - bullet.getSprite().getHeight() / 2
+                playerX - bullet.getSprite().getWidth() / 2,
+                playerY - bullet.getSprite().getHeight() / 2
             );
         }
     }
