@@ -25,29 +25,7 @@ public class GameController {
         }
     }
 
-    public void handleResize(int width, int height) {
-        if (worldController != null) {
-            worldController.handleResize(width, height);
-        }
-
-        if (playerController != null) {
-            playerController.handleResize(width, height);
-        }
-
-        if (weaponController != null) {
-            weaponController.handleResize(width, height);
-        }
-    }
-
     public WeaponController getWeaponController() {
         return weaponController;
-    }
-
-    public PlayerController getPlayerController() {
-        return playerController;
-    }
-
-    public WorldController getWorldController() {
-        return worldController;
     }
 }

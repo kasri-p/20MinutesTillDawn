@@ -46,10 +46,6 @@ public class GameView implements Screen, InputProcessor {
         // Update the viewport
         stage.getViewport().update(width, height, true);
 
-        // Let the controller handle all resize operations
-        controller.handleResize(width, height);
-
-        // Store new dimensions for future reference
         oldWidth = width;
         oldHeight = height;
     }
