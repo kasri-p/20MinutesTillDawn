@@ -17,7 +17,7 @@ public class GameAssetManager {
     private Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
     private Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
     private int footstepsCounter = 1;
-
+    
     private List<Sound> footSteps = new ArrayList<>();
 
     GameAssetManager() {
@@ -74,8 +74,8 @@ public class GameAssetManager {
     }
 
     public Animation<Texture> getPlayerWalkAnimation() {
-        String framePath = "Images/characters/" + App.getGame().getPlayer().getCharacter().getName() + "/walk";
-    
+        String framePath = "Images/characters/" + App.getGame().getPlayer().getCharacter().getName() + "/walk" + 1 + "png";
+
         return null;
     }
 

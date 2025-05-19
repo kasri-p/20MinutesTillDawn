@@ -4,9 +4,9 @@ package com.untilDawn.models.enums;
 public enum Characters {
     Shana("Shana", 4, 4),
     Diamond("Diamond", 7, 1),
-    Scarlett("Scarlett", 3, 5),
+    Scarlett("Scarlett", 5, 3),
     Lilith("Lilith", 5, 3),
-    Dasher("Dasher", 2, 10),
+    Dasher("Dasher", 10, 2),
     Abby("Abby", 3, 4),
     Raven("Raven", 6, 2);
 

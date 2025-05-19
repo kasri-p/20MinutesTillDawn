@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -13,13 +15,16 @@ import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
 
 public class GameView implements Screen, InputProcessor {
-    private final float GAME_WIDTH = 800;
-    private final float GAME_HEIGHT = 600;
     // Define game world size - adjust these values based on your game's needs'
     private Stage stage;
     private GameController controller;
     private OrthographicCamera camera;
     private FitViewport viewport;
+
+    private Texture mapTexture;
+    private float mapWidth;
+    private float mapHeight;
+
 
     // Add these variables to store the player's initial position
     private float initialPlayerX = 0;
@@ -29,12 +34,15 @@ public class GameView implements Screen, InputProcessor {
     public GameView(Skin skin) {
         // Initialize camera
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
+        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.controller = new GameController(this);
         camera.position.set(controller.getPlayerController().getPlayer().getPosX(), controller.getPlayerController().getPlayer().getPosY(), 0);
         camera.update();
-        // Use FitViewport to maintain aspect ratio
-        viewport = new FitViewport(GAME_WIDTH, GAME_HEIGHT, camera);
+        viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+
+        this.mapTexture = new Texture("Images/map.png");
+        this.mapWidth = mapTexture.getWidth();
+        this.mapHeight = mapTexture.getHeight();
 
         this.stage = new Stage(viewport);
     }
@@ -48,11 +56,19 @@ public class GameView implements Screen, InputProcessor {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        camera.position.set(controller.getPlayerController().getPlayer().getPosX(), controller.getPlayerController().getPlayer().getPosY(), 0);
-        camera.update();
-        
-        Main.getBatch().setProjectionMatrix(camera.combined);
+        float camHalfWidth = camera.viewportWidth / 2;
+        float camHalfHeight = camera.viewportHeight / 2;
 
+        float playerX = controller.getPlayerController().getPlayer().getPosX();
+        float playerY = controller.getPlayerController().getPlayer().getPosY();
+
+        float clampedX = MathUtils.clamp(playerX, camHalfWidth, mapWidth - camHalfWidth);
+        float clampedY = MathUtils.clamp(playerY, camHalfHeight, mapHeight - camHalfHeight);
+
+        camera.position.set(clampedX, clampedY, 0);
+        camera.update();
+
+        Main.getBatch().setProjectionMatrix(camera.combined);
         Main.getBatch().begin();
         controller.updateGame();
         Main.getBatch().end();
@@ -139,7 +155,6 @@ public class GameView implements Screen, InputProcessor {
         return false;
     }
 
-    // Add getter for camera
     public OrthographicCamera getCamera() {
         return camera;
     }

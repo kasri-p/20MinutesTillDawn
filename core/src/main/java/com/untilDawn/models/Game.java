@@ -2,6 +2,8 @@ package com.untilDawn.models;
 
 import com.untilDawn.models.enums.Weapons;
 
+import java.util.ArrayList;
+
 public class Game {
     private int score;
     private int level;
@@ -9,6 +11,7 @@ public class Game {
     private Weapons selectedWeapon;
     private int difficulty;
     private int timeLimit; // in minutes
+    private ArrayList<Enemy> enemies;
 
     public Game(int timeLimit) {
         this.score = 0;
@@ -70,5 +73,13 @@ public class Game {
 
     public void setTimeLimit(int timeLimit) {
         this.timeLimit = timeLimit;
+    }
+
+    public ArrayList<Enemy> getEnemies() {
+        return enemies;
+    }
+
+    public void addEnemy(Enemy enemy) {
+        this.enemies.add(enemy);
     }
 }

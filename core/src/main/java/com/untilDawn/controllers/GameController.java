@@ -27,7 +27,7 @@ public class GameController {
         if (view != null) {
             OrthographicCamera camera = view.getCamera();
             Main.getBatch().setProjectionMatrix(camera.combined);
-
+            
             worldController.update();
             playerController.update();
             weaponController.update();
