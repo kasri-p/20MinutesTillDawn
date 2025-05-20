@@ -13,6 +13,7 @@ public class Bullet {
     private int x;
     private int y;
     private Vector2 direction;
+    private boolean isActive = true;
 
     public Bullet(int x, int y) {
         sprite.setSize(20, 20);
@@ -48,5 +49,17 @@ public class Bullet {
 
     public void setDirection(Vector2 direction) {
         this.direction = direction;
+    }
+
+    public void dispose() {
+        texture.dispose();
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
     }
 }

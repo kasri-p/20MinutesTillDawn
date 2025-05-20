@@ -13,12 +13,11 @@ import java.util.List;
 
 public class GameAssetManager {
     private static GameAssetManager gameAssetManager;
-    private final String bullet = "Images/bullet.png";
-    private Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
-    private Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
+    private final Sound reloadSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/reload.wav"));
+    private final Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
+    private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
+    private final List<Sound> footSteps = new ArrayList<>();
     private int footstepsCounter = 1;
-    
-    private List<Sound> footSteps = new ArrayList<>();
 
     GameAssetManager() {
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
@@ -38,7 +37,7 @@ public class GameAssetManager {
     }
 
     public String getBullet() {
-        return bullet;
+        return "Images/bullet.png";
     }
 
     public Animation<Texture> getPlayerRunAnimation() {
@@ -93,5 +92,26 @@ public class GameAssetManager {
                 footstepsCounter = 0;
             }
         }
+    }
+
+    public void playReloadSound() {
+        if (App.isSFX()) {
+            reloadSound.play();
+        }
+    }
+
+    public Animation<Texture> getReloadAnimation() {
+        return null;
+    }
+
+    public Animation<Texture> getEnemyAnimation(String enemyName) {
+        Array<Texture> frames = new Array<>();
+        for (int i = 0; i < 2; i++) {
+            String framePath = "Images/Enemies/" + enemyName.toLowerCase() + "/" + enemyName.toLowerCase() + i + ".png";
+            Texture frameTex = new Texture(Gdx.files.internal(framePath));
+            frames.add(frameTex);
+        }
+
+        return new Animation<>(0.1f, frames);
     }
 }

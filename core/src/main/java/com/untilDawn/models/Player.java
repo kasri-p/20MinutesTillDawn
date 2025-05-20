@@ -3,6 +3,7 @@ package com.untilDawn.models;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Rectangle;
 import com.untilDawn.models.enums.Characters;
 
 public class Player {
@@ -11,7 +12,7 @@ public class Player {
     private float posX = 0;
     private float posY = 0;
     private float playerHealth = 100;
-    private CollisionRect rect;
+    private Rectangle boundingBox;
     private float time = 0;
     private float speed = 5;
     private boolean isPlayerIdle = true;
@@ -20,9 +21,10 @@ public class Player {
 
     public Player(Characters character) {
         playerSprite.setSize(playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
-        playerSprite.setOriginCenter(); // Set the origin to the center for proper rotation
-        rect = new CollisionRect(0, 0, playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
+        playerSprite.setOriginCenter();
+        boundingBox = new Rectangle(0, 0, playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
         this.character = character;
+        this.speed = character.getSpeed();
     }
 
     public float getSpeed() {
@@ -51,6 +53,7 @@ public class Player {
 
     public void setPosX(float posX) {
         this.posX = posX;
+        updateBoundingBox();
     }
 
     public float getPosY() {
@@ -59,6 +62,14 @@ public class Player {
 
     public void setPosY(float posY) {
         this.posY = posY;
+        updateBoundingBox();
+    }
+
+    private void updateBoundingBox() {
+        boundingBox.setPosition(
+            posX - playerSprite.getWidth() / 2,
+            posY - playerSprite.getHeight() / 2
+        );
     }
 
     public float getPlayerHealth() {
@@ -69,14 +80,13 @@ public class Player {
         this.playerHealth = playerHealth;
     }
 
-    public CollisionRect getRect() {
-        return rect;
+    public Rectangle getBoundingBox() {
+        return boundingBox;
     }
 
-    public void setRect(CollisionRect rect) {
-        this.rect = rect;
+    public void setBoundingBox(Rectangle boundingBox) {
+        this.boundingBox = boundingBox;
     }
-
 
     public boolean isPlayerIdle() {
         return isPlayerIdle;

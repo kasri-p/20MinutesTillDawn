@@ -1,36 +1,101 @@
 package com.untilDawn.controllers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Weapon;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.main.GameView;
+import com.untilDawn.views.main.MainMenu;
 
 public class GameController {
     private GameView view;
     private PlayerController playerController;
     private WeaponController weaponController;
     private WorldController worldController;
+    private EnemyController enemyController;
+
+    // Map dimensions
+    private float mapWidth;
+    private float mapHeight;
+
+    private float gameTime = 0;
+    private boolean gameOver = false;
 
     public GameController(GameView view) {
         this.view = view;
+
+        // Load map dimensions
+        Texture mapTexture = new Texture("Images/map.png");
+        this.mapWidth = mapTexture.getWidth();
+        this.mapHeight = mapTexture.getHeight();
+        mapTexture.dispose();
+
+        // Initialize controllers
         this.playerController = new PlayerController(App.getGame().getPlayer());
         this.weaponController = new WeaponController(new Weapon());
         this.weaponController.setPlayerController(playerController);
         this.worldController = new WorldController(playerController);
+        playerController.setWeaponController(weaponController);
+        this.enemyController = new EnemyController(playerController, weaponController, mapWidth, mapHeight);
 
-        this.playerController.getPlayer().setPosX(0);
-        this.playerController.getPlayer().setPosY(0);
+        // Set player starting position
+        this.playerController.getPlayer().setPosX(mapWidth / 2);
+        this.playerController.getPlayer().setPosY(mapHeight / 2);
     }
 
     public void updateGame() {
-        if (view != null) {
+        if (view != null && !gameOver) {
+
+            float deltaTime = Math.min(0.025f, Gdx.graphics.getDeltaTime()); // Capped at 40 fps for physics stability
+            gameTime += deltaTime;
+
             OrthographicCamera camera = view.getCamera();
             Main.getBatch().setProjectionMatrix(camera.combined);
-            
+
             worldController.update();
+            enemyController.update(deltaTime);
             playerController.update();
             weaponController.update();
+
+//            weaponController.checkAutoReload();
+
+            checkGameOver();
+        }
+    }
+
+    private void checkGameOver() {
+        if (playerController.getPlayer().getPlayerHealth() <= 0) {
+            gameOver = true;
+            App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
+
+            Gdx.app.postRunnable(() -> {
+                try {
+                    Thread.sleep(2000); // 2-second delay
+                    Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        // Check if time limit is reached
+        int timeLimit = App.getGame().getTimeLimit() * 60; // Convert minutes to seconds
+        if (gameTime >= timeLimit) {
+            // Handle game over - time's up
+            gameOver = true;
+
+            // Go back to main menu after a short delay
+            Gdx.app.postRunnable(() -> {
+                try {
+                    Thread.sleep(2000); // 2-second delay
+                    Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
@@ -40,5 +105,28 @@ public class GameController {
 
     public PlayerController getPlayerController() {
         return playerController;
+    }
+
+    public EnemyController getEnemyController() {
+        return enemyController;
+    }
+
+    public void dispose() {
+        // Dispose of all resources when the game ends
+        if (enemyController != null) {
+            enemyController.dispose();
+        }
+    }
+
+    public float getGameTime() {
+        return gameTime;
+    }
+
+    public float getMapWidth() {
+        return mapWidth;
+    }
+
+    public float getMapHeight() {
+        return mapHeight;
     }
 }

@@ -9,7 +9,7 @@ public class Weapon {
     private Texture texture;
     private Weapons weapon;
     private Sprite sprite;
-    private int ammo = 30;
+    private int ammo;
 
     public Weapon() {
         this.weapon = Weapons.Revolver;
@@ -17,6 +17,7 @@ public class Weapon {
         this.sprite = new Sprite(new Sprite(texture));
         sprite.setSize(50, 50);
         sprite.setOriginCenter();
+        ammo = weapon.getAmmoMax();
     }
 
 
@@ -31,4 +32,9 @@ public class Weapon {
     public void setAmmo(int ammo) {
         this.ammo = ammo;
     }
+
+    public Weapons getWeapon() {
+        return weapon;
+    }
+
 }

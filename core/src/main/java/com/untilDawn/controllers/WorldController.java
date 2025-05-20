@@ -7,7 +7,7 @@ import com.untilDawn.Main;
 public class WorldController {
     private PlayerController playerController;
     private Texture backgroundTexture;
-    ;
+
 
     public WorldController(PlayerController playerController) {
         this.backgroundTexture = new Texture("Images/map.png");
@@ -15,7 +15,6 @@ public class WorldController {
     }
 
     public void update() {
-
         float bgWidth = backgroundTexture.getWidth();
         float bgHeight = backgroundTexture.getHeight();
 

@@ -15,7 +15,6 @@ import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
 
 public class GameView implements Screen, InputProcessor {
-    // Define game world size - adjust these values based on your game's needs'
     private Stage stage;
     private GameController controller;
     private OrthographicCamera camera;
@@ -120,7 +119,7 @@ public class GameView implements Screen, InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
         viewport.unproject(worldCoords);
-
+        
         controller.getWeaponController().handleWeaponShoot((int) worldCoords.x, (int) worldCoords.y);
 
         return false;

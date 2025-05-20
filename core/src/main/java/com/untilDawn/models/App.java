@@ -46,7 +46,6 @@ public class App {
     public static void load() {
         users = FileStorage.loadUsers();
 
-        // Load settings
         Map<String, Object> settings = FileStorage.loadSettings();
         if (settings != null) {
             if (settings.containsKey("musicVolume")) {

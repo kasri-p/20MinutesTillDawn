@@ -6,17 +6,22 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.math.MathUtils;
 import com.untilDawn.Main;
+import com.untilDawn.models.App;
 import com.untilDawn.models.Player;
 import com.untilDawn.models.utils.GameAssetManager;
 
+import java.util.Map;
+
 public class PlayerController {
     private Player player;
-    private boolean recentlyFilipped = false;
+    private boolean recentlyFlipped = false;
     private float screenCenterX;
     private float screenCenterY;
     private Animation<Texture> currentAnimation;
     private float stateTime = 0;
     private boolean isMoving = false;
+
+    private WeaponController weaponController;
 
     private Texture mapTexture;
     private float mapWidth;
@@ -25,7 +30,7 @@ public class PlayerController {
     public PlayerController(Player player) {
         this.player = player;
         updateScreenCenter();
-        
+
         this.mapTexture = new Texture("Images/map.png");
         this.mapWidth = mapTexture.getWidth();
         this.mapHeight = mapTexture.getHeight();
@@ -79,30 +84,33 @@ public class PlayerController {
 
         float newX = player.getPosX();
         float newY = player.getPosY();
-
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+        Map<String, String> keyBinds = App.getKeybinds();
+        if (Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBinds.get("Move Up")))) {
             newY += player.getSpeed();
             isMoving = true;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBinds.get("Move Right")))) {
             newX += player.getSpeed();
             isMoving = true;
-            if (recentlyFilipped) {
+            if (recentlyFlipped) {
                 player.getPlayerSprite().flip(true, false);
-                recentlyFilipped = false;
+                recentlyFlipped = false;
             }
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBinds.get("Move Down")))) {
             newY -= player.getSpeed();
             isMoving = true;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBinds.get("Move Left")))) {
             newX -= player.getSpeed();
             isMoving = true;
-            if (!recentlyFilipped) {
+            if (!recentlyFlipped) {
                 player.getPlayerSprite().flip(true, false);
-                recentlyFilipped = true;
+                recentlyFlipped = true;
             }
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBinds.get("Reload")))) {
+            handleReload();
         }
 
         float halfWidth = player.getPlayerSprite().getWidth() / 2f;
@@ -128,5 +136,13 @@ public class PlayerController {
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    public void handleReload() {
+        weaponController.startReload();
+    }
+
+    public void setWeaponController(WeaponController weaponController) {
+        this.weaponController = weaponController;
     }
 }
