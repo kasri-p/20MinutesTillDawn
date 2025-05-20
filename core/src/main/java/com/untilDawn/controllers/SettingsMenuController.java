@@ -89,79 +89,58 @@ public class SettingsMenuController {
         // Update UI
         view.setKeybind(action, key);
     }
-
-    public void onAutoReloadToggled(boolean enabled) {
-    }
-
-    public void onBlackAndWhiteToggled(boolean enabled) {
-    }
+    
 
     public void onBackClicked() {
-        // Discard changes and return to main menu
         discardChanges();
         navigateToMainMenu();
     }
 
     public void onApplyClicked() {
-        // Save all settings
         saveSettings();
         navigateToMainMenu();
     }
 
     private void saveSettings() {
-        // Save music volume
         float volume = view.getMusicVolumeSlider().getValue();
         App.setMusicVolume(volume);
 
-        // Save current music track
         String selectedTrack = view.getMusicSelectBox().getSelected();
         App.setCurrentMusicTrack(selectedTrack);
 
-        // Save SFX setting
         boolean sfxEnabled = view.getSfxCheckBox().isChecked();
         App.setSFX(sfxEnabled);
 
-        // Save keybinds
         App.setKeybinds(pendingKeybinds);
 
-        // Save bonus features
         boolean autoReloadEnabled = view.getAutoReloadCheckBox().isChecked();
         App.setAutoReloadEnabled(autoReloadEnabled);
 
         boolean blackAndWhiteEnabled = view.getBlackAndWhiteCheckBox().isChecked();
         App.setBlackAndWhiteEnabled(blackAndWhiteEnabled);
 
-        // If the music changed and it's not the preview track, keep it playing
         if (!originalMusicTrack.equals(selectedTrack)) {
             Main.getMain().setMenuMusic(currentMusic);
         }
 
-        // Persist settings
         App.save();
     }
 
     private void discardChanges() {
-        // Restore original music volume
         if (currentMusic != null) {
             currentMusic.setVolume(originalVolume);
         }
 
-        // Restore original music if changed
         if (!originalMusicTrack.equals(view.getMusicSelectBox().getSelected())) {
-            // Stop the preview music
             if (currentMusic != null && currentMusic != Main.getMain().getMenuMusic()) {
                 currentMusic.stop();
                 currentMusic.dispose();
             }
 
-            // Restore original menu music
             Main.getMain().getMenuMusic().play();
         }
 
-        // Restore SFX setting
         App.setSFX(originalSFX);
-
-        // Keybinds are only applied when "Apply" is clicked, so no need to restore
     }
 
     private void navigateToMainMenu() {

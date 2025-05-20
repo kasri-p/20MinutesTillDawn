@@ -457,14 +457,12 @@ public class SettingsMenu implements Screen {
         autoReloadCheckBox.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                controller.onAutoReloadToggled(autoReloadCheckBox.isChecked());
             }
         });
 
         blackAndWhiteCheckBox.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                controller.onBlackAndWhiteToggled(blackAndWhiteCheckBox.isChecked());
             }
         });
 

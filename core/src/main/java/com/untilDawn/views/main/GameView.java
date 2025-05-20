@@ -1,4 +1,3 @@
-// Modified version of GameView.java
 package com.untilDawn.views.main;
 
 import com.badlogic.gdx.Gdx;
@@ -14,6 +13,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
+import com.untilDawn.models.App;
+import com.untilDawn.models.utils.GrayscaleShader;
 import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.views.GameHUD;
 
@@ -24,15 +25,11 @@ public class GameView implements Screen, InputProcessor {
     private FitViewport viewport;
     private GameHUD gameHUD;
     private LightingManager lightingManager;
+    private GrayscaleShader grayscaleShader;
 
     private Texture mapTexture;
     private float mapWidth;
     private float mapHeight;
-
-    // Add these variables to store the player's initial position
-    private float initialPlayerX = 0;
-    private float initialPlayerY = 0;
-    private boolean cameraInitialized = false;
 
     public GameView(Skin skin) {
         // Initialize camera
@@ -54,6 +51,8 @@ public class GameView implements Screen, InputProcessor {
 
         // Initialize the lighting manager
         this.lightingManager = LightingManager.getInstance();
+
+        this.grayscaleShader = GrayscaleShader.getInstance();
     }
 
     @Override
@@ -77,6 +76,11 @@ public class GameView implements Screen, InputProcessor {
         camera.position.set(clampedX, clampedY, 0);
         camera.update();
 
+        // Apply black and white shader if enabled
+        if (App.isBlackAndWhiteEnabled()) {
+            grayscaleShader.enable(Main.getBatch());
+        }
+
         Main.getBatch().setProjectionMatrix(camera.combined);
         Main.getBatch().begin();
 
@@ -85,6 +89,11 @@ public class GameView implements Screen, InputProcessor {
         lightingManager.render(Main.getBatch(), camera, playerX, playerY);
 
         Main.getBatch().end();
+
+        // Restore default shader
+        if (App.isBlackAndWhiteEnabled()) {
+            grayscaleShader.disable(Main.getBatch());
+        }
 
         gameHUD.render();
 
