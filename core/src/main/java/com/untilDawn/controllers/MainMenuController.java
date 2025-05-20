@@ -1,5 +1,6 @@
 package com.untilDawn.controllers;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.untilDawn.Main;
@@ -21,6 +22,11 @@ public class MainMenuController {
 
     public void initializeButtonListeners() {
         view.getLogoutButton().addListener(new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                
+            }
+
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 playClick();

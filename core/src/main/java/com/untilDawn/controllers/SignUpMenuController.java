@@ -23,6 +23,7 @@ public class SignUpMenuController {
 
     private void initializeButtonListeners() {
         view.getSignUpButton().addListener(new ChangeListener() {
+
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 playClick();
