@@ -45,6 +45,9 @@ public class EnemyController {
     private Vector2 prevBulletPos = new Vector2();
     private Vector2 currentBulletPos = new Vector2();
 
+    private int tentacleSpawned = 0;
+    private int eyeBatSpawned = 0;
+
     public EnemyController(PlayerController playerController, WeaponController weaponController, float mapWidth, float mapHeight) {
         this.playerController = playerController;
         this.weaponController = weaponController;
@@ -70,10 +73,17 @@ public class EnemyController {
 
         updateSpawnRate();
 
-        spawnTimer += delta;
-        if (spawnTimer >= currentSpawnRate) {
-            spawnRandomEnemy();
-            spawnTimer = 0;
+        while (gameTime >= 30 + 3 * tentacleSpawned) {
+            spawnTentacleMonster();
+            tentacleSpawned++;
+        }
+
+        float eyebatStartTime = 30 + 4 * eyeBatSpawned - gameTime;
+        if (gameTime >= eyebatStartTime) {
+            while (gameTime >= 30 + 10 * eyeBatSpawned) {
+                spawnEyeBat();
+                eyeBatSpawned++;
+            }
         }
 
         // Update all existing enemies
@@ -121,14 +131,12 @@ public class EnemyController {
         }
     }
 
-    private void spawnRandomEnemy() {
-//        EnemyType[] types = {EnemyType.ZOMBIE, EnemyType.SPIDER, EnemyType.GHOST, EnemyType.BAT};
-//        EnemyType randomType = types[MathUtils.random(types.length - 1)];
+    private void spawnTentacleMonster() {
+        System.out.println("spawned one tentacle monster");
+    }
 
-        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
-
-// TODO       Enemy newEnemy = new Enemy(randomType, spawnPos.x, spawnPos.y);
-//        enemies.add(newEnemy);
+    private void spawnEyeBat() {
+        System.out.println("spawned one eye bat");
     }
 
     private void updateEnemies(float delta) {
@@ -201,7 +209,7 @@ public class EnemyController {
 
                     // createHitEffect(bulletX, bulletY);
 
-                    break; // Move to next bullet
+                    break;
                 }
             }
         }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
+import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.models.utils.UIHelper;
 import com.untilDawn.views.StartMenu;
 
@@ -71,6 +72,7 @@ public class Main extends Game {
         super.render();
     }
 
+    // Modified part of Main.java (dispose method)
     @Override
     public void dispose() {
         App.save();
@@ -94,6 +96,9 @@ public class Main extends Game {
         UIHelper.dispose();
 
         GameAssetManager.getGameAssetManager().dispose();
+
+        // Dispose the lighting manager
+        LightingManager.getInstance().dispose();
 
         if (getScreen() != null) {
             getScreen().dispose();

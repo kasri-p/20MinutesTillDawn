@@ -1,3 +1,4 @@
+// Modified version of GameView.java
 package com.untilDawn.views.main;
 
 import com.badlogic.gdx.Gdx;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
+import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.views.GameHUD;
 
 public class GameView implements Screen, InputProcessor {
@@ -21,6 +23,7 @@ public class GameView implements Screen, InputProcessor {
     private OrthographicCamera camera;
     private FitViewport viewport;
     private GameHUD gameHUD;
+    private LightingManager lightingManager;
 
     private Texture mapTexture;
     private float mapWidth;
@@ -48,6 +51,9 @@ public class GameView implements Screen, InputProcessor {
 
         // Initialize the GameHUD
         this.gameHUD = new GameHUD(controller, camera);
+
+        // Initialize the lighting manager
+        this.lightingManager = LightingManager.getInstance();
     }
 
     @Override
@@ -73,10 +79,13 @@ public class GameView implements Screen, InputProcessor {
 
         Main.getBatch().setProjectionMatrix(camera.combined);
         Main.getBatch().begin();
+
         controller.updateGame();
+
+        lightingManager.render(Main.getBatch(), camera, playerX, playerY);
+
         Main.getBatch().end();
 
-        // Render the HUD
         gameHUD.render();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
