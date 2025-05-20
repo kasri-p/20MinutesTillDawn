@@ -2,6 +2,7 @@ package com.untilDawn.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
@@ -56,7 +57,7 @@ public class WeaponController {
 
         weapon.getSprite().draw(Main.getBatch());
 
-        updateBullets();
+        updateBullets(deltaTime);
     }
 
     private void updateScreenCenter() {
@@ -68,7 +69,6 @@ public class WeaponController {
         if (isReloading) {
             reloadTimer += deltaTime;
 
-            // Check if reload is complete
             if (reloadTimer >= reloadDuration) {
                 completeReload();
             }
@@ -79,11 +79,10 @@ public class WeaponController {
         isReloading = false;
         reloadTimer = 0;
 
-        // Reset ammo to maximum
         if (weapon.getWeapon() != null) {
             weapon.setAmmo(weapon.getWeapon().getAmmoMax());
         } else {
-            weapon.setAmmo(30); // Default ammo if weapon type is not set
+            weapon.setAmmo(30);
         }
     }
 
@@ -112,7 +111,6 @@ public class WeaponController {
 
     public void handleWeaponShoot(int x, int y) {
         if (isReloading || weapon.getAmmo() <= 0) {
-            // If out of ammo, automatically start reloading
             if (weapon.getAmmo() <= 0 && !isReloading) {
                 startReload();
             }
@@ -125,12 +123,28 @@ public class WeaponController {
         float playerY = playerController.getPlayer().getPosY();
 
         int projectileCount = 1;
+        float bulletSpeed = 10.0f;
+        int bulletDamage = 5;
+
         if (weapon.getWeapon() != null) {
             projectileCount = weapon.getWeapon().getProjectileCount();
+
+            // Adjust the bullet speed based on weapon type
+            if (weapon.getWeapon() == Weapons.Shotgun) {
+                bulletSpeed = 8.0f;
+                bulletDamage = 10;
+            } else if (weapon.getWeapon() == Weapons.Dual_Smg) {
+                bulletSpeed = 15.0f;
+                bulletDamage = 3;
+            } else if (weapon.getWeapon() == Weapons.Revolver) {
+                bulletSpeed = 12.0f;
+                bulletDamage = 8;
+            }
         }
 
         for (int i = 0; i < projectileCount; i++) {
             Bullet newBullet = new Bullet((int) playerX, (int) playerY);
+            newBullet.setDamage(bulletDamage);
 
             Vector2 direction = new Vector2(x - playerX, y - playerY).nor();
 
@@ -138,22 +152,26 @@ public class WeaponController {
                 float spreadAngle = 15f;
                 float angle = (float) Math.toDegrees(Math.atan2(direction.y, direction.x));
 
-                // Calculate spread based on projectile index
                 float bulletAngle = angle + (i - (projectileCount - 1) / 2f) * (spreadAngle / (projectileCount - 1));
 
-                // Convert back to radians and create new direction vector
                 float radians = (float) Math.toRadians(bulletAngle);
                 direction = new Vector2((float) Math.cos(radians), (float) Math.sin(radians));
+
+                float speedVariation = MathUtils.random(-0.5f, 0.5f);
+                newBullet.setSpeed(bulletSpeed + speedVariation);
+            } else {
+                newBullet.setSpeed(bulletSpeed);
             }
 
             newBullet.setDirection(direction);
 
-            bullets.add(newBullet);
-
+            // Set the initial position
             newBullet.getSprite().setPosition(
                 playerX - newBullet.getSprite().getWidth() / 2,
                 playerY - newBullet.getSprite().getHeight() / 2
             );
+
+            bullets.add(newBullet);
         }
 
         // Reduce ammo
@@ -176,7 +194,7 @@ public class WeaponController {
         }
     }
 
-    public void updateBullets() {
+    public void updateBullets(float deltaTime) {
         Iterator<Bullet> iterator = bullets.iterator();
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
@@ -187,30 +205,15 @@ public class WeaponController {
                 continue;
             }
 
+            // Update bullet physics
+            bullet.update(deltaTime);
+
             // Draw the bullet
             bullet.getSprite().draw(Main.getBatch());
 
-            // Update bullet position
-            float speed = 10.0f; // Base bullet speed
-
-            // Adjust speed based on weapon type if needed
-            if (weapon.getWeapon() == Weapons.Shotgun) {
-                speed = 8.0f; // Shotgun bullets are slower
-            } else if (weapon.getWeapon() == Weapons.Dual_Smg) {
-                speed = 12.0f; // SMG bullets are faster
-            }
-
-            bullet.getSprite().setX(bullet.getSprite().getX() + bullet.getDirection().x * speed);
-            bullet.getSprite().setY(bullet.getSprite().getY() + bullet.getDirection().y * speed);
-
             // Check if bullet is too far from player
-            float playerX = 0;
-            float playerY = 0;
-
-            if (playerController != null) {
-                playerX = playerController.getPlayer().getPosX();
-                playerY = playerController.getPlayer().getPosY();
-            }
+            float playerX = playerController != null ? playerController.getPlayer().getPosX() : 0;
+            float playerY = playerController != null ? playerController.getPlayer().getPosY() : 0;
 
             if (isBulletTooFar(bullet, playerX, playerY)) {
                 bullet.setActive(false);
@@ -227,8 +230,8 @@ public class WeaponController {
     }
 
     private boolean isBulletTooFar(Bullet bullet, float playerX, float playerY) {
-        float bulletX = bullet.getSprite().getX();
-        float bulletY = bullet.getSprite().getY();
+        float bulletX = bullet.getSprite().getX() + bullet.getSprite().getWidth() / 2;
+        float bulletY = bullet.getSprite().getY() + bullet.getSprite().getHeight() / 2;
 
         float distanceSquared = (bulletX - playerX) * (bulletX - playerX) +
             (bulletY - playerY) * (bulletY - playerY);

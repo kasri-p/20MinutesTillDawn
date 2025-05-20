@@ -18,6 +18,7 @@ public class GameAssetManager {
     private final Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
     private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
     private final List<Sound> footSteps = new ArrayList<>();
+    
     // Cache for enemy animations to prevent memory leaks
     private final ObjectMap<String, Animation<Texture>> enemyAnimationCache = new ObjectMap<>();
     private int footstepsCounter = 1;
@@ -75,12 +76,6 @@ public class GameAssetManager {
         return new Animation<>(FRAME_DURATION, frames);
     }
 
-    public Animation<Texture> getPlayerWalkAnimation() {
-        String framePath = "Images/characters/" + App.getGame().getPlayer().getCharacter().getName() + "/walk" + 1 + "png";
-
-        return null;
-    }
-
     public void playShot() {
         if (App.isSFX()) {
             shootSound.play();
@@ -108,26 +103,23 @@ public class GameAssetManager {
     }
 
     public Animation<Texture> getEnemyAnimation(String enemyName) {
-        // Check if the animation is already cached
         if (enemyAnimationCache.containsKey(enemyName)) {
             return enemyAnimationCache.get(enemyName);
         }
 
-        // If not cached, create and cache the animation
         Array<Texture> frames = new Array<>();
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             String framePath = "Images/Enemies/" + enemyName.toLowerCase() + "/" + enemyName.toLowerCase() + i + ".png";
             if (Gdx.files.internal(framePath).exists()) {
                 Texture frameTex = new Texture(Gdx.files.internal(framePath));
                 frames.add(frameTex);
             } else {
-                // Use a placeholder or default texture if the file doesn't exist
                 Gdx.app.log("GameAssetManager", "Enemy texture not found: " + framePath);
             }
         }
 
         if (frames.size == 0) {
-            return null; // Return null if no frames were loaded
+            return null;
         }
 
         Animation<Texture> animation = new Animation<>(0.2f, frames);

@@ -5,9 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.*;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Bullet;
@@ -38,8 +36,14 @@ public class EnemyController {
     private int numberOfTrees = 30;
 
     private boolean autoAim = false;
-
     private float autoAimCooldown = 0;
+
+    // Helper variables for collision detection
+    private Circle bulletCircle = new Circle();
+    private Circle enemyCircle = new Circle();
+    private Vector2 bulletVelocity = new Vector2();
+    private Vector2 prevBulletPos = new Vector2();
+    private Vector2 currentBulletPos = new Vector2();
 
     public EnemyController(PlayerController playerController, WeaponController weaponController, float mapWidth, float mapHeight) {
         this.playerController = playerController;
@@ -52,7 +56,6 @@ public class EnemyController {
     public void update(float delta) {
         Map<String, String> keyBindings = App.getKeybinds();
         if (autoAimCooldown <= 0 && Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBindings.get("Auto Shoot")))) {
-            System.out.println("AutoAim toggled");
             autoAim = !autoAim;
             autoAimCooldown = 0.2f;
         } else {
@@ -77,7 +80,7 @@ public class EnemyController {
         updateEnemies(delta);
 
         // Check for collisions with bullets
-        checkBulletCollisions();
+        checkBulletCollisions(delta);
 
         // Check for collisions with player
         checkPlayerCollisions();
@@ -142,7 +145,7 @@ public class EnemyController {
         }
     }
 
-    private void checkBulletCollisions() {
+    private void checkBulletCollisions(float delta) {
         ArrayList<Bullet> bullets = weaponController.getBullets();
         if (bullets == null) return;
 
@@ -150,42 +153,88 @@ public class EnemyController {
             if (bullet == null || !bullet.isActive()) continue;
 
             Sprite bulletSprite = bullet.getSprite();
-            Rectangle bulletRect = bulletSprite.getBoundingRectangle();
+
+            // Get bullet position and size for better collision detection
+            float bulletX = bulletSprite.getX() + bulletSprite.getWidth() / 2;
+            float bulletY = bulletSprite.getY() + bulletSprite.getHeight() / 2;
+            float bulletRadius = Math.min(bulletSprite.getWidth(), bulletSprite.getHeight()) / 2.5f;
+
+            // Store previous position for line-based collision
+            prevBulletPos.set(currentBulletPos);
+            currentBulletPos.set(bulletX, bulletY);
+
+            // For the first frame, initialize both positions
+            if (prevBulletPos.x == 0 && prevBulletPos.y == 0) {
+                prevBulletPos.set(currentBulletPos);
+            }
+
+            // Calculate bullet velocity for trajectory checking
+            bulletVelocity.set(bullet.getDirection()).scl(10f); // Adjust speed multiplier as needed
+
+            // Setup circle for bullet
+            bulletCircle.set(bulletX, bulletY, bulletRadius);
 
             for (Enemy enemy : enemies) {
                 if (!enemy.isActive()) continue;
 
-                Rectangle enemyRect = enemy.getBoundingBox();
+                // Get enemy position and size for better collision detection
+                float enemyX = enemy.getPosX();
+                float enemyY = enemy.getPosY();
+                Rectangle boundingBox = enemy.getBoundingBox();
+                float enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.5f;
 
-                if (bulletRect.overlaps(enemyRect)) {
+                // Setup circle for enemy
+                enemyCircle.set(enemyX, enemyY, enemyRadius);
+
+                boolean collision = false;
+
+                if (Intersector.overlaps(bulletCircle, enemyCircle)) {
+                    collision = true;
+                } else if (Intersector.intersectSegmentCircle(prevBulletPos, currentBulletPos,
+                    new Vector2(enemyX, enemyY), enemyRadius * enemyRadius)) {
+                    collision = true;
+                }
+
+                if (collision) {
                     boolean killed = enemy.hit(bullet.getDamage());
-
                     bullet.setActive(false);
 
-                    break;
+                    // createHitEffect(bulletX, bulletY);
+
+                    break; // Move to next bullet
                 }
             }
         }
     }
 
     private void checkPlayerCollisions() {
-        for (Enemy enemy : enemies) {
-            if (!enemy.isActive()) {
-                Sprite playerSprite = playerController.getPlayer().getPlayerSprite();
-                Rectangle playerRect = playerSprite.getBoundingRectangle();
-                Rectangle enemyRect = enemy.getBoundingBox();
+        if (playerController == null || playerController.getPlayer() == null) return;
 
-                if (enemyRect.overlaps(playerRect)) {
-                    // TODO: add damage
-                    Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
-                }
-                if (enemy.isDropActive()) {
+        Sprite playerSprite = playerController.getPlayer().getPlayerSprite();
+        Rectangle playerRect = playerSprite.getBoundingRectangle();
+
+        float playerX = playerController.getPlayer().getPosX();
+        float playerY = playerController.getPlayer().getPosY();
+        float playerRadius = Math.min(playerRect.width, playerRect.height) / 2.5f;
+
+        Circle playerCircle = new Circle(playerX, playerY, playerRadius);
+
+        for (Enemy enemy : enemies) {
+            Rectangle enemyRect = enemy.getBoundingBox();
+            float enemyX = enemy.getPosX();
+            float enemyY = enemy.getPosY();
+            float enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.5f;
+
+            Circle enemyCircle = new Circle(enemyX, enemyY, enemyRadius);
+
+            if (enemy.isActive() && Intersector.overlaps(playerCircle, enemyCircle)) {
+                // TODO: Add damage to player
+                Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
+            } else if (!enemy.isActive() && enemy.isDropActive()) {
+                if (Intersector.overlaps(playerCircle, enemyCircle)) {
                     enemy.collectDrop(playerController.getPlayer());
                 }
-                continue;
             }
-
-            //TODO: Check if enemy collides with player
         }
     }
 
@@ -242,10 +291,9 @@ public class EnemyController {
             }
 
             if (closestEnemy != null) {
-                int cursorX = (int) (closestEnemy.getPosX() - playerController.getPlayer().getPosX() + Gdx.graphics.getWidth() / 2);
-                int cursorY = (int) (Gdx.graphics.getHeight() - (closestEnemy.getPosY() - playerController.getPlayer().getPosY() + Gdx.graphics.getHeight() / 2));
+                int cursorX = (int) (closestEnemy.getPosX() - playerController.getPlayer().getPosX() + (float) Gdx.graphics.getWidth() / 2);
+                int cursorY = (int) (Gdx.graphics.getHeight() - (closestEnemy.getPosY() - playerController.getPlayer().getPosY() + (float) Gdx.graphics.getHeight() / 2));
 
-                Gdx.app.log("AutoAim", "Toggled: TRUE");
                 Gdx.input.setCursorPosition(cursorX, cursorY);
             }
         }
