@@ -65,7 +65,6 @@ public class WeaponController {
 
         weapon.getSprite().draw(Main.getBatch());
 
-        // Draw reload bar if reloading
         if (isReloading) {
             drawReloadBar();
         }
@@ -112,15 +111,18 @@ public class WeaponController {
         float playerX = playerController.getPlayer().getPosX();
         float playerY = playerController.getPlayer().getPosY();
 
-
         float barX = playerX - reloadBarWidth / 2;
         float barY = playerY + reloadBarOffsetY;
 
         Main.getBatch().draw(reloadBarBg, barX, barY, reloadBarWidth, reloadBarHeight);
 
         float progress = reloadTimer / reloadDuration;
-        float fillWidth = reloadBarWidth * progress;
-        Main.getBatch().draw(reloadBarFill, barX, barY, fillWidth, reloadBarHeight);
+        float indicatorWidth = reloadBarFill.getWidth();
+        float indicatorHeight = reloadBarHeight;
+
+        float indicatorX = barX + (reloadBarWidth - indicatorWidth) * progress;
+
+        Main.getBatch().draw(reloadBarFill, indicatorX, barY, indicatorWidth, indicatorHeight);
     }
 
     public void handleWeaponRotation(int x, int y) {
@@ -166,7 +168,6 @@ public class WeaponController {
         if (weapon.getWeapon() != null) {
             projectileCount = weapon.getWeapon().getProjectileCount();
 
-            // Adjust the bullet speed based on weapon type
             if (weapon.getWeapon() == Weapons.Shotgun) {
                 bulletSpeed = 8.0f;
                 bulletDamage = 10;
@@ -202,7 +203,6 @@ public class WeaponController {
 
             newBullet.setDirection(direction);
 
-            // Set the initial position
             newBullet.getSprite().setPosition(
                 playerX - newBullet.getSprite().getWidth() / 2,
                 playerY - newBullet.getSprite().getHeight() / 2
@@ -211,7 +211,6 @@ public class WeaponController {
             bullets.add(newBullet);
         }
 
-        // Reduce ammo
         weapon.setAmmo(weapon.getAmmo() - 1);
     }
 
@@ -272,16 +271,11 @@ public class WeaponController {
         float distanceSquared = (bulletX - playerX) * (bulletX - playerX) +
             (bulletY - playerY) * (bulletY - playerY);
 
-        float maxDistanceSquared = 1000 * 1000; // 1000 pixels max distance
+        float maxDistanceSquared = 1200 * 1200;
 
         return distanceSquared > maxDistanceSquared;
     }
 
-    public void setReloadBarDimensions(float width, float height, float offsetY) {
-        this.reloadBarWidth = width;
-        this.reloadBarHeight = height;
-        this.reloadBarOffsetY = offsetY;
-    }
 
     public Weapon getWeapon() {
         return weapon;
@@ -320,7 +314,6 @@ public class WeaponController {
         }
         bullets.clear();
 
-        // Dispose of reload bar textures
         if (reloadBarBg != null) {
             reloadBarBg.dispose();
             reloadBarBg = null;

@@ -22,8 +22,12 @@ public class GameAssetManager {
     private final Texture reloadBarBg = new Texture(Gdx.files.internal("Images/reload/ReloadBar_0.png"));
     private final Texture reloadBarFill = new Texture(Gdx.files.internal("Images/reload/ReloadBar_1.png"));
 
-    // Cache for enemy animations to prevent memory leaks
     private final ObjectMap<String, Animation<Texture>> enemyAnimationCache = new ObjectMap<>();
+
+    private final ObjectMap<String, Animation<Texture>> playerRunAnimationCache = new ObjectMap<>();
+    private final ObjectMap<String, Animation<Texture>> playerIdleAnimationCache = new ObjectMap<>();
+
+
     private int footstepsCounter = 1;
 
     GameAssetManager() {
@@ -48,10 +52,16 @@ public class GameAssetManager {
     }
 
     public Animation<Texture> getPlayerRunAnimation() {
-        Array<Texture> frames = new Array<>();
+        String characterName = App.getGame().getPlayer().getCharacter().getName();
+        String cacheKey = characterName + "_run";
 
+        if (playerRunAnimationCache.containsKey(cacheKey)) {
+            return playerRunAnimationCache.get(cacheKey);
+        }
+
+        Array<Texture> frames = new Array<>();
         for (int i = 0; i < 4; i++) {
-            String framePath = "Images/characters/" + App.getGame().getPlayer().getCharacter().getName() + "/run" + i + ".png";
+            String framePath = "Images/characters/" + characterName + "/run" + i + ".png";
 
             if (Gdx.files.internal(framePath).exists()) {
                 Texture frameTex = new Texture(Gdx.files.internal(framePath));
@@ -60,14 +70,22 @@ public class GameAssetManager {
         }
 
         float FRAME_DURATION = 0.13f;
-        return new Animation<>(FRAME_DURATION, frames);
+        Animation<Texture> animation = new Animation<>(FRAME_DURATION, frames);
+        playerRunAnimationCache.put(cacheKey, animation);
+        return animation;
     }
 
     public Animation<Texture> getPlayerIdleAnimation() {
-        Array<Texture> frames = new Array<>();
+        String characterName = App.getGame().getPlayer().getCharacter().getName();
+        String cacheKey = characterName + "_idle";
 
+        if (playerIdleAnimationCache.containsKey(cacheKey)) {
+            return playerIdleAnimationCache.get(cacheKey);
+        }
+
+        Array<Texture> frames = new Array<>();
         for (int i = 0; i < 6; i++) {
-            String framePath = "Images/characters/" + App.getGame().getPlayer().getCharacter().getName() + "/idle" + i + ".png";
+            String framePath = "Images/characters/" + characterName + "/idle" + i + ".png";
 
             if (Gdx.files.internal(framePath).exists()) {
                 Texture frameTex = new Texture(Gdx.files.internal(framePath));
@@ -76,7 +94,9 @@ public class GameAssetManager {
         }
 
         float FRAME_DURATION = 0.13f;
-        return new Animation<>(FRAME_DURATION, frames);
+        Animation<Texture> animation = new Animation<>(FRAME_DURATION, frames);
+        playerIdleAnimationCache.put(cacheKey, animation);
+        return animation;
     }
 
     public void playShot() {
@@ -159,6 +179,30 @@ public class GameAssetManager {
             }
         }
         enemyAnimationCache.clear();
+
+        for (Animation<Texture> animation : playerRunAnimationCache.values()) {
+            if (animation != null) {
+                for (Texture texture : animation.getKeyFrames()) {
+                    if (texture != null) {
+                        texture.dispose();
+                    }
+                }
+            }
+        }
+        playerRunAnimationCache.clear();
+
+        // Dispose player idle animations
+        for (Animation<Texture> animation : playerIdleAnimationCache.values()) {
+            if (animation != null) {
+                for (Texture texture : animation.getKeyFrames()) {
+                    if (texture != null) {
+                        texture.dispose();
+                    }
+                }
+            }
+        }
+        playerIdleAnimationCache.clear();
+
     }
 
     public Texture getReloadBarBg() {
