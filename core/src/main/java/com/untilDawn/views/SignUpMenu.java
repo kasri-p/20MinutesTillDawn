@@ -21,7 +21,6 @@ public class SignUpMenu implements Screen {
     private final TextButton backButton;
     private final Table table;
     private final Sound clickSound;
-    private SignUpMenuController controller;
 
     private Image[] leavesDecorations;
 
@@ -72,7 +71,7 @@ public class SignUpMenu implements Screen {
         stage.addActor(table);
         table.toFront();
 
-        controller = new SignUpMenuController(this);
+        SignUpMenuController controller = new SignUpMenuController(this);
     }
 
     @Override

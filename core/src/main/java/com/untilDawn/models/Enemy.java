@@ -37,7 +37,6 @@ public class Enemy {
         createSprite();
     }
 
-    // Determine a random spawn position at the edge of the map
     public static Vector2 getRandomSpawnPosition(float mapWidth, float mapHeight, float marginFromEdge) {
         float x, y;
         int side = MathUtils.random(3); // 0-3 for top, right, bottom, left
@@ -79,12 +78,11 @@ public class Enemy {
 
     private void createSprite() {
         this.sprite = new Sprite(texture);
-        float scale = 1.5f; // Adjust scale as needed
+        float scale = 1f; // Adjust scale as needed
         sprite.setSize(texture.getWidth() * scale, texture.getHeight() * scale);
         sprite.setOriginCenter();
         sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
 
-        // Create the bounding box for collision detection
         this.boundingBox = new Rectangle(
             posX - sprite.getWidth() / 2,
             posY - sprite.getHeight() / 2,

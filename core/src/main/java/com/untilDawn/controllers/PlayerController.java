@@ -15,8 +15,7 @@ import java.util.Map;
 public class PlayerController {
     private Player player;
     private boolean recentlyFlipped = false;
-    private float screenCenterX;
-    private float screenCenterY;
+
     private Animation<Texture> currentAnimation;
     private float stateTime = 0;
     private boolean isMoving = false;
@@ -29,21 +28,14 @@ public class PlayerController {
 
     public PlayerController(Player player) {
         this.player = player;
-        updateScreenCenter();
 
         this.mapTexture = new Texture("Images/map.png");
         this.mapWidth = mapTexture.getWidth();
         this.mapHeight = mapTexture.getHeight();
     }
 
-    private void updateScreenCenter() {
-        screenCenterX = Gdx.graphics.getWidth() / 2f;
-        screenCenterY = Gdx.graphics.getHeight() / 2f;
-    }
-
     public void update() {
         stateTime += Gdx.graphics.getDeltaTime();
-
         player.getPlayerSprite().setPosition(
             player.getPosX() - player.getPlayerSprite().getWidth() / 2,
             player.getPosY() - player.getPlayerSprite().getHeight() / 2

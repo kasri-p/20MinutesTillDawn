@@ -112,10 +112,10 @@ public class GameController {
     }
 
     public void dispose() {
-        // Dispose of all resources when the game ends
         if (enemyController != null) {
             enemyController.dispose();
         }
+        playerController.getPlayer().dispose();
     }
 
     public float getGameTime() {

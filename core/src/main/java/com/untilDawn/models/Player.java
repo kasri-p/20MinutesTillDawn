@@ -115,4 +115,8 @@ public class Player {
     public Characters getCharacter() {
         return character;
     }
+
+    public void dispose() {
+        playerTexture.dispose();
+    }
 }

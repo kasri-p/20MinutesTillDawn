@@ -5,13 +5,13 @@
     "Pause": "ESC",
     "Move Down": "S",
     "Reload": "R",
+    "Auto Shoot": "Space",
     "Move Up": "W",
-    "Shoot": "SPACE",
     "Move Right": "D"
   },
   "isSFX": true,
   "language": "en",
   "currentMusicTrack": "For Whom The Bell Tolls",
-  "musicVolume": 0.0,
+  "musicVolume": 0.32999998,
   "blackAndWhiteEnabled": true
 }

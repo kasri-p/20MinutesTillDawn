@@ -1,9 +1,15 @@
 package com.untilDawn.controllers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.Main;
+import com.untilDawn.models.App;
 import com.untilDawn.models.Bullet;
 import com.untilDawn.models.Enemy;
 import com.untilDawn.models.enums.EnemyType;
@@ -11,6 +17,7 @@ import com.untilDawn.models.utils.GameAssetManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 public class EnemyController {
     private ArrayList<Enemy> enemies = new ArrayList<>();
@@ -28,7 +35,12 @@ public class EnemyController {
     private float mapHeight;
 
     private boolean treesPlaced = false;
-    private int numberOfTrees = 20;
+    private int numberOfTrees = 30;
+
+    private boolean autoAim = false;
+
+    private float autoAimCooldown = 0;
+
 
     public EnemyController(PlayerController playerController, WeaponController weaponController, float mapWidth, float mapHeight) {
         this.playerController = playerController;
@@ -39,6 +51,15 @@ public class EnemyController {
     }
 
     public void update(float delta) {
+        Map<String, String> keyBindings = App.getKeybinds();
+        if (autoAimCooldown <= 0 && Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBindings.get("Auto Shoot")))) {
+            System.out.println("AutoAim toggled");
+            autoAim = !autoAim;
+            autoAimCooldown = 0.2f;
+        } else {
+            autoAimCooldown -= delta;
+        }
+
         gameTime += delta;
 
         // Place trees if not done yet
@@ -67,6 +88,9 @@ public class EnemyController {
 
         // Draw all active enemies
         drawEnemies();
+
+        // check auto aim
+        checkAutoAim();
     }
 
     private void placeTrees() {
@@ -78,13 +102,14 @@ public class EnemyController {
             float playerY = playerController.getPlayer().getPosY();
             float distanceToPlayer = Vector2.dst(x, y, playerX, playerY);
 
-            if (distanceToPlayer > 300) {
+            if (distanceToPlayer > 200) {
                 Enemy tree = new Enemy(EnemyType.TREE, x, y);
                 enemies.add(tree);
             } else {
                 i--;
             }
         }
+
         treesPlaced = true;
     }
 
@@ -101,7 +126,6 @@ public class EnemyController {
 //        EnemyType[] types = {EnemyType.ZOMBIE, EnemyType.SPIDER, EnemyType.GHOST, EnemyType.BAT};
 //        EnemyType randomType = types[MathUtils.random(types.length - 1)];
 
-        // Get a random spawn position at the edge of the map
         Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
 
 // TODO       Enemy newEnemy = new Enemy(randomType, spawnPos.x, spawnPos.y);
@@ -127,19 +151,17 @@ public class EnemyController {
         if (bullets == null) return;
 
         for (Bullet bullet : bullets) {
-            if (bullet == null) continue;
+            if (bullet == null || !bullet.isActive()) continue;
 
-            float bulletX = bullet.getSprite().getX() + bullet.getSprite().getWidth() / 2;
-            float bulletY = bullet.getSprite().getY() + bullet.getSprite().getHeight() / 2;
+            Sprite bulletSprite = bullet.getSprite();
+            Rectangle bulletRect = bulletSprite.getBoundingRectangle();
 
             for (Enemy enemy : enemies) {
                 if (!enemy.isActive()) continue;
 
-                float enemyX = enemy.getPosX();
-                float enemyY = enemy.getPosY();
-                float distance = Vector2.dst(bulletX, bulletY, enemyX, enemyY);
+                Rectangle enemyRect = enemy.getBoundingBox();
 
-                if (distance < 30) {
+                if (bulletRect.overlaps(enemyRect)) {
                     boolean killed = enemy.hit(bullet.getDamage());
 
                     bullet.setActive(false);
@@ -153,6 +175,14 @@ public class EnemyController {
     private void checkPlayerCollisions() {
         for (Enemy enemy : enemies) {
             if (!enemy.isActive()) {
+                Sprite playerSprite = playerController.getPlayer().getPlayerSprite();
+                Rectangle playerRect = playerSprite.getBoundingRectangle();
+                Rectangle enemyRect = enemy.getBoundingBox();
+
+                if (enemyRect.overlaps(playerRect)) {
+                    // TODO: add damage
+                    Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
+                }
                 // Check for drop collection if enemy is not active
                 if (enemy.isDropActive()) {
                     enemy.collectDrop(playerController.getPlayer());
@@ -167,9 +197,13 @@ public class EnemyController {
     private void drawEnemies() {
         for (Enemy enemy : enemies) {
             if (enemy.isActive()) {
-                Animation animation = GameAssetManager.getGameAssetManager().getEnemyAnimation(enemy.getType().getName());
+                Animation<Texture> animation = GameAssetManager.getGameAssetManager().getEnemyAnimation(enemy.getType().getName());
                 animation.setPlayMode(Animation.PlayMode.LOOP);
-                animation.getKeyFrame(gameTime, true);
+                Texture currentFrame = animation.getKeyFrame(gameTime, true);
+
+                Sprite sprite = new Sprite(currentFrame);
+                sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
+                sprite.draw(Main.getBatch());
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {
                 enemy.getDropSprite().draw(Main.getBatch());
             }
@@ -185,5 +219,36 @@ public class EnemyController {
 
     public ArrayList<Enemy> getEnemies() {
         return enemies;
+    }
+
+    private void checkAutoAim() {
+        if (autoAim && !enemies.isEmpty()) {
+            Enemy closestEnemy = null;
+            float minDistance = Float.MAX_VALUE;
+
+            for (Enemy enemy : enemies) {
+                if (!enemy.isActive()) continue;
+
+                float distance = Vector2.dst(
+                    playerController.getPlayer().getPosX(),
+                    playerController.getPlayer().getPosY(),
+                    enemy.getPosX(),
+                    enemy.getPosY()
+                );
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestEnemy = enemy;
+                }
+            }
+
+            if (closestEnemy != null) {
+                int cursorX = (int) (closestEnemy.getPosX() - playerController.getPlayer().getPosX() + Gdx.graphics.getWidth() / 2);
+                int cursorY = (int) (Gdx.graphics.getHeight() - (closestEnemy.getPosY() - playerController.getPlayer().getPosY() + Gdx.graphics.getHeight() / 2));
+
+                Gdx.app.log("AutoAim", "Toggled: TRUE");
+                Gdx.input.setCursorPosition(cursorX, cursorY);
+            }
+        }
     }
 }

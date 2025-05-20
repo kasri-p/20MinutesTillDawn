@@ -3,6 +3,7 @@ package com.untilDawn.models;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.models.utils.GameAssetManager;
 
@@ -14,7 +15,8 @@ public class Bullet {
     private int y;
     private Vector2 direction;
     private boolean isActive = true;
-
+    private Rectangle boundingBox;
+    
     public Bullet(int x, int y) {
         sprite.setSize(20, 20);
         this.x = x;

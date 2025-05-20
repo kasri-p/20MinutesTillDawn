@@ -106,12 +106,12 @@ public class GameAssetManager {
 
     public Animation<Texture> getEnemyAnimation(String enemyName) {
         Array<Texture> frames = new Array<>();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             String framePath = "Images/Enemies/" + enemyName.toLowerCase() + "/" + enemyName.toLowerCase() + i + ".png";
             Texture frameTex = new Texture(Gdx.files.internal(framePath));
             frames.add(frameTex);
         }
 
-        return new Animation<>(0.1f, frames);
+        return new Animation<>(5f, frames);
     }
 }
