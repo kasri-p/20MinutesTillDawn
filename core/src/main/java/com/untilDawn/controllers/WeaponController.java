@@ -1,6 +1,7 @@
 package com.untilDawn.controllers;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -24,6 +25,13 @@ public class WeaponController {
     private boolean isReloading = false;
     private float reloadTimer = 0;
     private float reloadDuration = 1.0f; // 1 second reload time by default
+
+    // Reload bar properties
+    private Texture reloadBarBg;
+    private Texture reloadBarFill;
+    private float reloadBarWidth = 40f;
+    private float reloadBarHeight = 8f;
+    private float reloadBarOffsetY = 50f; // Distance above player head
 
     public WeaponController(Weapon weapon) {
         this.weapon = weapon;
@@ -57,6 +65,11 @@ public class WeaponController {
 
         weapon.getSprite().draw(Main.getBatch());
 
+        // Draw reload bar if reloading
+        if (isReloading) {
+            drawReloadBar();
+        }
+
         updateBullets(deltaTime);
     }
 
@@ -84,6 +97,30 @@ public class WeaponController {
         } else {
             weapon.setAmmo(30);
         }
+    }
+
+    private void drawReloadBar() {
+        if (playerController == null) return;
+
+        if (reloadBarBg == null) {
+            reloadBarBg = GameAssetManager.getGameAssetManager().getReloadBarBg();
+        }
+        if (reloadBarFill == null) {
+            reloadBarFill = GameAssetManager.getGameAssetManager().getReloadBarFill();
+        }
+
+        float playerX = playerController.getPlayer().getPosX();
+        float playerY = playerController.getPlayer().getPosY();
+
+
+        float barX = playerX - reloadBarWidth / 2;
+        float barY = playerY + reloadBarOffsetY;
+
+        Main.getBatch().draw(reloadBarBg, barX, barY, reloadBarWidth, reloadBarHeight);
+
+        float progress = reloadTimer / reloadDuration;
+        float fillWidth = reloadBarWidth * progress;
+        Main.getBatch().draw(reloadBarFill, barX, barY, fillWidth, reloadBarHeight);
     }
 
     public void handleWeaponRotation(int x, int y) {
@@ -222,7 +259,6 @@ public class WeaponController {
         }
     }
 
-    //TODO: Check if we need to auto-reload
     public void checkAutoReload() {
         if (weapon.getAmmo() <= 0 && App.isAutoReloadEnabled() && !isReloading) {
             startReload();
@@ -239,6 +275,12 @@ public class WeaponController {
         float maxDistanceSquared = 1000 * 1000; // 1000 pixels max distance
 
         return distanceSquared > maxDistanceSquared;
+    }
+
+    public void setReloadBarDimensions(float width, float height, float offsetY) {
+        this.reloadBarWidth = width;
+        this.reloadBarHeight = height;
+        this.reloadBarOffsetY = offsetY;
     }
 
     public Weapon getWeapon() {
@@ -277,5 +319,15 @@ public class WeaponController {
             bullet.dispose();
         }
         bullets.clear();
+
+        // Dispose of reload bar textures
+        if (reloadBarBg != null) {
+            reloadBarBg.dispose();
+            reloadBarBg = null;
+        }
+        if (reloadBarFill != null) {
+            reloadBarFill.dispose();
+            reloadBarFill = null;
+        }
     }
 }

@@ -13,17 +13,18 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
+import com.untilDawn.views.GameHUD;
 
 public class GameView implements Screen, InputProcessor {
     private Stage stage;
     private GameController controller;
     private OrthographicCamera camera;
     private FitViewport viewport;
+    private GameHUD gameHUD;
 
     private Texture mapTexture;
     private float mapWidth;
     private float mapHeight;
-
 
     // Add these variables to store the player's initial position
     private float initialPlayerX = 0;
@@ -44,6 +45,9 @@ public class GameView implements Screen, InputProcessor {
         this.mapHeight = mapTexture.getHeight();
 
         this.stage = new Stage(viewport);
+
+        // Initialize the GameHUD
+        this.gameHUD = new GameHUD(controller, camera);
     }
 
     @Override
@@ -72,6 +76,9 @@ public class GameView implements Screen, InputProcessor {
         controller.updateGame();
         Main.getBatch().end();
 
+        // Render the HUD
+        gameHUD.render();
+
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
@@ -98,6 +105,12 @@ public class GameView implements Screen, InputProcessor {
         if (stage != null) {
             stage.dispose();
         }
+        if (gameHUD != null) {
+            gameHUD.dispose();
+        }
+        if (mapTexture != null) {
+            mapTexture.dispose();
+        }
     }
 
     @Override
@@ -119,7 +132,7 @@ public class GameView implements Screen, InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
         viewport.unproject(worldCoords);
-        
+
         controller.getWeaponController().handleWeaponShoot((int) worldCoords.x, (int) worldCoords.y);
 
         return false;

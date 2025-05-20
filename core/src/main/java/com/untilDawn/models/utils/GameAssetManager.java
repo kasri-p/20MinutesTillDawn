@@ -18,7 +18,10 @@ public class GameAssetManager {
     private final Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
     private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
     private final List<Sound> footSteps = new ArrayList<>();
-    
+
+    private final Texture reloadBarBg = new Texture(Gdx.files.internal("Images/reload/ReloadBar_0.png"));
+    private final Texture reloadBarFill = new Texture(Gdx.files.internal("Images/reload/ReloadBar_1.png"));
+
     // Cache for enemy animations to prevent memory leaks
     private final ObjectMap<String, Animation<Texture>> enemyAnimationCache = new ObjectMap<>();
     private int footstepsCounter = 1;
@@ -156,5 +159,13 @@ public class GameAssetManager {
             }
         }
         enemyAnimationCache.clear();
+    }
+
+    public Texture getReloadBarBg() {
+        return reloadBarBg;
+    }
+
+    public Texture getReloadBarFill() {
+        return reloadBarFill;
     }
 }
