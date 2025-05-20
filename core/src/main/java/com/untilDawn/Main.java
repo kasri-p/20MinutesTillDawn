@@ -74,14 +74,30 @@ public class Main extends Game {
     @Override
     public void dispose() {
         App.save();
-        batch.dispose();
-        if (menuMusic != null) {
-            menuMusic.dispose();
+
+        if (batch != null) {
+            batch.dispose();
+            batch = null;
         }
+
+        if (menuMusic != null) {
+            menuMusic.stop();
+            menuMusic.dispose();
+            menuMusic = null;
+        }
+
         if (clickSound != null) {
             clickSound.dispose();
+            clickSound = null;
         }
+
         UIHelper.dispose();
+
+        GameAssetManager.getGameAssetManager().dispose();
+
+        if (getScreen() != null) {
+            getScreen().dispose();
+        }
     }
 
     public Sound getClickSound() {

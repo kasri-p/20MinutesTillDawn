@@ -41,7 +41,6 @@ public class EnemyController {
 
     private float autoAimCooldown = 0;
 
-
     public EnemyController(PlayerController playerController, WeaponController weaponController, float mapWidth, float mapHeight) {
         this.playerController = playerController;
         this.weaponController = weaponController;
@@ -62,15 +61,12 @@ public class EnemyController {
 
         gameTime += delta;
 
-        // Place trees if not done yet
         if (!treesPlaced) {
             placeTrees();
         }
 
-        // Update spawn rate based on elapsed time
         updateSpawnRate();
 
-        // Check if it's time to spawn a new enemy
         spawnTimer += delta;
         if (spawnTimer >= currentSpawnRate) {
             spawnRandomEnemy();
@@ -183,7 +179,6 @@ public class EnemyController {
                     // TODO: add damage
                     Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
                 }
-                // Check for drop collection if enemy is not active
                 if (enemy.isDropActive()) {
                     enemy.collectDrop(playerController.getPlayer());
                 }
@@ -195,15 +190,19 @@ public class EnemyController {
     }
 
     private void drawEnemies() {
+        GameAssetManager assetManager = GameAssetManager.getGameAssetManager();
+
         for (Enemy enemy : enemies) {
             if (enemy.isActive()) {
-                Animation<Texture> animation = GameAssetManager.getGameAssetManager().getEnemyAnimation(enemy.getType().getName());
-                animation.setPlayMode(Animation.PlayMode.LOOP);
-                Texture currentFrame = animation.getKeyFrame(gameTime, true);
+                Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
+                if (animation != null) {
+                    animation.setPlayMode(Animation.PlayMode.LOOP);
+                    Texture currentFrame = animation.getKeyFrame(gameTime, true);
 
-                Sprite sprite = new Sprite(currentFrame);
-                sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
-                sprite.draw(Main.getBatch());
+                    Sprite sprite = new Sprite(currentFrame);
+                    sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
+                    sprite.draw(Main.getBatch());
+                }
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {
                 enemy.getDropSprite().draw(Main.getBatch());
             }
