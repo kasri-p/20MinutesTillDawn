@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.untilDawn.models.App;
+import com.untilDawn.models.enums.Weapons;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ public class GameAssetManager {
     private final ObjectMap<String, Animation<Texture>> playerRunAnimationCache = new ObjectMap<>();
     private final ObjectMap<String, Animation<Texture>> playerIdleAnimationCache = new ObjectMap<>();
 
+    private final ObjectMap<String, Animation<Texture>> weaponReloadAnimationCache = new ObjectMap<>();
 
     private int footstepsCounter = 1;
 
@@ -96,6 +98,37 @@ public class GameAssetManager {
         float FRAME_DURATION = 0.13f;
         Animation<Texture> animation = new Animation<>(FRAME_DURATION, frames);
         playerIdleAnimationCache.put(cacheKey, animation);
+        return animation;
+    }
+
+    public Animation<Texture> getWeaponReloadAnimation(Weapons weapon) {
+        String weaponName = weapon.getName().replaceAll("\\s+", "");
+        String cacheKey = weaponName + "_reload";
+
+        if (weaponReloadAnimationCache.containsKey(cacheKey)) {
+            return weaponReloadAnimationCache.get(cacheKey);
+        }
+
+        Array<Texture> frames = new Array<>();
+        for (int i = 0; i < 3; i++) {
+            String framePath = "Images/weapons/" + weaponName + "/reload" + i + ".png";
+
+            if (Gdx.files.internal(framePath).exists()) {
+                Texture frameTex = new Texture(Gdx.files.internal(framePath));
+                frames.add(frameTex);
+            } else {
+                Gdx.app.log("GameAssetManager", "Weapon reload texture not found: " + framePath);
+            }
+        }
+
+        if (frames.size == 0) {
+            return null;
+        }
+
+        // Adjust duration based on weapon reload time for smoother animations
+        float frameDuration = weapon.getReloadTime() / frames.size;
+        Animation<Texture> animation = new Animation<>(frameDuration, frames);
+        weaponReloadAnimationCache.put(cacheKey, animation);
         return animation;
     }
 
@@ -202,6 +235,17 @@ public class GameAssetManager {
             }
         }
         playerIdleAnimationCache.clear();
+
+        for (Animation<Texture> animation : weaponReloadAnimationCache.values()) {
+            if (animation != null) {
+                for (Texture texture : animation.getKeyFrames()) {
+                    if (texture != null) {
+                        texture.dispose();
+                    }
+                }
+            }
+        }
+        weaponReloadAnimationCache.clear();
 
     }
 

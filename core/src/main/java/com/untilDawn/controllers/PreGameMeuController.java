@@ -68,7 +68,7 @@ public class PreGameMeuController {
 
     public void startGame() {
         playClick();
-
+        
         if (selectedCharacter == null) {
             System.out.println("No character selected!");
             return;
@@ -83,6 +83,7 @@ public class PreGameMeuController {
 
         Game game = new Game();
         game.setPlayer(player);
+        game.setSelectedWeapon(selectedWeapon);
 
         User currentUser = App.getLoggedInUser();
         if (currentUser != null) {

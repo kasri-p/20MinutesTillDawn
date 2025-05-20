@@ -5,13 +5,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.controllers.GameController;
 import com.untilDawn.models.utils.GameAssetManager;
 
+// This class is responsible for rendering the HUD (Heads-Up Display) elements of the game.
 public class GameHUD {
     private GameController gameController;
     private OrthographicCamera camera;
 
     private Texture reloadBarBg;
     private Texture reloadBarFill;
-    
+
     public GameHUD(GameController gameController, OrthographicCamera camera) {
         this.gameController = gameController;
         this.camera = camera;

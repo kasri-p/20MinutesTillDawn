@@ -8,7 +8,7 @@ public class Game {
     private int score;
     private int level;
     private Player player;
-    private Weapons selectedWeapon;
+    private Weapon selectedWeapon;
     private int difficulty;
     private int timeLimit; // in minutes
     private ArrayList<Enemy> enemies;
@@ -51,12 +51,12 @@ public class Game {
         this.player = player;
     }
 
-    public Weapons getSelectedWeapon() {
+    public Weapon getSelectedWeapon() {
         return selectedWeapon;
     }
 
     public void setSelectedWeapon(Weapons selectedWeapon) {
-        this.selectedWeapon = selectedWeapon;
+        this.selectedWeapon = new Weapon(selectedWeapon);
     }
 
     public int getDifficulty() {

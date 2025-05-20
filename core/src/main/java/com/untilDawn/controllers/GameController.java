@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
-import com.untilDawn.models.Weapon;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.main.GameView;
 import com.untilDawn.views.main.MainMenu;
@@ -35,7 +34,7 @@ public class GameController {
 
         // Initialize controllers
         this.playerController = new PlayerController(App.getGame().getPlayer());
-        this.weaponController = new WeaponController(new Weapon());
+        this.weaponController = new WeaponController(App.getGame().getSelectedWeapon());
         this.weaponController.setPlayerController(playerController);
         this.worldController = new WorldController(playerController);
         playerController.setWeaponController(weaponController);

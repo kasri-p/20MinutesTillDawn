@@ -11,8 +11,8 @@ public class Weapon {
     private Sprite sprite;
     private int ammo;
 
-    public Weapon() {
-        this.weapon = Weapons.Revolver;
+    public Weapon(Weapons weapon) {
+        this.weapon = weapon;
         texture = new Texture(Gdx.files.internal("Images/weapons/" + weapon.getName().toLowerCase() + "/still.png"));
         this.sprite = new Sprite(new Sprite(texture));
         sprite.setSize(50, 50);

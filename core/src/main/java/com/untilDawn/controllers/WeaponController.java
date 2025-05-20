@@ -2,6 +2,7 @@ package com.untilDawn.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -24,14 +25,17 @@ public class WeaponController {
 
     private boolean isReloading = false;
     private float reloadTimer = 0;
-    private float reloadDuration = 1.0f; // 1 second reload time by default
+    private float reloadDuration = 1.0f;
 
-    // Reload bar properties
+    // Reload bar ahh progress
     private Texture reloadBarBg;
     private Texture reloadBarFill;
-    private float reloadBarWidth = 40f;
+    private float reloadBarWidth = 50f;
     private float reloadBarHeight = 8f;
-    private float reloadBarOffsetY = 50f; // Distance above player head
+    private float reloadBarOffsetY = 40f;// Distance above player head
+
+    private Animation<Texture> reloadAnimation;
+    private float reloadAnimationTime = 0;
 
     public WeaponController(Weapon weapon) {
         this.weapon = weapon;
