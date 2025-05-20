@@ -169,7 +169,7 @@ public class EnemyController {
             if (enemy.isActive()) {
                 Animation animation = GameAssetManager.getGameAssetManager().getEnemyAnimation(enemy.getType().getName());
                 animation.setPlayMode(Animation.PlayMode.LOOP);
-                
+                animation.getKeyFrame(gameTime, true);
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {
                 enemy.getDropSprite().draw(Main.getBatch());
             }
@@ -183,7 +183,6 @@ public class EnemyController {
         enemies.clear();
     }
 
-    // Getter for enemies list
     public ArrayList<Enemy> getEnemies() {
         return enemies;
     }

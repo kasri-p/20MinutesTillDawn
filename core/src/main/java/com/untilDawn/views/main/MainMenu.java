@@ -208,4 +208,8 @@ public class MainMenu implements Screen {
     public TextButton getLogoutButton() {
         return logoutButton;
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }

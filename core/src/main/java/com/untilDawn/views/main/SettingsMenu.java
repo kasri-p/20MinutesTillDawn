@@ -484,4 +484,8 @@ public class SettingsMenu implements Screen {
             }
         });
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }
