@@ -18,10 +18,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class EnemyController {
-    // Drop chances (percentages)
-    private final float HEALTH_DROP_CHANCE = 20f; // 20% chance for health
-    private final float SPEED_DROP_CHANCE = 15f;  // 15% chance for speed boost
-    private final float AMMO_DROP_CHANCE = 25f;   // 25% chance for ammo
     private ArrayList<Enemy> enemies = new ArrayList<>();
     private PlayerController playerController;
     private WeaponController weaponController;
@@ -224,6 +220,9 @@ public class EnemyController {
                 }
 
                 if (collision) {
+                    if (enemy.getType() != EnemyType.TREE) {
+                        GameAssetManager.getGameAssetManager().playSplash();
+                    }
                     boolean killed = enemy.hit(bullet.getDamage());
                     bullet.setActive(false);
 
@@ -242,7 +241,6 @@ public class EnemyController {
             // TODO
         }
 
-        // Decide what type of drop to create (if any)
         float roll = MathUtils.random(0f, 100f);
         String dropType = null;
 //
@@ -320,7 +318,8 @@ public class EnemyController {
                     animation.setPlayMode(Animation.PlayMode.LOOP);
                     Texture currentFrame = animation.getKeyFrame(gameTime, true);
 
-                    Sprite sprite = new Sprite(currentFrame);
+                    Sprite sprite = enemy.getSprite();
+                    sprite.setTexture(currentFrame);
 
                     float scale = 1.0f;
 

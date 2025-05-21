@@ -17,7 +17,6 @@ public class GameAssetManager {
     private static GameAssetManager gameAssetManager;
     private final Sound reloadSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/reload.wav"));
     private final Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
-    private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
     private final List<Sound> footSteps = new ArrayList<>();
 
     private final Texture reloadBarBg = new Texture(Gdx.files.internal("Images/reload/ReloadBar_0.png"));
@@ -27,13 +26,14 @@ public class GameAssetManager {
 
     private final ObjectMap<String, Animation<Texture>> playerRunAnimationCache = new ObjectMap<>();
     private final ObjectMap<String, Animation<Texture>> playerIdleAnimationCache = new ObjectMap<>();
-
     private final ObjectMap<String, Animation<Texture>> weaponReloadAnimationCache = new ObjectMap<>();
 
+    private final Sound bloodSplash = Gdx.audio.newSound(Gdx.files.internal("Sounds/effects/bloodSplash.wav"));
+    private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
+    private final Sound obtainSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/ObtainPoints.wav"));
+
     private int footstepsCounter = 1;
-
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
-
 
     GameAssetManager() {
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
@@ -141,6 +141,24 @@ public class GameAssetManager {
         }
     }
 
+    public void playReloadSound() {
+        if (App.isSFX()) {
+            reloadSound.play();
+        }
+    }
+
+    public void playSplash() {
+        if (App.isSFX()) {
+            bloodSplash.play();
+        }
+    }
+
+    public void playObtain() {
+        if (App.isSFX()) {
+            obtainSound.play();
+        }
+    }
+
     public void playFootStep() {
         if (App.isSFX()) {
             footSteps.get(footstepsCounter).play();
@@ -148,12 +166,6 @@ public class GameAssetManager {
             if (footstepsCounter == footSteps.size()) {
                 footstepsCounter = 0;
             }
-        }
-    }
-
-    public void playReloadSound() {
-        if (App.isSFX()) {
-            reloadSound.play();
         }
     }
 
@@ -202,49 +214,10 @@ public class GameAssetManager {
             }
         }
 
-        for (Animation<Texture> animation : enemyAnimationCache.values()) {
-            if (animation != null) {
-                for (Texture texture : animation.getKeyFrames()) {
-                    if (texture != null) {
-                        texture.dispose();
-                    }
-                }
-            }
-        }
+
         enemyAnimationCache.clear();
-
-        for (Animation<Texture> animation : playerRunAnimationCache.values()) {
-            if (animation != null) {
-                for (Texture texture : animation.getKeyFrames()) {
-                    if (texture != null) {
-                        texture.dispose();
-                    }
-                }
-            }
-        }
         playerRunAnimationCache.clear();
-
-        // Dispose player idle animations
-        for (Animation<Texture> animation : playerIdleAnimationCache.values()) {
-            if (animation != null) {
-                for (Texture texture : animation.getKeyFrames()) {
-                    if (texture != null) {
-                        texture.dispose();
-                    }
-                }
-            }
-        }
         playerIdleAnimationCache.clear();
-
-        for (Animation<Texture> animation : weaponReloadAnimationCache.values()) {
-            if (animation != null) {
-                for (Texture texture : animation.getKeyFrames()) {
-                    if (texture != null) {
-                        texture.dispose();
-                    }
-                }
-            }
-        }
         weaponReloadAnimationCache.clear();
 
         if (muzzleFlash != null) {
@@ -252,6 +225,13 @@ public class GameAssetManager {
             muzzleFlash = null;
         }
 
+        if (reloadBarBg != null) {
+            reloadBarBg.dispose();
+        }
+
+        if (reloadBarFill != null) {
+            reloadBarFill.dispose();
+        }
     }
 
     public Texture getReloadBarBg() {

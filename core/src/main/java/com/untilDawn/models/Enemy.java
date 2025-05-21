@@ -1,6 +1,7 @@
 package com.untilDawn.models;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
@@ -20,12 +21,19 @@ public class Enemy {
     private Vector2 direction = new Vector2(0, 0);
     private float spawnTime;
 
-    // For dropped items // TODO: add these to enemyController
+    // For dropped items
     private boolean hasDroppedItem = false;
     private Texture dropTexture;
     private Sprite dropSprite;
     private boolean dropActive = false;
     private String dropType;
+
+    // Improved properties for hit flash effect
+    private boolean isFlashing = false;
+    private float flashDuration = 0.4f;  // Longer duration for smoother effect
+    private float flashTimer = 0;
+    private Color originalColor = new Color(1f, 1f, 1f, 1f);
+    private Color flashColor = new Color(1f, 0.3f, 0.3f, 1f);  // Less intense red
 
     public Enemy(EnemyType type, float posX, float posY) {
         this.type = type;
@@ -51,11 +59,11 @@ public class Enemy {
                 x = mapWidth - marginFromEdge;
                 y = MathUtils.random(marginFromEdge, mapHeight - marginFromEdge);
                 break;
-            case 2: // Bottom
+            case 2:
                 x = MathUtils.random(marginFromEdge, mapWidth - marginFromEdge);
                 y = marginFromEdge;
                 break;
-            case 3: // Left
+            case 3:
                 x = marginFromEdge;
                 y = MathUtils.random(marginFromEdge, mapHeight - marginFromEdge);
                 break;
@@ -89,6 +97,7 @@ public class Enemy {
         sprite.setSize(texture.getWidth() * scale, texture.getHeight() * scale);
         sprite.setOriginCenter();
         sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
+        sprite.setColor(originalColor);
 
         this.boundingBox = new Rectangle(
             posX - sprite.getWidth() / 2,
@@ -112,11 +121,42 @@ public class Enemy {
 
         boundingBox.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
 
+        // Update hit flash effect
+        updateFlashEffect(delta);
+
         if (dropActive && dropSprite != null) {
             float pulsate = 0.7f + 0.3f * (float) Math.sin(spawnTime * 3);
             dropSprite.setAlpha(pulsate);
 
             dropSprite.setRotation(dropSprite.getRotation() + 60 * delta);
+        }
+    }
+
+    private void updateFlashEffect(float delta) {
+        if (isFlashing) {
+            flashTimer += delta;
+            if (flashTimer >= flashDuration) {
+                // Flash ended, return to normal color
+                isFlashing = false;
+                flashTimer = 0;
+                sprite.setColor(originalColor);
+            } else {
+                // Create a smoother transition from flash color to original color
+                float progress = flashTimer / flashDuration;
+
+                // Use a smoother easing function
+                float smoothProgress = 1 - (1 - progress) * (1 - progress);
+
+                // Interpolate between flash color and original color
+                Color currentColor = new Color(
+                    flashColor.r + (originalColor.r - flashColor.r) * smoothProgress,
+                    flashColor.g + (originalColor.g - flashColor.g) * smoothProgress,
+                    flashColor.b + (originalColor.b - flashColor.b) * smoothProgress,
+                    1f
+                );
+
+                sprite.setColor(currentColor);
+            }
         }
     }
 
@@ -141,6 +181,8 @@ public class Enemy {
     public boolean hit(int damage) {
         health -= damage;
 
+        startFlashEffect();
+
         if (health <= 0 && isActive) {
             isActive = false;
             dropItem();
@@ -148,6 +190,20 @@ public class Enemy {
         }
 
         return false;
+    }
+
+    private void startFlashEffect() {
+        isFlashing = true;
+        flashTimer = 0;
+
+        // Start with a softer flash
+        Color initialFlash = new Color(
+            originalColor.r * 0.4f + flashColor.r * 0.6f,
+            originalColor.g * 0.4f + flashColor.g * 0.6f,
+            originalColor.b * 0.4f + flashColor.b * 0.6f,
+            1f
+        );
+        sprite.setColor(initialFlash);
     }
 
     private void dropItem() {
@@ -261,8 +317,16 @@ public class Enemy {
         return boundingBox;
     }
 
+    public Sprite getSprite() {
+        return sprite;
+    }
+
     public void dispose() {
         if (texture != null) texture.dispose();
         if (dropTexture != null) dropTexture.dispose();
+    }
+
+    public void setFlashDuration(float duration) {
+        this.flashDuration = duration;
     }
 }

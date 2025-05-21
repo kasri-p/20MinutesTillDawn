@@ -124,6 +124,10 @@ public class WeaponController {
                 weaponPosY - weapon.getSprite().getHeight() / 2
             );
 
+            if (weapon.getWeapon() == Weapons.Shotgun) {
+                weapon.getSprite().setScale(0.8f);
+            }
+
             weapon.getSprite().setRotation(angle);
 
             weapon.getSprite().setFlip(false, angle > 90 || angle < -90);

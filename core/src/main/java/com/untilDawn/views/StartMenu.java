@@ -42,8 +42,12 @@ public class StartMenu implements Screen {
     private StartMenuController controller;
     private TextureRegion firstFrame;
 
-    public StartMenu(Skin skin) {
+    private Texture eyeBlink1;
+    private Texture eyeBlink2;
+    private Texture eyeBlink3;
+    private Texture logoTexture;
 
+    public StartMenu(Skin skin) {
         TextButton.TextButtonStyle boldButtonStyle = new TextButton.TextButtonStyle();
         boldButtonStyle.font = skin.getFont("font");
         boldButtonStyle.font.getData().setScale(1.1f);
@@ -54,7 +58,8 @@ public class StartMenu implements Screen {
         this.startButton = new TextButton(Language.Start.getText(), boldButtonStyle);
         this.quitButton = new TextButton("Quit", boldButtonStyle);
         this.languageButton = new TextButton("Language: English", boldButtonStyle);
-        Texture logoTexture = new Texture(Gdx.files.internal("Images/logo.png"));
+
+        this.logoTexture = new Texture(Gdx.files.internal("Images/logo.png"));
         this.logoImage = new Image(logoTexture);
 
         this.table = new Table();
@@ -67,9 +72,9 @@ public class StartMenu implements Screen {
     }
 
     private void createEyeBlinkAnimation() {
-        Texture eyeBlink1 = new Texture(Gdx.files.internal("Images/EyeBlink/EyeBlink_0.png"));
-        Texture eyeBlink2 = new Texture(Gdx.files.internal("Images/EyeBlink/EyeBlink_1.png"));
-        Texture eyeBlink3 = new Texture(Gdx.files.internal("Images/EyeBlink/EyeBlink_2.png"));
+        eyeBlink1 = new Texture(Gdx.files.internal("Images/EyeBlink/EyeBlink_0.png"));
+        eyeBlink2 = new Texture(Gdx.files.internal("Images/EyeBlink/EyeBlink_1.png"));
+        eyeBlink3 = new Texture(Gdx.files.internal("Images/EyeBlink/EyeBlink_2.png"));
 
         Array<TextureRegion> eyeFrames = new Array<>();
         eyeFrames.add(new TextureRegion(eyeBlink1));
@@ -226,15 +231,15 @@ public class StartMenu implements Screen {
             stage.dispose();
         }
 
-        if (logoImage != null && logoImage.getDrawable() instanceof TextureRegionDrawable) {
-            ((TextureRegionDrawable) logoImage.getDrawable()).getRegion().getTexture().dispose();
+        // Dispose logo texture
+        if (logoTexture != null) {
+            logoTexture.dispose();
         }
 
-        for (TextureRegion region : ((TextureRegion[]) eyeBlinkAnimation.getKeyFrames())) {
-            if (region.getTexture() != null) {
-                region.getTexture().dispose();
-            }
-        }
+        // Dispose the eye blink textures
+        if (eyeBlink1 != null) eyeBlink1.dispose();
+        if (eyeBlink2 != null) eyeBlink2.dispose();
+        if (eyeBlink3 != null) eyeBlink3.dispose();
     }
 
     public TextButton getStartButton() {
