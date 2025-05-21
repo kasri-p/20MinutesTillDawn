@@ -17,12 +17,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class WeaponController {
+    private final float MUZZLE_FLASH_DURATION = 0.05f; // Duration to show muzzle flash in seconds
     private Weapon weapon;
     private ArrayList<Bullet> bullets = new ArrayList<>();
     private float screenCenterX;
     private float screenCenterY;
     private PlayerController playerController;
-
     private boolean isReloading = false;
     private float reloadTimer = 0;
     private float reloadDuration = 1.0f;
@@ -32,10 +32,17 @@ public class WeaponController {
     private Texture reloadBarFill;
     private float reloadBarWidth = 60f;
     private float reloadBarHeight = 8f;
-    private float reloadBarOffsetY = 40f;// Distance above player head
-
+    private float reloadBarOffsetY = 37f;// Distance above player head
     private Animation<Texture> reloadAnimation;
     private float reloadAnimationTime = 0;
+
+    // Muzzle flash properties
+    private Texture muzzleFlashTexture;
+    private boolean showMuzzleFlash = false;
+    private float muzzleFlashTimer = 0;
+    private float muzzleFlashOffsetX = 0; // Will be calculated based on weapon
+    private float muzzleFlashOffsetY = 0; // Will be calculated based on weapon
+    private float muzzleFlashScale = 1.0f;
 
     public WeaponController(Weapon weapon) {
         this.weapon = weapon;
@@ -43,6 +50,37 @@ public class WeaponController {
 
         if (weapon.getWeapon() != null) {
             this.reloadDuration = weapon.getWeapon().getReloadTime();
+        }
+
+        muzzleFlashTexture = GameAssetManager.getGameAssetManager().getMuzzleFlash();
+
+        updateMuzzleFlashProperties();
+    }
+
+    private void updateMuzzleFlashProperties() {
+        if (weapon.getWeapon() == null) {
+            muzzleFlashOffsetX = 15f;
+            muzzleFlashScale = 1.5f;
+            return;
+        }
+
+        switch (weapon.getWeapon()) {
+            case Shotgun:
+                muzzleFlashOffsetX = 22f;
+                muzzleFlashScale = 4f;
+                break;
+            case Dual_Smg:
+                muzzleFlashOffsetX = 14f;
+                muzzleFlashScale = 0.4f;
+                break;
+            case Revolver:
+                muzzleFlashOffsetX = 18f;
+                muzzleFlashScale = 0.6f;
+                break;
+            default:
+                muzzleFlashOffsetX = 15f;
+                muzzleFlashScale = 0.5f;
+                break;
         }
     }
 
@@ -59,14 +97,46 @@ public class WeaponController {
             float playerX = playerController.getPlayer().getPosX();
             float playerY = playerController.getPlayer().getPosY();
 
+            int mouseX = Gdx.input.getX();
+            int mouseY = Gdx.input.getY();
+
+            float worldMouseX = mouseX - (float) Gdx.graphics.getWidth() / 2 + playerX;
+            float worldMouseY = Gdx.graphics.getHeight() - mouseY - (float) Gdx.graphics.getHeight() / 2 + playerY;
+
+            float dirX = worldMouseX - playerX;
+            float dirY = worldMouseY - playerY;
+
+            float length = (float) Math.sqrt(dirX * dirX + dirY * dirY);
+            if (length != 0) {
+                dirX /= length;
+                dirY /= length;
+            }
+
+            float angle = (float) Math.toDegrees(Math.atan2(dirY, dirX));
+
+
+            float weaponOffsetDistance = 23.0f;
+            float weaponPosX = playerX + dirX * weaponOffsetDistance;
+            float weaponPosY = playerY + dirY * weaponOffsetDistance;
+
             weapon.getSprite().setPosition(
-                playerX - weapon.getSprite().getWidth() / 2,
-                playerY - weapon.getSprite().getHeight() / 2
+                weaponPosX - weapon.getSprite().getWidth() / 2,
+                weaponPosY - weapon.getSprite().getHeight() / 2
             );
+
+            weapon.getSprite().setRotation(angle);
+
+            weapon.getSprite().setFlip(false, angle > 90 || angle < -90);
+
+            if (showMuzzleFlash) {
+                updateMuzzleFlashTimer(deltaTime);
+                if (showMuzzleFlash) {
+                    drawMuzzleFlash(playerX, playerY, dirX, dirY, angle);
+                }
+            }
         }
 
         updateReloading(deltaTime);
-
         weapon.getSprite().draw(Main.getBatch());
 
         if (isReloading) {
@@ -74,6 +144,42 @@ public class WeaponController {
         }
 
         updateBullets(deltaTime);
+    }
+
+    private void updateMuzzleFlashTimer(float deltaTime) {
+        if (showMuzzleFlash) {
+            muzzleFlashTimer += deltaTime;
+            if (muzzleFlashTimer >= MUZZLE_FLASH_DURATION) {
+                showMuzzleFlash = false;
+                muzzleFlashTimer = 0;
+            }
+        }
+    }
+
+    private void drawMuzzleFlash(float playerX, float playerY, float dirX, float dirY, float angle) {
+        if (muzzleFlashTexture == null) return;
+
+        float weaponCenterX = weapon.getSprite().getX() + weapon.getSprite().getWidth() / 2;
+        float weaponCenterY = weapon.getSprite().getY() + weapon.getSprite().getHeight() / 2;
+
+        float radians = (float) Math.toRadians(angle);
+        float flashX = weaponCenterX + (float) (Math.cos(radians) * muzzleFlashOffsetX) - muzzleFlashTexture.getWidth() * muzzleFlashScale / 2;
+        float flashY = weaponCenterY + (float) (Math.sin(radians) * muzzleFlashOffsetX) - muzzleFlashTexture.getHeight() * muzzleFlashScale / 2;
+
+        Main.getBatch().draw(
+            muzzleFlashTexture,
+            flashX,
+            flashY,
+            muzzleFlashTexture.getWidth() * muzzleFlashScale / 2,
+            muzzleFlashTexture.getHeight() * muzzleFlashScale / 2,
+            muzzleFlashTexture.getWidth() * muzzleFlashScale,
+            muzzleFlashTexture.getHeight() * muzzleFlashScale,
+            1.0f, 1.0f,
+            angle,
+            0, 0,
+            muzzleFlashTexture.getWidth(), muzzleFlashTexture.getHeight(),
+            false, weapon.getSprite().isFlipY()
+        );
     }
 
     private void updateScreenCenter() {
@@ -154,13 +260,16 @@ public class WeaponController {
 
     public void handleWeaponShoot(int x, int y) {
         if (isReloading || weapon.getAmmo() <= 0) {
-            if (weapon.getAmmo() <= 0 && !isReloading) {
-                startReload();
+            if (weapon.getAmmo() <= 0) {
+                checkAutoReload();
             }
             return;
         }
 
         GameAssetManager.getGameAssetManager().playShot();
+
+        showMuzzleFlash = true;
+        muzzleFlashTimer = 0;
 
         float playerX = playerController.getPlayer().getPosX();
         float playerY = playerController.getPlayer().getPosY();
@@ -239,19 +348,15 @@ public class WeaponController {
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
 
-            // Skip or remove inactive bullets
             if (!bullet.isActive()) {
                 iterator.remove();
                 continue;
             }
 
-            // Update bullet physics
             bullet.update(deltaTime);
 
-            // Draw the bullet
             bullet.getSprite().draw(Main.getBatch());
 
-            // Check if bullet is too far from player
             float playerX = playerController != null ? playerController.getPlayer().getPosX() : 0;
             float playerY = playerController != null ? playerController.getPlayer().getPosY() : 0;
 
@@ -288,10 +393,11 @@ public class WeaponController {
     public void setWeapon(Weapon weapon) {
         this.weapon = weapon;
 
-        // Update reload duration
         if (weapon.getWeapon() != null) {
             this.reloadDuration = weapon.getWeapon().getReloadTime();
         }
+
+        updateMuzzleFlashProperties();
     }
 
     public void handleResize(int width, int height) {
@@ -312,7 +418,6 @@ public class WeaponController {
     }
 
     public void dispose() {
-        // Clear all bullets
         for (Bullet bullet : bullets) {
             bullet.dispose();
         }

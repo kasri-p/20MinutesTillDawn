@@ -16,7 +16,6 @@ public class GameController {
     private WorldController worldController;
     private EnemyController enemyController;
 
-    // Map dimensions
     private float mapWidth;
     private float mapHeight;
 
@@ -59,8 +58,6 @@ public class GameController {
             playerController.update();
             weaponController.update();
 
-//            weaponController.checkAutoReload();
-
             checkGameOver();
         }
     }
@@ -80,13 +77,10 @@ public class GameController {
             });
         }
 
-        // Check if time limit is reached
-        int timeLimit = App.getGame().getTimeLimit() * 60; // Convert minutes to seconds
+        int timeLimit = App.getGame().getTimeLimit() * 60;
         if (gameTime >= timeLimit) {
-            // Handle game over - time's up
             gameOver = true;
 
-            // Go back to main menu after a short delay
             Gdx.app.postRunnable(() -> {
                 try {
                     Thread.sleep(2000); // 2-second delay

@@ -17,7 +17,7 @@ public class PreGameMeuController {
     private Characters selectedCharacter;
     private Weapons selectedWeapon;
     private int selectedTime = 5;
-    private int selectedDifficulty = 1; // Default difficulty level
+    private int selectedDifficulty = 1;
 
     public PreGameMeuController() {
     }
@@ -68,7 +68,7 @@ public class PreGameMeuController {
 
     public void startGame() {
         playClick();
-        
+
         if (selectedCharacter == null) {
             System.out.println("No character selected!");
             return;

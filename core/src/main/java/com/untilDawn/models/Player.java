@@ -20,7 +20,7 @@ public class Player {
     private Characters character;
 
     public Player(Characters character) {
-        playerSprite.setSize(playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
+        playerSprite.setSize(playerTexture.getWidth() * 2, playerTexture.getHeight() * 2);
         playerSprite.setOriginCenter();
         boundingBox = new Rectangle(0, 0, playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
         this.character = character;

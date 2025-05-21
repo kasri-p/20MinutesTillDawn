@@ -1,5 +1,5 @@
 {
-  "autoReloadEnabled": false,
+  "autoReloadEnabled": true,
   "keybinds": {
     "Move Left": "A",
     "Pause": "ESC",
@@ -11,7 +11,7 @@
   },
   "isSFX": true,
   "language": "en",
-  "currentMusicTrack": "For Whom The Bell Tolls",
-  "musicVolume": 0.0,
+  "currentMusicTrack": "South Of Heaven",
+  "musicVolume": 0.41,
   "blackAndWhiteEnabled": false
 }

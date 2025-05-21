@@ -22,7 +22,6 @@ public class EnemyController {
     private PlayerController playerController;
     private WeaponController weaponController;
 
-    private float spawnTimer = 0;
     private float initialSpawnRate = 3.0f; // One enemy every 3 seconds initially
     private float currentSpawnRate; // This will decrease over time
     private float minimumSpawnRate = 0.5f; // Max of 2 enemies per second
@@ -109,9 +108,10 @@ public class EnemyController {
 
             float playerX = playerController.getPlayer().getPosX();
             float playerY = playerController.getPlayer().getPosY();
+            
             float distanceToPlayer = Vector2.dst(x, y, playerX, playerY);
 
-            if (distanceToPlayer > 200) {
+            if (distanceToPlayer > 300) {
                 Enemy tree = new Enemy(EnemyType.TREE, x, y);
                 enemies.add(tree);
             } else {
@@ -162,36 +162,37 @@ public class EnemyController {
 
             Sprite bulletSprite = bullet.getSprite();
 
-            // Get bullet position and size for better collision detection
             float bulletX = bulletSprite.getX() + bulletSprite.getWidth() / 2;
             float bulletY = bulletSprite.getY() + bulletSprite.getHeight() / 2;
-            float bulletRadius = Math.min(bulletSprite.getWidth(), bulletSprite.getHeight()) / 2.5f;
 
-            // Store previous position for line-based collision
+            float bulletRadius = Math.min(bulletSprite.getWidth(), bulletSprite.getHeight()) / 3.0f;
+
             prevBulletPos.set(currentBulletPos);
             currentBulletPos.set(bulletX, bulletY);
 
-            // For the first frame, initialize both positions
             if (prevBulletPos.x == 0 && prevBulletPos.y == 0) {
                 prevBulletPos.set(currentBulletPos);
             }
 
-            // Calculate bullet velocity for trajectory checking
-            bulletVelocity.set(bullet.getDirection()).scl(10f); // Adjust speed multiplier as needed
+            bulletVelocity.set(bullet.getDirection()).scl(15f);
 
-            // Setup circle for bullet
             bulletCircle.set(bulletX, bulletY, bulletRadius);
 
             for (Enemy enemy : enemies) {
                 if (!enemy.isActive()) continue;
 
-                // Get enemy position and size for better collision detection
                 float enemyX = enemy.getPosX();
                 float enemyY = enemy.getPosY();
                 Rectangle boundingBox = enemy.getBoundingBox();
-                float enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.5f;
 
-                // Setup circle for enemy
+                float enemyRadius;
+
+                if (enemy.getType() == EnemyType.TREE) {
+                    enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 3.0f;
+                } else {
+                    enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.5f;
+                }
+
                 enemyCircle.set(enemyX, enemyY, enemyRadius);
 
                 boolean collision = false;
@@ -206,9 +207,6 @@ public class EnemyController {
                 if (collision) {
                     boolean killed = enemy.hit(bullet.getDamage());
                     bullet.setActive(false);
-
-                    // createHitEffect(bulletX, bulletY);
-
                     break;
                 }
             }
@@ -223,7 +221,8 @@ public class EnemyController {
 
         float playerX = playerController.getPlayer().getPosX();
         float playerY = playerController.getPlayer().getPosY();
-        float playerRadius = Math.min(playerRect.width, playerRect.height) / 2.5f;
+
+        float playerRadius = Math.min(playerRect.width, playerRect.height) / 3.0f;
 
         Circle playerCircle = new Circle(playerX, playerY, playerRadius);
 
@@ -231,11 +230,19 @@ public class EnemyController {
             Rectangle enemyRect = enemy.getBoundingBox();
             float enemyX = enemy.getPosX();
             float enemyY = enemy.getPosY();
-            float enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.5f;
+
+            float enemyRadius;
+
+            if (enemy.getType() == EnemyType.TREE) {
+                enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 3.0f;
+            } else {
+                enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.5f;
+            }
 
             Circle enemyCircle = new Circle(enemyX, enemyY, enemyRadius);
 
             if (enemy.isActive() && Intersector.overlaps(playerCircle, enemyCircle)) {
+
                 // TODO: Add damage to player
                 Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
             } else if (!enemy.isActive() && enemy.isDropActive()) {
@@ -257,6 +264,14 @@ public class EnemyController {
                     Texture currentFrame = animation.getKeyFrame(gameTime, true);
 
                     Sprite sprite = new Sprite(currentFrame);
+
+                    float scale = 1.0f;
+
+                    if (enemy.getType() == EnemyType.TREE) {
+                        scale = 2.2f;
+                    }
+
+                    sprite.setSize(currentFrame.getWidth() * scale, currentFrame.getHeight() * scale);
                     sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
                     sprite.draw(Main.getBatch());
                 }

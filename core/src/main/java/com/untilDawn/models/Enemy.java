@@ -39,7 +39,7 @@ public class Enemy {
 
     public static Vector2 getRandomSpawnPosition(float mapWidth, float mapHeight, float marginFromEdge) {
         float x, y;
-        int side = MathUtils.random(3); // 0-3 for top, right, bottom, left
+        int side = MathUtils.random(3);
 
         switch (side) {
             case 0: // Top
@@ -70,7 +70,6 @@ public class Enemy {
         try {
             this.texture = new Texture(Gdx.files.internal(type.getTexturePath()));
         } catch (Exception e) {
-            // Fallback texture if the specified one isn't found
             this.texture = new Texture(Gdx.files.internal("Images/enemies/default.png"));
             System.out.println("Error loading enemy texture: " + e.getMessage());
         }
@@ -78,7 +77,14 @@ public class Enemy {
 
     private void createSprite() {
         this.sprite = new Sprite(texture);
-        float scale = 1f; // Adjust scale as needed
+
+        float scale = 1.0f;
+
+        // Make trees significantly larger
+        if (type == EnemyType.TREE) {
+            scale = 2.3f; // Increase tree size by 2.5x
+        }
+
         sprite.setSize(texture.getWidth() * scale, texture.getHeight() * scale);
         sprite.setOriginCenter();
         sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
@@ -115,17 +121,14 @@ public class Enemy {
     }
 
     private void moveTowardsPlayer(Player player, float delta) {
-        // Calculate direction to player
         float playerX = player.getPosX();
         float playerY = player.getPosY();
 
-        // Calculate direction vector
         direction.x = playerX - posX;
         direction.y = playerY - posY;
-        direction.nor(); // Normalize to get direction only
+        direction.nor();
 
-        // Move towards player
-        posX += direction.x * type.getSpeed() * delta * 60; // Adjust for framerate
+        posX += direction.x * type.getSpeed() * delta * 60;
         posY += direction.y * type.getSpeed() * delta * 60;
     }
 

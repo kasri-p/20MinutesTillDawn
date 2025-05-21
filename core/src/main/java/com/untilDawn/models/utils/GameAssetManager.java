@@ -32,6 +32,9 @@ public class GameAssetManager {
 
     private int footstepsCounter = 1;
 
+    private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
+
+
     GameAssetManager() {
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep2.wav")));
@@ -154,10 +157,6 @@ public class GameAssetManager {
         }
     }
 
-    public Animation<Texture> getReloadAnimation() {
-        return null;
-    }
-
     public Animation<Texture> getEnemyAnimation(String enemyName) {
         if (enemyAnimationCache.containsKey(enemyName)) {
             return enemyAnimationCache.get(enemyName);
@@ -178,7 +177,8 @@ public class GameAssetManager {
             return null;
         }
 
-        Animation<Texture> animation = new Animation<>(0.2f, frames);
+        float animationDuration = enemyName.equalsIgnoreCase("tree") ? 5f : 0.3f;
+        Animation<Texture> animation = new Animation<>(animationDuration, frames);
         enemyAnimationCache.put(enemyName, animation);
         return animation;
     }
@@ -247,6 +247,11 @@ public class GameAssetManager {
         }
         weaponReloadAnimationCache.clear();
 
+        if (muzzleFlash != null) {
+            muzzleFlash.dispose();
+            muzzleFlash = null;
+        }
+
     }
 
     public Texture getReloadBarBg() {
@@ -255,5 +260,9 @@ public class GameAssetManager {
 
     public Texture getReloadBarFill() {
         return reloadBarFill;
+    }
+
+    public Texture getMuzzleFlash() {
+        return muzzleFlash;
     }
 }

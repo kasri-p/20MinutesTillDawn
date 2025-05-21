@@ -115,13 +115,6 @@ public class PlayerController {
         player.setPosY(newY);
     }
 
-    public void idleAnimation() {
-        Animation<Texture> idleAnimation = GameAssetManager.getGameAssetManager().getPlayerIdleAnimation();
-        if (idleAnimation != null) {
-            idleAnimation.setPlayMode(Animation.PlayMode.LOOP);
-        }
-    }
-
     public Player getPlayer() {
         return player;
     }
