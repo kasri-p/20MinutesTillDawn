@@ -1,4 +1,3 @@
-// core/src/main/java/com/untilDawn/models/utils/LightingManager.java
 package com.untilDawn.models.utils;
 
 import com.badlogic.gdx.graphics.*;
@@ -6,10 +5,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Disposable;
 
-/**
- * Manages lighting effects for the game, creating a bright area around the player
- * while keeping the rest of the map darker.
- */
 public class LightingManager implements Disposable {
     private static LightingManager instance;
 
@@ -20,11 +15,9 @@ public class LightingManager implements Disposable {
 
     private LightingManager() {
         this.lightTexture = createLightTexture(256);
-
         this.shadowTexture = createShadowTexture();
-
-        this.lightRadius = 250f;
-        this.ambientIntensity = 0.6f;
+        this.lightRadius = 300f;
+        this.ambientIntensity = 0.4f; // Increased from 0.3f to 0.4f for more brightness
     }
 
     public static LightingManager getInstance() {
@@ -46,8 +39,13 @@ public class LightingManager implements Disposable {
                 float distanceFromCenter = (float) Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
                 float normalizedDistance = MathUtils.clamp(distanceFromCenter / radius, 0f, 1f);
 
+                // Even softer fall-off with lower maximum alpha
+                float alpha = 0.3f * (1f - normalizedDistance * normalizedDistance);
 
-                float alpha = 0.6f * (1f - normalizedDistance * normalizedDistance);
+                // Add this line to create a more gradual edge
+                if (normalizedDistance > 0.7f) {
+                    alpha *= (1.0f - (normalizedDistance - 0.7f) / 0.3f);
+                }
 
                 pixmap.setColor(1f, 1f, 1f, alpha);
                 pixmap.drawPixel(x, y);
@@ -76,7 +74,9 @@ public class LightingManager implements Disposable {
 
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        batch.setColor(0, 0, 0, 1f - ambientIntensity);
+        // Lighter dark purple/blue-black color with even less opacity
+        batch.setColor(0.18f, 0.17f, 0.22f, 0.7f);
+
         batch.draw(shadowTexture,
             camera.position.x - camera.viewportWidth / 2,
             camera.position.y - camera.viewportHeight / 2,
@@ -86,7 +86,8 @@ public class LightingManager implements Disposable {
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
 
         float drawSize = lightRadius * 2f;
-        batch.setColor(0.7f, 0.7f, 0.7f, 0.5f);
+        // Slightly brighter light
+        batch.setColor(0.65f, 0.65f, 0.7f, 0.25f);
         batch.draw(lightTexture,
             playerX - lightRadius,
             playerY - lightRadius,

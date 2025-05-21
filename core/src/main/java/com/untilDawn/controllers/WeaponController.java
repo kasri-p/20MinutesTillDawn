@@ -30,7 +30,7 @@ public class WeaponController {
     // Reload bar ahh progress
     private Texture reloadBarBg;
     private Texture reloadBarFill;
-    private float reloadBarWidth = 50f;
+    private float reloadBarWidth = 60f;
     private float reloadBarHeight = 8f;
     private float reloadBarOffsetY = 40f;// Distance above player head
 
