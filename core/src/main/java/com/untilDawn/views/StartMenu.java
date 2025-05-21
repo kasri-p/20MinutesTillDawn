@@ -230,11 +230,9 @@ public class StartMenu implements Screen {
             ((TextureRegionDrawable) logoImage.getDrawable()).getRegion().getTexture().dispose();
         }
 
-        if (eyeBlinkAnimation != null) {
-            for (TextureRegion region : eyeBlinkAnimation.getKeyFrames()) {
-                if (region.getTexture() != null) {
-                    region.getTexture().dispose();
-                }
+        for (TextureRegion region : ((TextureRegion[]) eyeBlinkAnimation.getKeyFrames())) {
+            if (region.getTexture() != null) {
+                region.getTexture().dispose();
             }
         }
     }

@@ -20,11 +20,12 @@ public class Enemy {
     private Vector2 direction = new Vector2(0, 0);
     private float spawnTime;
 
-    // For dropped items
+    // For dropped items // TODO: add these to enemyController
     private boolean hasDroppedItem = false;
     private Texture dropTexture;
     private Sprite dropSprite;
     private boolean dropActive = false;
+    private String dropType;
 
     public Enemy(EnemyType type, float posX, float posY) {
         this.type = type;
@@ -39,7 +40,7 @@ public class Enemy {
 
     public static Vector2 getRandomSpawnPosition(float mapWidth, float mapHeight, float marginFromEdge) {
         float x, y;
-        int side = MathUtils.random(3);
+        int side = MathUtils.random(3); // 0 = top, 1 = right, 2 = bottom, 3 = left
 
         switch (side) {
             case 0: // Top
@@ -58,7 +59,7 @@ public class Enemy {
                 x = marginFromEdge;
                 y = MathUtils.random(marginFromEdge, mapHeight - marginFromEdge);
                 break;
-            default: // Fallback
+            default: // Fallback (shouldn't happen)
                 x = MathUtils.random(mapWidth);
                 y = MathUtils.random(mapHeight);
         }
@@ -103,20 +104,19 @@ public class Enemy {
 
         spawnTime += delta;
 
-        // Only move if this enemy type can move
         if (type.canMove()) {
             moveTowardsPlayer(player, delta);
         }
 
-        // Update sprite position
         sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
 
-        // Update bounding box
         boundingBox.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
 
-        // Handle drop item update if it exists
         if (dropActive && dropSprite != null) {
-            // Pulsate the drop or add effects here if needed
+            float pulsate = 0.7f + 0.3f * (float) Math.sin(spawnTime * 3);
+            dropSprite.setAlpha(pulsate);
+
+            dropSprite.setRotation(dropSprite.getRotation() + 60 * delta);
         }
     }
 
@@ -130,12 +130,17 @@ public class Enemy {
 
         posX += direction.x * type.getSpeed() * delta * 60;
         posY += direction.y * type.getSpeed() * delta * 60;
+
+        if (direction.x < 0) {
+            sprite.setFlip(true, false);
+        } else if (direction.x > 0) {
+            sprite.setFlip(false, false);
+        }
     }
 
     public boolean hit(int damage) {
         health -= damage;
 
-        // Check if enemy is defeated
         if (health <= 0 && isActive) {
             isActive = false;
             dropItem();
@@ -146,65 +151,82 @@ public class Enemy {
     }
 
     private void dropItem() {
-        if (!hasDroppedItem) {
-            hasDroppedItem = true;
-            dropActive = true;
+        if (hasDroppedItem) return;
 
-            // Load appropriate drop texture based on enemy type
-            String dropTexturePath = "Images/drops/" + ".png";
-            try {
-                dropTexture = new Texture(Gdx.files.internal(dropTexturePath));
-                dropSprite = new Sprite(dropTexture);
-                dropSprite.setSize(30, 30);
-                dropSprite.setPosition(posX - 15, posY - 15);
-                dropSprite.setOriginCenter();
-            } catch (Exception e) {
-                System.out.println("Error loading drop texture: " + e.getMessage());
-                dropActive = false;
-            }
+        hasDroppedItem = true;
+
+        float dropChance;
+
+        if (type == EnemyType.TREE) {
+            dropChance = 0.8f;
+            dropType = "health";
+        } else {
+            dropChance = 1.0f;
+            dropType = "experience";
+        }
+
+        if (MathUtils.random() < dropChance) {
+            createDropSprite();
+            dropActive = true;
+        }
+    }
+
+    private void createDropSprite() {
+        // TODO
+        String dropTexturePath = "Images/drops/" + dropType + ".png";
+
+        try {
+            dropTexture = new Texture(Gdx.files.internal(dropTexturePath));
+            dropSprite = new Sprite(dropTexture);
+            dropSprite.setSize(30, 30);
+            dropSprite.setPosition(posX - 15, posY - 15);
+            dropSprite.setOriginCenter();
+        } catch (Exception e) {
+            System.out.println("Error loading drop texture: " + e.getMessage());
+            dropActive = false;
         }
     }
 
     public boolean collectDrop(Player player) {
-        if (!dropActive) return false;
-
-        // Create a temporary rectangle for the drop
-        Rectangle dropRect = new Rectangle(
-            dropSprite.getX(),
-            dropSprite.getY(),
-            dropSprite.getWidth(),
-            dropSprite.getHeight()
-        );
-
-        // Check if player collides with the drop
-        if (dropRect.overlaps(player.getBoundingBox())) {
-            applyDropEffect(player);
-            dropActive = false;
-            return true;
-        }
-
+//        if (!dropActive) return false;
+//
+//        Rectangle dropRect = new Rectangle(
+//            dropSprite.getX(),
+//            dropSprite.getY(),
+//            dropSprite.getWidth(),
+//            dropSprite.getHeight()
+//        );
+//
+//        if (dropRect.overlaps(player.getBoundingBox())) {
+//            applyDropEffect(player);
+//            dropActive = false;
+//            return true;
+//        }
+//
         return false;
     }
 
     private void applyDropEffect(Player player) {
-//        switch (type.getDropType()) {
-//            case "health":
-//                // Increase player health
-//                player.setPlayerHealth(Math.min(player.getPlayerHealth() + 10, 100));
-//                break;
-//            case "speed":
-//                // Temporary speed boost - would need a timer system
-//                break;
-//            case "ammo":
-//                // Would increase weapon ammo
-//                break;
-//            case "experience":
-//                // Would increase player XP or score
-//                break;
-//            case "seed":
-//                // Special drop for trees
-//                break;
-//        }
+        switch (dropType) {
+            case "health":
+                int health = player.getPlayerHealth();
+                health += 1;
+                if (player.getCharacter().getHp() < health) {
+                    health = player.getCharacter().getHp();
+                }
+                player.setPlayerHealth(health);
+                Gdx.app.log("Drop", "Player collected health drop. New health: " + player.getPlayerHealth());
+                break;
+
+            case "experience":
+                player.addXP(3);
+                Gdx.app.log("Drop", "Player collected experience drop. New score: " + App.getLoggedInUser().getScore());
+                break;
+
+            default:
+                Gdx.app.log("Drop", "Player collected unknown drop type: " + dropType);
+                break;
+        }
     }
 
     public Sprite getDropSprite() {

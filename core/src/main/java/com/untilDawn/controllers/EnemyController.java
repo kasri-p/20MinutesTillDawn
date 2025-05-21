@@ -18,32 +18,31 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class EnemyController {
+    // Drop chances (percentages)
+    private final float HEALTH_DROP_CHANCE = 20f; // 20% chance for health
+    private final float SPEED_DROP_CHANCE = 15f;  // 15% chance for speed boost
+    private final float AMMO_DROP_CHANCE = 25f;   // 25% chance for ammo
     private ArrayList<Enemy> enemies = new ArrayList<>();
     private PlayerController playerController;
     private WeaponController weaponController;
-
     private float initialSpawnRate = 3.0f; // One enemy every 3 seconds initially
     private float currentSpawnRate; // This will decrease over time
     private float minimumSpawnRate = 0.5f; // Max of 2 enemies per second
     private float spawnRateDecreasePerMinute = 0.2f; // Spawn rate decreases by 0.2 seconds every minute
-
     private float gameTime = 0;
+    private float timeSinceLastSpawn = 0;
     private float mapWidth;
     private float mapHeight;
-
     private boolean treesPlaced = false;
     private int numberOfTrees = 30;
-
     private boolean autoAim = false;
     private float autoAimCooldown = 0;
-
     // Helper variables for collision detection
     private Circle bulletCircle = new Circle();
     private Circle enemyCircle = new Circle();
     private Vector2 bulletVelocity = new Vector2();
     private Vector2 prevBulletPos = new Vector2();
     private Vector2 currentBulletPos = new Vector2();
-
     private int tentacleSpawned = 0;
     private int eyeBatSpawned = 0;
 
@@ -65,6 +64,7 @@ public class EnemyController {
         }
 
         gameTime += delta;
+        timeSinceLastSpawn += delta;
 
         if (!treesPlaced) {
             placeTrees();
@@ -108,7 +108,7 @@ public class EnemyController {
 
             float playerX = playerController.getPlayer().getPosX();
             float playerY = playerController.getPlayer().getPosY();
-            
+
             float distanceToPlayer = Vector2.dst(x, y, playerX, playerY);
 
             if (distanceToPlayer > 300) {
@@ -131,12 +131,31 @@ public class EnemyController {
         }
     }
 
+    private void spawnRegularEnemy() {
+        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
+
+        Enemy enemy = new Enemy(EnemyType.TENTACLE, spawnPos.x, spawnPos.y);
+        enemies.add(enemy);
+
+        Gdx.app.log("EnemyController", "Spawned regular enemy at " + spawnPos.x + ", " + spawnPos.y);
+    }
+
     private void spawnTentacleMonster() {
-        System.out.println("spawned one tentacle monster");
+        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
+
+        Enemy enemy = new Enemy(EnemyType.TENTACLE, spawnPos.x, spawnPos.y);
+        enemies.add(enemy);
+
+        Gdx.app.log("EnemyController", "Spawned tentacle monster at " + spawnPos.x + ", " + spawnPos.y);
     }
 
     private void spawnEyeBat() {
-        System.out.println("spawned one eye bat");
+        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
+
+        Enemy enemy = new Enemy(EnemyType.EYEBAT, spawnPos.x, spawnPos.y);
+        enemies.add(enemy);
+
+        Gdx.app.log("EnemyController", "Spawned eye bat at " + spawnPos.x + ", " + spawnPos.y);
     }
 
     private void updateEnemies(float delta) {
@@ -207,11 +226,47 @@ public class EnemyController {
                 if (collision) {
                     boolean killed = enemy.hit(bullet.getDamage());
                     bullet.setActive(false);
+
+                    if (killed) {
+                        dropItem(enemy);
+                    }
+
                     break;
                 }
             }
         }
     }
+
+    private void dropItem(Enemy enemy) {
+        if (enemy.getType() == EnemyType.TREE) {
+            // TODO
+        }
+
+        // Decide what type of drop to create (if any)
+        float roll = MathUtils.random(0f, 100f);
+        String dropType = null;
+//
+//        if (roll < HEALTH_DROP_CHANCE) {
+//            dropType = "health";
+//        } else if (roll < HEALTH_DROP_CHANCE + SPEED_DROP_CHANCE) {
+//            dropType = "speed";
+//        } else if (roll < HEALTH_DROP_CHANCE + SPEED_DROP_CHANCE + AMMO_DROP_CHANCE) {
+//            dropType = "ammo";
+//        }
+
+//        // If we decided to drop something, create the drop
+//        if (dropType != null) {
+//            createDrop(enemy, dropType);
+//        }
+    }
+
+
+//    private void createDrop(Enemy enemy, String dropType) {
+//        // The actual implementation will be handled by the Enemy class
+//        // Just logging here to show the concept
+//        Gdx.app.log("EnemyController", "Created " + dropType + " drop at " +
+//            enemy.getPosX() + ", " + enemy.getPosY());
+//    }
 
     private void checkPlayerCollisions() {
         if (playerController == null || playerController.getPlayer() == null) return;
@@ -242,8 +297,10 @@ public class EnemyController {
             Circle enemyCircle = new Circle(enemyX, enemyY, enemyRadius);
 
             if (enemy.isActive() && Intersector.overlaps(playerCircle, enemyCircle)) {
+                playerController.getPlayer().setPlayerHealth(
+                    playerController.getPlayer().getPlayerHealth() - 1
+                );
 
-                // TODO: Add damage to player
                 Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
             } else if (!enemy.isActive() && enemy.isDropActive()) {
                 if (Intersector.overlaps(playerCircle, enemyCircle)) {
@@ -269,10 +326,24 @@ public class EnemyController {
 
                     if (enemy.getType() == EnemyType.TREE) {
                         scale = 2.2f;
+                    } else if (enemy.getType() == EnemyType.TENTACLE) {
+                        scale = 1.5f;
                     }
 
                     sprite.setSize(currentFrame.getWidth() * scale, currentFrame.getHeight() * scale);
                     sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
+
+                    if (enemy.getType() != EnemyType.TREE) {
+                        float playerX = playerController.getPlayer().getPosX();
+                        float enemyX = enemy.getPosX();
+
+                        if (enemyX < playerX) {
+                            sprite.setFlip(false, false);
+                        } else {
+                            sprite.setFlip(true, false);
+                        }
+                    }
+
                     sprite.draw(Main.getBatch());
                 }
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {

@@ -3,7 +3,7 @@ package com.untilDawn.models.enums;
 public enum EnemyType {
     TREE("Tree", 1000, 0, "Images/Enemies/Tree/tree0.png", false),
     EYEBAT("EyeBat", 50, 2, "Images/Enemies/eyebat/eyebat0.png", true),
-    TENTACLE("TentacleMonster", 25, 1, "Images/Enemies/tentacle/tentacle0.png", true),
+    TENTACLE("TentacleMonster", 25, 1, "Images/Enemies/tentaclemonster/tentaclemonster0.png", true),
 
     ;
 
@@ -33,7 +33,7 @@ public enum EnemyType {
     public float getSpeed() {
         return speed;
     }
-    
+
     public String getTexturePath() {
         return texturePath;
     }

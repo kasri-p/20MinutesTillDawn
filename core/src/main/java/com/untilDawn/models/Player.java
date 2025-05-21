@@ -11,7 +11,7 @@ public class Player {
     private Sprite playerSprite = new Sprite(playerTexture);
     private float posX = 0;
     private float posY = 0;
-    private float playerHealth = 100;
+    private int playerHealth;
     private Rectangle boundingBox;
     private float time = 0;
     private float speed = 5;
@@ -19,12 +19,15 @@ public class Player {
     private boolean isPlayerRunning = false;
     private Characters character;
 
+    private int XP;
+
     public Player(Characters character) {
         playerSprite.setSize(playerTexture.getWidth() * 2, playerTexture.getHeight() * 2);
         playerSprite.setOriginCenter();
         boundingBox = new Rectangle(0, 0, playerTexture.getWidth() * 3, playerTexture.getHeight() * 3);
         this.character = character;
         this.speed = character.getSpeed();
+        this.playerHealth = character.getHp();
     }
 
     public float getSpeed() {
@@ -72,11 +75,11 @@ public class Player {
         );
     }
 
-    public float getPlayerHealth() {
+    public int getPlayerHealth() {
         return playerHealth;
     }
 
-    public void setPlayerHealth(float playerHealth) {
+    public void setPlayerHealth(int playerHealth) {
         this.playerHealth = playerHealth;
     }
 
@@ -118,5 +121,9 @@ public class Player {
 
     public void dispose() {
         playerTexture.dispose();
+    }
+
+    public void addXP(int xp) {
+        this.XP += xp;
     }
 }

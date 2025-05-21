@@ -40,16 +40,14 @@ public class Bullet {
         boundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2);
     }
 
-    // Update method for bullet physics
     public void update(float delta) {
         if (!isActive) return;
 
-        // Store previous position for trajectory collision
         previousPosition.set(position);
 
         // Update position based on direction and speed
         if (direction != null) {
-            position.x += direction.x * speed * delta * 60; // Normalize by frame rate
+            position.x += direction.x * speed * delta * 60;
             position.y += direction.y * speed * delta * 60;
 
             // Update sprite and collision shapes
