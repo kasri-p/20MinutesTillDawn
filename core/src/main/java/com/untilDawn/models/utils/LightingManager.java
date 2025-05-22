@@ -17,7 +17,7 @@ public class LightingManager implements Disposable {
         this.lightTexture = createLightTexture(256);
         this.shadowTexture = createShadowTexture();
         this.lightRadius = 300f;
-        this.ambientIntensity = 0.4f; // Increased from 0.3f to 0.4f for more brightness
+        this.ambientIntensity = 0.5f; // Increased from 0.4f to 0.5f for more brightness
     }
 
     public static LightingManager getInstance() {
@@ -74,8 +74,8 @@ public class LightingManager implements Disposable {
 
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        // Lighter dark purple/blue-black color with even less opacity
-        batch.setColor(0.18f, 0.17f, 0.22f, 0.7f);
+        // Brighter shadow overlay - reduced opacity from 0.7f to 0.55f
+        batch.setColor(0.18f, 0.17f, 0.22f, 0.55f);
 
         batch.draw(shadowTexture,
             camera.position.x - camera.viewportWidth / 2,

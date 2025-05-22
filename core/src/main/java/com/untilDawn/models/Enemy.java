@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.models.enums.EnemyType;
+import com.untilDawn.models.utils.GameAssetManager;
 
 public class Enemy {
     private final EnemyType type;
@@ -186,6 +187,11 @@ public class Enemy {
         if (health <= 0 && isActive) {
             isActive = false;
             dropItem();
+            if (type == EnemyType.EYEBAT) {
+                GameAssetManager.getGameAssetManager().playBatDeath();
+            } else if (type != EnemyType.TREE) {
+                GameAssetManager.getGameAssetManager().playSplash();
+            }
             return true;
         }
 
@@ -196,7 +202,6 @@ public class Enemy {
         isFlashing = true;
         flashTimer = 0;
 
-        // Start with a softer flash
         Color initialFlash = new Color(
             originalColor.r * 0.4f + flashColor.r * 0.6f,
             originalColor.g * 0.4f + flashColor.g * 0.6f,
@@ -228,13 +233,12 @@ public class Enemy {
     }
 
     private void createDropSprite() {
-        // TODO
         String dropTexturePath = "Images/drops/" + dropType + ".png";
-
+        int size = dropType.equals("experience") ? 12 : 30;
         try {
             dropTexture = new Texture(Gdx.files.internal(dropTexturePath));
             dropSprite = new Sprite(dropTexture);
-            dropSprite.setSize(30, 30);
+            dropSprite.setSize(size, size);
             dropSprite.setPosition(posX - 15, posY - 15);
             dropSprite.setOriginCenter();
         } catch (Exception e) {
@@ -244,21 +248,21 @@ public class Enemy {
     }
 
     public boolean collectDrop(Player player) {
-//        if (!dropActive) return false;
-//
-//        Rectangle dropRect = new Rectangle(
-//            dropSprite.getX(),
-//            dropSprite.getY(),
-//            dropSprite.getWidth(),
-//            dropSprite.getHeight()
-//        );
-//
-//        if (dropRect.overlaps(player.getBoundingBox())) {
-//            applyDropEffect(player);
-//            dropActive = false;
-//            return true;
-//        }
-//
+        if (!dropActive) return false;
+
+        Rectangle dropRect = new Rectangle(
+            dropSprite.getX(),
+            dropSprite.getY(),
+            dropSprite.getWidth(),
+            dropSprite.getHeight()
+        );
+
+        if (dropRect.overlaps(player.getBoundingBox())) {
+            applyDropEffect(player);
+            dropActive = false;
+            GameAssetManager.getGameAssetManager().playObtain();
+            return true;
+        }
         return false;
     }
 
@@ -271,12 +275,10 @@ public class Enemy {
                     health = player.getCharacter().getHp();
                 }
                 player.setPlayerHealth(health);
-                Gdx.app.log("Drop", "Player collected health drop. New health: " + player.getPlayerHealth());
                 break;
 
             case "experience":
                 player.addXP(3);
-                Gdx.app.log("Drop", "Player collected experience drop. New score: " + App.getLoggedInUser().getScore());
                 break;
 
             default:

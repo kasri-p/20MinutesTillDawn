@@ -95,6 +95,7 @@ public class GameView implements Screen, InputProcessor {
             grayscaleShader.disable(Main.getBatch());
         }
 
+        // Render the HUD after everything else
         gameHUD.render();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -104,6 +105,7 @@ public class GameView implements Screen, InputProcessor {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        gameHUD.resize(width, height);
     }
 
     @Override

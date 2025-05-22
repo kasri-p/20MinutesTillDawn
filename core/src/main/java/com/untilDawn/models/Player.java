@@ -18,6 +18,7 @@ public class Player {
     private boolean isPlayerIdle = true;
     private boolean isPlayerRunning = false;
     private Characters character;
+    private int level = 1;
 
     private int XP;
 
@@ -125,5 +126,33 @@ public class Player {
 
     public void addXP(int xp) {
         this.XP += xp;
+        updateLevel();
+    }
+
+    private void updateLevel() {
+        int tempXP = XP;
+        int newLevel = 1;
+        int xpNeeded = 20;
+
+        while (tempXP >= xpNeeded) {
+            tempXP -= xpNeeded;
+            newLevel++;
+            xpNeeded = 20 * newLevel;
+        }
+
+        // If level has increased
+        if (newLevel > level) {
+//            levelUp(newLevel);
+        }
+
+        this.level = newLevel;
+    }
+
+    public int getXP() {
+        return XP;
+    }
+
+    public int getLevel() {
+        return level;
     }
 }

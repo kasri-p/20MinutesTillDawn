@@ -31,10 +31,26 @@ public class GameAssetManager {
     private final Sound bloodSplash = Gdx.audio.newSound(Gdx.files.internal("Sounds/effects/bloodSplash.wav"));
     private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
     private final Sound obtainSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/ObtainPoints.wav"));
+    private final Sound batDeathSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/batDeath.wav"));
 
+    private final Texture heartAnimation0 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_0.png"));
+    private final Texture heartAnimation1 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_1.png"));
+    private final Texture heartAnimation2 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_2.png"));
+    private final Texture heartAnimation3 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_3.png"));
+
+    private final Texture levelUpAnimation1 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp1.png"));
+    private final Texture levelUpAnimation2 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp2.png"));
+    private final Texture levelUpAnimation3 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp3.png"));
+    private final Texture levelUpAnimation4 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp4.png"));
+    private final Texture levelUpAnimation5 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp5.png"));
+    private final Texture levelUpAnimation6 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp6.png"));
+    private final Texture levelUpAnimation7 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp7.png"));
+    private final Texture levelUpAnimation8 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp8.png"));
+
+    private final Animation<Texture> levelUpAnimation = new Animation<>(0.1f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
     private int footstepsCounter = 1;
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
-
+    private Animation<Texture> heartAnimation = new Animation<>(0.1f, heartAnimation0, heartAnimation1, heartAnimation2, heartAnimation3);
     GameAssetManager() {
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep2.wav")));
@@ -46,6 +62,10 @@ public class GameAssetManager {
             gameAssetManager = new GameAssetManager();
         }
         return gameAssetManager;
+    }
+
+    public Animation<Texture> getLevelUpAnimation() {
+        return levelUpAnimation;
     }
 
     public Skin getSkin() {
@@ -104,8 +124,9 @@ public class GameAssetManager {
         return animation;
     }
 
+    // A fixed version of getWeaponReloadAnimation method in GameAssetManager
     public Animation<Texture> getWeaponReloadAnimation(Weapons weapon) {
-        String weaponName = weapon.getName().replaceAll("\\s+", "");
+        String weaponName = weapon.getName().replaceAll("\\s+", "").toLowerCase();
         String cacheKey = weaponName + "_reload";
 
         if (weaponReloadAnimationCache.containsKey(cacheKey)) {
@@ -113,12 +134,17 @@ public class GameAssetManager {
         }
 
         Array<Texture> frames = new Array<>();
-        for (int i = 0; i < 3; i++) {
+
+        for (int i = 0; i < 4; i++) {
             String framePath = "Images/weapons/" + weaponName + "/reload" + i + ".png";
 
             if (Gdx.files.internal(framePath).exists()) {
-                Texture frameTex = new Texture(Gdx.files.internal(framePath));
-                frames.add(frameTex);
+                try {
+                    Texture frameTex = new Texture(Gdx.files.internal(framePath));
+                    frames.add(frameTex);
+                } catch (Exception e) {
+                    Gdx.app.error("GameAssetManager", "Error loading weapon reload texture: " + framePath + ", " + e.getMessage());
+                }
             } else {
                 Gdx.app.log("GameAssetManager", "Weapon reload texture not found: " + framePath);
             }
@@ -129,10 +155,14 @@ public class GameAssetManager {
         }
 
         // Adjust duration based on weapon reload time for smoother animations
-        float frameDuration = weapon.getReloadTime() / frames.size;
+        float frameDuration = weapon.getReloadTime() / (float) frames.size;
         Animation<Texture> animation = new Animation<>(frameDuration, frames);
         weaponReloadAnimationCache.put(cacheKey, animation);
         return animation;
+    }
+
+    public Animation<Texture> getHeartAnimation() {
+        return heartAnimation;
     }
 
     public void playShot() {
@@ -156,6 +186,12 @@ public class GameAssetManager {
     public void playObtain() {
         if (App.isSFX()) {
             obtainSound.play();
+        }
+    }
+
+    public void playBatDeath() {
+        if (App.isSFX()) {
+            batDeathSound.play();
         }
     }
 

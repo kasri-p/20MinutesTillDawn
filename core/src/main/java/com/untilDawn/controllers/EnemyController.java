@@ -98,6 +98,8 @@ public class EnemyController {
     }
 
     private void placeTrees() {
+        ArrayList<Circle> treePositions = new ArrayList<>();
+
         for (int i = 0; i < numberOfTrees; i++) {
             float x = MathUtils.random(100, mapWidth - 100);
             float y = MathUtils.random(100, mapHeight - 100);
@@ -105,11 +107,27 @@ public class EnemyController {
             float playerX = playerController.getPlayer().getPosX();
             float playerY = playerController.getPlayer().getPosY();
 
+            // Check distance from player
             float distanceToPlayer = Vector2.dst(x, y, playerX, playerY);
 
-            if (distanceToPlayer > 300) {
+            // Define minimum distance between trees
+            float treeRadius = 75f; // Adjust based on your tree size
+            boolean tooCloseToOtherTree = false;
+
+            // Check distance from other trees
+            for (Circle existingTree : treePositions) {
+                float distanceToTree = Vector2.dst(x, y, existingTree.x, existingTree.y);
+                if (distanceToTree < (treeRadius * 2)) {
+                    tooCloseToOtherTree = true;
+                    break;
+                }
+            }
+
+            if (distanceToPlayer > 300 && !tooCloseToOtherTree) {
                 Enemy tree = new Enemy(EnemyType.TREE, x, y);
                 enemies.add(tree);
+
+                treePositions.add(new Circle(x, y, treeRadius));
             } else {
                 i--;
             }
@@ -220,9 +238,6 @@ public class EnemyController {
                 }
 
                 if (collision) {
-                    if (enemy.getType() != EnemyType.TREE) {
-                        GameAssetManager.getGameAssetManager().playSplash();
-                    }
                     boolean killed = enemy.hit(bullet.getDamage());
                     bullet.setActive(false);
 
@@ -295,11 +310,14 @@ public class EnemyController {
             Circle enemyCircle = new Circle(enemyX, enemyY, enemyRadius);
 
             if (enemy.isActive() && Intersector.overlaps(playerCircle, enemyCircle)) {
+                Gdx.app.log("Player Health", "Player health: " + playerController.getPlayer().getPlayerHealth());
+
                 playerController.getPlayer().setPlayerHealth(
                     playerController.getPlayer().getPlayerHealth() - 1
                 );
 
                 Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
+                return;
             } else if (!enemy.isActive() && enemy.isDropActive()) {
                 if (Intersector.overlaps(playerCircle, enemyCircle)) {
                     enemy.collectDrop(playerController.getPlayer());

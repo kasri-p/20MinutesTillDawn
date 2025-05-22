@@ -66,14 +66,14 @@ public class GameController {
         if (playerController.getPlayer().getPlayerHealth() <= 0) {
             gameOver = true;
             App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
-
+            Gdx.app.log("GameController", "Player health:" + playerController.getPlayer().getPlayerHealth());
             Gdx.app.postRunnable(() -> {
-                try {
-                    Thread.sleep(2000); // 2-second delay
-                    Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(2000); // 2-second delay
+                Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
             });
         }
 

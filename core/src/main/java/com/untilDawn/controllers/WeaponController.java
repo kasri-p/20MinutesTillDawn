@@ -27,14 +27,16 @@ public class WeaponController {
     private float reloadTimer = 0;
     private float reloadDuration = 1.0f;
 
-    // Reload bar ahh progress
+    // Reload bar progress
     private Texture reloadBarBg;
     private Texture reloadBarFill;
     private float reloadBarWidth = 60f;
     private float reloadBarHeight = 8f;
-    private float reloadBarOffsetY = 37f;// Distance above player head
+    private float reloadBarOffsetY = 37f; // Distance above player head
     private Animation<Texture> reloadAnimation;
     private float reloadAnimationTime = 0;
+    private boolean usingReloadAnimation = false;
+    private Texture stillTexture;
 
     // Muzzle flash properties
     private Texture muzzleFlashTexture;
@@ -50,11 +52,24 @@ public class WeaponController {
 
         if (weapon.getWeapon() != null) {
             this.reloadDuration = weapon.getWeapon().getReloadTime();
+            // Load the still texture for the weapon
+            loadStillTexture();
         }
 
         muzzleFlashTexture = GameAssetManager.getGameAssetManager().getMuzzleFlash();
 
         updateMuzzleFlashProperties();
+    }
+
+    private void loadStillTexture() {
+        if (weapon.getWeapon() != null) {
+            String weaponName = weapon.getWeapon().getName().replaceAll("\\s+", "").toLowerCase();
+            String stillPath = "Images/weapons/" + weaponName + "/still.png";
+            if (Gdx.files.internal(stillPath).exists()) {
+                stillTexture = new Texture(Gdx.files.internal(stillPath));
+                weapon.getSprite().setTexture(stillTexture);
+            }
+        }
     }
 
     private void updateMuzzleFlashProperties() {
@@ -113,7 +128,6 @@ public class WeaponController {
             }
 
             float angle = (float) Math.toDegrees(Math.atan2(dirY, dirX));
-
 
             float weaponOffsetDistance = 23.0f;
             float weaponPosX = playerX + dirX * weaponOffsetDistance;
@@ -195,6 +209,15 @@ public class WeaponController {
         if (isReloading) {
             reloadTimer += deltaTime;
 
+            if (usingReloadAnimation) {
+                reloadAnimationTime += deltaTime;
+
+                if (reloadAnimation != null) {
+                    Texture currentFrame = reloadAnimation.getKeyFrame(reloadAnimationTime, false);
+                    weapon.getSprite().setTexture(currentFrame);
+                }
+            }
+
             if (reloadTimer >= reloadDuration) {
                 completeReload();
             }
@@ -204,6 +227,12 @@ public class WeaponController {
     private void completeReload() {
         isReloading = false;
         reloadTimer = 0;
+        usingReloadAnimation = false;
+
+        // Reset to the still texture when reload is complete
+        if (stillTexture != null) {
+            weapon.getSprite().setTexture(stillTexture);
+        }
 
         if (weapon.getWeapon() != null) {
             weapon.setAmmo(weapon.getWeapon().getAmmoMax());
@@ -233,7 +262,7 @@ public class WeaponController {
         float progress = reloadTimer / reloadDuration;
         float indicatorWidth = reloadBarFill.getWidth();
         float indicatorHeight = reloadBarHeight;
-
+        
         float indicatorX = barX + (reloadBarWidth - indicatorWidth) * progress;
 
         Main.getBatch().draw(reloadBarFill, indicatorX, barY, indicatorWidth, indicatorHeight);
@@ -331,10 +360,35 @@ public class WeaponController {
         weapon.setAmmo(weapon.getAmmo() - 1);
     }
 
+    // Updated WeaponController.startReload() method
     public void startReload() {
         if (!isReloading && weapon.getAmmo() < weapon.getWeapon().getAmmoMax()) {
             isReloading = true;
             reloadTimer = 0;
+            reloadAnimationTime = 0;
+
+            if (weapon.getWeapon() != null) {
+                try {
+                    reloadAnimation = GameAssetManager.getGameAssetManager().getWeaponReloadAnimation(weapon.getWeapon());
+
+                    if (reloadAnimation != null) {
+                        usingReloadAnimation = true;
+
+                        Texture firstFrame = reloadAnimation.getKeyFrame(0);
+                        if (firstFrame != null) {
+                            weapon.getSprite().setTexture(firstFrame);
+                        }
+                    } else {
+                        usingReloadAnimation = false;
+                        if (stillTexture != null) {
+                            weapon.getSprite().setTexture(stillTexture);
+                        }
+                    }
+                } catch (Exception e) {
+                    Gdx.app.error("WeaponController", "Error loading reload animation: " + e.getMessage());
+                    usingReloadAnimation = false;
+                }
+            }
 
             GameAssetManager.getGameAssetManager().playReloadSound();
         }
@@ -344,6 +398,12 @@ public class WeaponController {
         if (isReloading) {
             isReloading = false;
             reloadTimer = 0;
+            usingReloadAnimation = false;
+
+            // Reset to still texture
+            if (stillTexture != null) {
+                weapon.getSprite().setTexture(stillTexture);
+            }
         }
     }
 
@@ -389,7 +449,6 @@ public class WeaponController {
         return distanceSquared > maxDistanceSquared;
     }
 
-
     public Weapon getWeapon() {
         return weapon;
     }
@@ -401,6 +460,7 @@ public class WeaponController {
             this.reloadDuration = weapon.getWeapon().getReloadTime();
         }
 
+        loadStillTexture();
         updateMuzzleFlashProperties();
     }
 
@@ -434,6 +494,10 @@ public class WeaponController {
         if (reloadBarFill != null) {
             reloadBarFill.dispose();
             reloadBarFill = null;
+        }
+        if (stillTexture != null) {
+            stillTexture.dispose();
+            stillTexture = null;
         }
     }
 }
