@@ -14,10 +14,16 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
 import com.untilDawn.models.App;
+import com.untilDawn.models.utils.GameAssetManager;
+import com.untilDawn.models.utils.GameSaveSystem;
 import com.untilDawn.models.utils.GrayscaleShader;
 import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.views.GameHUD;
+import com.untilDawn.views.StartMenu;
 import com.untilDawn.views.window.LevelUpWindow;
+import com.untilDawn.views.window.PauseMenuWindow;
+
+import java.util.Map;
 
 public class GameView implements Screen, InputProcessor {
     private Stage stage;
@@ -36,6 +42,9 @@ public class GameView implements Screen, InputProcessor {
     private LevelUpWindow levelUpWindow;
     private boolean gameIsPaused = false;
     private Skin skin;
+
+    // Pause menu
+    private PauseMenuWindow pauseMenuWindow;
 
     public GameView(Skin skin) {
         this.skin = skin;
@@ -132,6 +141,34 @@ public class GameView implements Screen, InputProcessor {
         Gdx.input.setInputProcessor(stage);
     }
 
+    private void showPauseMenu() {
+        gameIsPaused = true;
+
+        pauseMenuWindow = new PauseMenuWindow(
+            skin,
+            controller.getPlayerController().getPlayer(),
+            stage,
+            () -> resumeGame(), // onResume
+            () -> giveUpGame(),  // onGiveUp
+            () -> saveAndExitGame() // onSaveAndExit
+        );
+
+        // Clear any existing actors that might interfere
+        stage.clear();
+        stage.addActor(pauseMenuWindow);
+
+        // Force the window to be centered and on top
+        pauseMenuWindow.toFront();
+        pauseMenuWindow.setZIndex(1000); // Ensure it's on top
+
+        // Change input processor to stage to handle window interactions
+        Gdx.input.setInputProcessor(stage);
+
+        // Debug: Log window position
+        System.out.println("Pause menu created at: " + pauseMenuWindow.getX() + ", " + pauseMenuWindow.getY());
+        System.out.println("Window size: " + pauseMenuWindow.getWidth() + "x" + pauseMenuWindow.getHeight());
+    }
+
     private void resumeGame() {
         gameIsPaused = false;
 
@@ -141,8 +178,53 @@ public class GameView implements Screen, InputProcessor {
             levelUpWindow = null;
         }
 
+        // Remove pause menu if it exists
+        if (pauseMenuWindow != null) {
+            pauseMenuWindow.remove();
+            pauseMenuWindow = null;
+        }
+
         // Restore input processor to this GameView
         Gdx.input.setInputProcessor(this);
+    }
+
+    private void giveUpGame() {
+        gameIsPaused = false;
+
+        // Update user stats
+        if (App.getLoggedInUser() != null) {
+            App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
+            App.save();
+        }
+
+        // Return to start menu
+        StartMenu startMenu = new StartMenu(GameAssetManager.getGameAssetManager().getSkin());
+        Main.getMain().setScreen(startMenu);
+    }
+
+    private void saveAndExitGame() {
+        if (App.getLoggedInUser() != null && !App.getLoggedInUser().isGuest()) {
+            // Save the current game state
+            boolean saved = GameSaveSystem.saveGame(
+                App.getLoggedInUser(),
+                App.getGame(),
+                controller.getPlayerController().getPlayer(),
+                controller.getGameTime()
+            );
+
+            if (saved) {
+                Gdx.app.log("GameView", "Game saved successfully");
+            } else {
+                Gdx.app.error("GameView", "Failed to save game");
+            }
+        }
+
+        // Save user data
+        App.save();
+
+        // Return to main menu
+        MainMenu mainMenu = new MainMenu(GameAssetManager.getGameAssetManager().getSkin());
+        Main.getMain().setScreen(mainMenu);
     }
 
     @Override
@@ -180,16 +262,34 @@ public class GameView implements Screen, InputProcessor {
         if (levelUpWindow != null) {
             levelUpWindow.dispose();
         }
+        if (pauseMenuWindow != null) {
+            pauseMenuWindow.remove();
+        }
     }
 
     @Override
     public boolean keyDown(int keycode) {
         // Only process game input if not paused
         if (!gameIsPaused) {
-            // Handle escape key to pause game or show menu
+            // Handle escape key to show pause menu
             if (keycode == com.badlogic.gdx.Input.Keys.ESCAPE) {
-                // You could implement a pause menu here
+                showPauseMenu();
                 return true;
+            }
+
+            // Handle pause key from keybinds
+            Map<String, String> keyBinds = App.getKeybinds();
+            String pauseKey = keyBinds.get("Pause");
+            if (pauseKey != null) {
+                try {
+                    int pauseKeyCode = com.badlogic.gdx.Input.Keys.valueOf(pauseKey);
+                    if (keycode == pauseKeyCode) {
+                        showPauseMenu();
+                        return true;
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Invalid key name, ignore
+                }
             }
         }
         return false;

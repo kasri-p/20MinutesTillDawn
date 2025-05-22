@@ -109,12 +109,10 @@ public class GameHUD {
 
     private void drawGameTimer(SpriteBatch batch) {
         float gameTime = gameController.getGameTime();
-        int timeLimit = gameController.getTimeLimit(); // You'll need to add this method to GameController
+        int timeLimit = gameController.getTimeLimit();
 
-        // Calculate remaining time in seconds
         float remainingTime = Math.max(0, (timeLimit * 60) - gameTime);
 
-        // Convert to minutes and seconds
         int minutes = (int) (remainingTime / 60);
         int seconds = (int) (remainingTime % 60);
 
@@ -135,19 +133,16 @@ public class GameHUD {
             font.setColor(Color.WHITE); // White for normal time
         }
 
-        // Draw timer label and time
         font.draw(batch, "TIME", x, y + 20);
         font.draw(batch, timeText, x, y);
 
-        // Add pulsing effect when time is running low
         if (remainingTime <= 10 && remainingTime > 0) {
-            float pulse = 1.0f + 0.3f * (float) Math.sin(animationTime * 8); // Fast pulse
+            float pulse = 1.0f + 0.3f * (float) Math.sin(animationTime * 8);
             font.getData().setScale(1.2f * pulse);
             font.draw(batch, timeText, x, y);
-            font.getData().setScale(1.2f); // Reset scale
+            font.getData().setScale(1.2f);
         }
 
-        // Show warning when time is almost up
         if (remainingTime <= 5 && remainingTime > 0) {
             smallFont.setColor(Color.RED);
             smallFont.draw(batch, "TIME'S UP!", x - 20, y - 25);
@@ -170,10 +165,8 @@ public class GameHUD {
             Texture heartFrame = heartAnimation.getKeyFrame(animationTime, true);
 
             if (i < currentHealth) {
-                // Full heart
                 batch.setColor(Color.WHITE);
             } else {
-                // Empty heart
                 batch.setColor(0.3f, 0.3f, 0.3f, 0.8f);
             }
 
@@ -182,7 +175,6 @@ public class GameHUD {
 
         batch.setColor(Color.WHITE);
 
-        // Show regeneration indicator if active
         if (player.hasRegeneration()) {
             smallFont.setColor(Color.GREEN);
             smallFont.draw(batch, "REGEN", startX, startY - 20);

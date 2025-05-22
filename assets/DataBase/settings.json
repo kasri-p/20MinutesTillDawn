@@ -9,9 +9,9 @@
     "Move Up": "W",
     "Move Right": "D"
   },
-  "isSFX": false,
+  "isSFX": true,
   "language": "en",
   "currentMusicTrack": "South Of Heaven",
-  "musicVolume": 0.0,
+  "musicVolume": 0.13,
   "blackAndWhiteEnabled": false
 }

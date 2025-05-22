@@ -37,7 +37,6 @@ public class GameAssetManager {
     private final Texture heartAnimation0 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_0.png"));
     private final Texture heartAnimation1 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_1.png"));
     private final Texture heartAnimation2 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_2.png"));
-    private final Texture heartAnimation3 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_3.png"));
 
     private final Texture levelUpAnimation1 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp1.png"));
     private final Texture levelUpAnimation2 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp2.png"));
@@ -51,7 +50,7 @@ public class GameAssetManager {
     private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
     private int footstepsCounter = 1;
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
-    private Animation<Texture> heartAnimation = new Animation<>(0.5f, heartAnimation0, heartAnimation1, heartAnimation2, heartAnimation3);
+    private Animation<Texture> heartAnimation = new Animation<>(0.5f, heartAnimation0, heartAnimation1, heartAnimation2);
     private Texture panel = new Texture(Gdx.files.internal("Images/panel.png"));
 
     GameAssetManager() {
