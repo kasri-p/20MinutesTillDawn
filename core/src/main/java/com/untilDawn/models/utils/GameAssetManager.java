@@ -32,6 +32,7 @@ public class GameAssetManager {
     private final Sound shootSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/single_shot.wav"));
     private final Sound obtainSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/ObtainPoints.wav"));
     private final Sound batDeathSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/batDeath.wav"));
+    private final Sound levelUpSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/LevelUp.wav"));
 
     private final Texture heartAnimation0 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_0.png"));
     private final Texture heartAnimation1 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_1.png"));
@@ -50,7 +51,8 @@ public class GameAssetManager {
     private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
     private int footstepsCounter = 1;
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
-    private Animation<Texture> heartAnimation = new Animation<>(0.1f, heartAnimation0, heartAnimation1, heartAnimation2, heartAnimation3);
+    private Animation<Texture> heartAnimation = new Animation<>(0.5f, heartAnimation0, heartAnimation1, heartAnimation2, heartAnimation3);
+    private Texture panel = new Texture(Gdx.files.internal("Images/panel.png"));
 
     GameAssetManager() {
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
@@ -63,6 +65,10 @@ public class GameAssetManager {
             gameAssetManager = new GameAssetManager();
         }
         return gameAssetManager;
+    }
+
+    public Texture getPanel() {
+        return panel;
     }
 
     public Animation<Texture> getLevelUpAnimation() {
@@ -193,6 +199,12 @@ public class GameAssetManager {
     public void playBatDeath() {
         if (App.isSFX()) {
             batDeathSound.play();
+        }
+    }
+
+    public void playLevelUp() {
+        if (App.isSFX()) {
+            levelUpSound.play();
         }
     }
 

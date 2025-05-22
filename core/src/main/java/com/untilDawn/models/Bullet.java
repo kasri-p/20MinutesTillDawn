@@ -11,7 +11,7 @@ import com.untilDawn.models.utils.GameAssetManager;
 public class Bullet {
     private Texture texture = new Texture(GameAssetManager.getGameAssetManager().getBullet());
     private Sprite sprite = new Sprite(texture);
-    private int damage = 5;
+    private int damage;
     private int x;
     private int y;
     private Vector2 direction;

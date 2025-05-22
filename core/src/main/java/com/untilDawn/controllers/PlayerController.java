@@ -8,23 +8,24 @@ import com.badlogic.gdx.math.MathUtils;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Player;
+import com.untilDawn.models.enums.Abilities;
 import com.untilDawn.models.utils.GameAssetManager;
 
 import java.util.Map;
 
 public class PlayerController {
+    private final float ABILITY_COOLDOWN = 0.5f;
     private Player player;
     private boolean recentlyFlipped = false;
-
     private Animation<Texture> currentAnimation;
     private float stateTime = 0;
     private boolean isMoving = false;
-
     private WeaponController weaponController;
-
     private Texture mapTexture;
     private float mapWidth;
     private float mapHeight;
+    // Ability cooldowns to prevent spam activation
+    private float lastAbilityActivation = 0f;
 
     public PlayerController(Player player) {
         this.player = player;
@@ -37,6 +38,7 @@ public class PlayerController {
     public void update() {
         float deltaTime = Gdx.graphics.getDeltaTime();
         stateTime += deltaTime;
+        lastAbilityActivation += deltaTime;
 
         player.update(deltaTime);
 
@@ -56,6 +58,7 @@ public class PlayerController {
         }
 
         handlePlayerInput();
+        handleAbilityInput();
     }
 
     private void drawLevelUpAnimation() {
@@ -153,6 +156,7 @@ public class PlayerController {
         float newX = player.getPosX();
         float newY = player.getPosY();
         Map<String, String> keyBinds = App.getKeybinds();
+
         if (Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBinds.get("Move Up")))) {
             newY += player.getSpeed();
             isMoving = true;
@@ -189,6 +193,49 @@ public class PlayerController {
 
         player.setPosX(newX);
         player.setPosY(newY);
+    }
+
+    private void handleAbilityInput() {
+        if (lastAbilityActivation < ABILITY_COOLDOWN) {
+            return;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+            activateAbility(Abilities.DAMAGER);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+            activateAbility(Abilities.SPEEDY);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+            activateAbility(Abilities.SHIELD);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
+            activateAbility(Abilities.MULTISHOT);
+        }
+    }
+
+    private void activateAbility(Abilities ability) {
+        if (ability.canActivate()) {
+            switch (ability) {
+                case DAMAGER:
+                    player.activateDamager();
+                    break;
+                case SPEEDY:
+                    player.activateSpeedy();
+                    break;
+                case SHIELD:
+                    player.activateShield();
+                    break;
+                case MULTISHOT:
+                    player.activateMultishot();
+                    break;
+            }
+            lastAbilityActivation = 0f;
+
+            if (App.isSFX()) {
+                Main.getMain().getClickSound().play();
+            }
+        }
     }
 
     public Player getPlayer() {

@@ -1,14 +1,14 @@
 package com.untilDawn.models.enums;
 
 public enum Abilities {
-    VITALITY("Vitality", "Increases maximum HP by one unit, providing more survivability in combat", AbilityType.PASSIVE, "💙", 0f, 0f),
-    DAMAGER("Damager", "Increases weapon damage by 25% for 10 seconds, dealing devastating blows to enemies", AbilityType.ACTIVE, "⚔️", 10f, 30f),
-    PROCREASE("Procrease", "Increases weapon projectile count by one unit, allowing for wider area coverage", AbilityType.PASSIVE, "🎯", 0f, 0f),
-    AMOCREASE("Amocrease", "Increases maximum weapon ammunition by 5 units, reducing reload frequency", AbilityType.PASSIVE, "🔫", 0f, 0f),
-    SPEEDY("Speedy", "Doubles player movement speed for 10 seconds, enabling quick escapes and positioning", AbilityType.ACTIVE, "💨", 10f, 25f),
-    REGENERATION("Regeneration", "Slowly regenerates health over time, providing continuous healing", AbilityType.PASSIVE, "💚", 0f, 0f),
-    SHIELD("Shield", "Provides temporary invincibility for 3 seconds when activated", AbilityType.ACTIVE, "🛡️", 3f, 45f),
-    MULTISHOT("Multishot", "Fire 3 bullets in a spread pattern for 15 seconds", AbilityType.ACTIVE, "🌟", 15f, 20f);
+    VITALITY("Vitality", "Increases maximum HP by one unit, providing more survivability in combat", AbilityType.PASSIVE, "💙", 0f, 0f, "Images/Abilities/Vitality"),
+    DAMAGER("Damager", "Increases weapon damage by 25% for 10 seconds, dealing devastating blows to enemies", AbilityType.ACTIVE, "⚔️", 10f, 30f, "Images/Abilities/AmoDamage"),
+    PROCREASE("Procrease", "Increases weapon projectile count by one unit, allowing for wider area coverage", AbilityType.PASSIVE, "🎯", 0f, 0f, "Images/Abilities/doubleShot"),
+    AMOCREASE("Amocrease", "Increases maximum weapon ammunition by 5 units, reducing reload frequency", AbilityType.PASSIVE, "🔫", 0f, 0f, "Images/Abilities/Amo"),
+    SPEEDY("Speedy", "Doubles player movement speed for 10 seconds, enabling quick escapes and positioning", AbilityType.ACTIVE, "💨", 10f, 25f, "Images/Abilities/Speedy"),
+    REGENERATION("Regeneration", "Slowly regenerates health over time, providing continuous healing", AbilityType.PASSIVE, "💚", 0f, 0f, "Images/Abilities/Regeneration"),
+    SHIELD("Shield", "Provides temporary invincibility for 3 seconds when activated", AbilityType.ACTIVE, "🛡️", 3f, 45f, "Images/Abilities/HolyShield"),
+    MULTISHOT("Multishot", "Fire 3 bullets in a spread pattern for 15 seconds", AbilityType.ACTIVE, "🌟", 15f, 20f, "Images/Abilities/MultiShot");
 
     private final String name;
     private final String description;
@@ -16,18 +16,20 @@ public enum Abilities {
     private final String icon;
     private final float duration;
     private final float cooldown;
+    private final String imagePath;
 
     private boolean active = false;
     private float remainingDuration = 0;
     private float remainingCooldown = 0;
 
-    Abilities(String name, String description, AbilityType type, String icon, float duration, float cooldown) {
+    Abilities(String name, String description, AbilityType type, String icon, float duration, float cooldown, String imagePath) {
         this.name = name;
         this.description = description;
         this.type = type;
         this.icon = icon;
         this.duration = duration;
         this.cooldown = cooldown;
+        this.imagePath = imagePath;
     }
 
     public String getName() {
@@ -103,16 +105,8 @@ public enum Abilities {
         remainingCooldown = 0;
     }
 
-    public String getStatusText() {
-        if (type == AbilityType.PASSIVE) {
-            return "Passive";
-        } else if (active) {
-            return String.format("Active (%.1fs)", remainingDuration);
-        } else if (remainingCooldown > 0) {
-            return String.format("Cooldown (%.1fs)", remainingCooldown);
-        } else {
-            return "Ready";
-        }
+    public String getImagePath() {
+        return imagePath;
     }
 
     public enum AbilityType {

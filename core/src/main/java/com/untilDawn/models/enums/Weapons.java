@@ -2,7 +2,7 @@ package com.untilDawn.models.enums;
 
 
 public enum Weapons {
-    Revolver("Revolver", 6, 1, 1, 20),
+    Revolver("Revolver", 6, 1, 1, 100),
     Shotgun("Shotgun", 2, 1, 4, 10),
     Dual_Smg("Dual Smg", 24, 2, 1, 8);
 
@@ -43,6 +43,7 @@ public enum Weapons {
     }
 
     public int getDamage() {
+        System.out.println(damage);
         return damage;
     }
 

@@ -10,6 +10,7 @@ public class Weapon {
     private Weapons weapon;
     private Sprite sprite;
     private int ammo;
+    private int maxAmmoBonus = 0;
 
     public Weapon(Weapons weapon) {
         this.weapon = weapon;
@@ -20,7 +21,6 @@ public class Weapon {
         ammo = weapon.getAmmoMax();
     }
 
-
     public Sprite getSprite() {
         return sprite;
     }
@@ -30,11 +30,35 @@ public class Weapon {
     }
 
     public void setAmmo(int ammo) {
-        this.ammo = ammo;
+        this.ammo = Math.min(ammo, getMaxAmmoWithBonus());
     }
 
     public Weapons getWeapon() {
         return weapon;
     }
 
+    public int getMaxAmmoBonus() {
+        return maxAmmoBonus;
+    }
+
+    public void setMaxAmmoBonus(int maxAmmoBonus) {
+        this.maxAmmoBonus = maxAmmoBonus;
+    }
+
+    public int getMaxAmmoWithBonus() {
+        return weapon.getAmmoMax() + maxAmmoBonus;
+    }
+
+    public void applyAmmoBonus(int bonus) {
+        maxAmmoBonus += bonus;
+        if (ammo > getMaxAmmoWithBonus()) {
+            ammo = getMaxAmmoWithBonus();
+        }
+    }
+
+    public void dispose() {
+        if (texture != null) {
+            texture.dispose();
+        }
+    }
 }
