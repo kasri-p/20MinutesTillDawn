@@ -29,6 +29,13 @@ public class Player {
     private float levelUpAnimationTime = 0f;
     private Animation<Texture> levelUpAnimation;
 
+    // Invincibility properties
+    private boolean isInvincible = false;
+    private float invincibilityTimer = 0f;
+    private float invincibilityDuration = 1f;
+    private float flashTimer = 0f;
+    private boolean isFlashing = false;
+
     public Player(Characters character) {
         playerSprite.setSize(playerTexture.getWidth() * 2, playerTexture.getHeight() * 2);
         playerSprite.setOriginCenter();
@@ -39,6 +46,64 @@ public class Player {
 
         // Get the level up animation from GameAssetManager
         this.levelUpAnimation = GameAssetManager.getGameAssetManager().getLevelUpAnimation();
+    }
+
+    public void update(float delta) {
+        // Update invincibility
+        updateInvincibility(delta);
+
+        // Update level up animation
+        updateLevelUpAnimation(delta);
+
+        // Update position
+        updateBoundingBox();
+    }
+
+    private void updateInvincibility(float delta) {
+        if (isInvincible) {
+            invincibilityTimer += delta;
+            flashTimer += delta;
+
+            // Flash effect during invincibility
+            if (flashTimer >= 0.1f) { // Flash every 0.1 seconds
+                isFlashing = !isFlashing;
+                flashTimer = 0f;
+
+                if (isFlashing) {
+                    playerSprite.setColor(1f, 1f, 1f, 0.5f); // Semi-transparent
+                } else {
+                    playerSprite.setColor(1f, 1f, 1f, 1f); // Full opacity
+                }
+            }
+
+            // End invincibility after duration
+            if (invincibilityTimer >= invincibilityDuration) {
+                isInvincible = false;
+                invincibilityTimer = 0f;
+                flashTimer = 0f;
+                isFlashing = false;
+                playerSprite.setColor(1f, 1f, 1f, 1f); // Reset to full opacity
+            }
+        }
+    }
+
+    public void setInvincible(boolean invincible, float duration) {
+        this.isInvincible = invincible;
+        this.invincibilityDuration = duration;
+        this.invincibilityTimer = 0f;
+        this.flashTimer = 0f;
+
+        if (!invincible) {
+            isFlashing = false;
+            playerSprite.setColor(1f, 1f, 1f, 1f); // Reset color
+        }
+    }
+
+    public void takeDamage(int damage) {
+        if (!isInvincible) {
+            playerHealth -= 1;
+            Gdx.app.log("Player", "Player took " + damage + " damage. Health: " + playerHealth);
+        }
     }
 
     public float getSpeed() {
@@ -130,6 +195,10 @@ public class Player {
         return character;
     }
 
+    public boolean isInvincible() {
+        return isInvincible;
+    }
+
     public void dispose() {
         playerTexture.dispose();
     }
@@ -212,4 +281,3 @@ public class Player {
         return level;
     }
 }
-

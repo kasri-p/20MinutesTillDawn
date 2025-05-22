@@ -84,6 +84,7 @@ public class PreGameMeuController {
         Game game = new Game();
         game.setPlayer(player);
         game.setSelectedWeapon(selectedWeapon);
+        game.setTimeLimit(selectedTime);
 
         User currentUser = App.getLoggedInUser();
         if (currentUser != null) {

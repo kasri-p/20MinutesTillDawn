@@ -38,6 +38,10 @@ public class PreGameMenu implements Screen {
     private Label weaponInfoLabel;
     private TextButton playButton;
 
+    // Time limit selection
+    private ButtonGroup<TextButton> timeLimitGroup;
+    private TextButton time2Button, time5Button, time10Button, time20Button;
+
     private Texture selectorTexture;
     private Texture selectorHighlightTexture;
     private Texture panelTexture;
@@ -50,6 +54,7 @@ public class PreGameMenu implements Screen {
 
     private int selectedCharacter = -1;
     private int selectedWeapon = -1;
+    private int selectedTimeLimit = 5; // Default 5 minutes
     private Characters[] availableCharacters = {
         Characters.Shana,
         Characters.Diamond,
@@ -144,6 +149,16 @@ public class PreGameMenu implements Screen {
         createWeaponBubbles(weaponBubblesTable);
         selectorsTable.add(weaponBubblesTable).colspan(3).pad(5 * heightFactor).row();
 
+        // Time limit selection section
+        Label timeLimitLabel = new Label("Select Time Limit", skin);
+        timeLimitLabel.setAlignment(Align.center);
+        timeLimitLabel.setFontScale(Math.min(widthFactor, heightFactor) * 0.9f);
+        selectorsTable.add(timeLimitLabel).colspan(3).pad(5 * heightFactor).row();
+
+        Table timeLimitTable = new Table();
+        createTimeLimitButtons(timeLimitTable);
+        selectorsTable.add(timeLimitTable).colspan(3).pad(5 * heightFactor).row();
+
         TextButton.TextButtonStyle playButtonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
         playButtonStyle.fontColor = Color.SALMON;
         playButtonStyle.overFontColor = Color.valueOf("#f1cedb");
@@ -198,6 +213,77 @@ public class PreGameMenu implements Screen {
 
         stage.addActor(panelContainer);
         stage.addActor(mainTable);
+    }
+
+    private void createTimeLimitButtons(Table timeLimitTable) {
+        TextButton.TextButtonStyle timeLimitStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
+        timeLimitStyle.fontColor = Color.WHITE;
+        timeLimitStyle.overFontColor = Color.LIGHT_GRAY;
+        timeLimitStyle.downFontColor = Color.GRAY;
+        timeLimitStyle.checkedFontColor = Color.YELLOW;
+
+        time2Button = new TextButton("2 min", timeLimitStyle);
+        time5Button = new TextButton("5 min", timeLimitStyle);
+        time10Button = new TextButton("10 min", timeLimitStyle);
+        time20Button = new TextButton("20 min", timeLimitStyle);
+
+        // Create button group for exclusive selection
+        timeLimitGroup = new ButtonGroup<>(time2Button, time5Button, time10Button, time20Button);
+        timeLimitGroup.setMaxCheckCount(1);
+        timeLimitGroup.setMinCheckCount(1);
+
+        // Set default selection
+        time5Button.setChecked(true);
+
+        // Add listeners
+        time2Button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                controller.playClick();
+                selectedTimeLimit = 2;
+                controller.onTimeSelected(2);
+                updatePlayButtonState();
+            }
+        });
+
+        time5Button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                controller.playClick();
+                selectedTimeLimit = 5;
+                controller.onTimeSelected(5);
+                updatePlayButtonState();
+            }
+        });
+
+        time10Button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                controller.playClick();
+                selectedTimeLimit = 10;
+                controller.onTimeSelected(10);
+                updatePlayButtonState();
+            }
+        });
+
+        time20Button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                controller.playClick();
+                selectedTimeLimit = 20;
+                controller.onTimeSelected(20);
+                updatePlayButtonState();
+            }
+        });
+
+        float buttonWidth = 60 * widthFactor;
+        float buttonHeight = 40 * heightFactor;
+        float padding = 5 * Math.min(widthFactor, heightFactor);
+
+        timeLimitTable.add(time2Button).width(buttonWidth).height(buttonHeight).pad(5);
+        timeLimitTable.add(time5Button).width(buttonWidth).height(buttonHeight).pad(5);
+        timeLimitTable.add(time10Button).width(buttonWidth).height(buttonHeight).pad(5);
+        timeLimitTable.add(time20Button).width(buttonWidth).height(buttonHeight).pad(5);
     }
 
     private void createCharacterBubbles(Table bubblesTable) {
@@ -550,6 +636,10 @@ public class PreGameMenu implements Screen {
 
     public int getSelectedWeapon() {
         return selectedWeapon;
+    }
+
+    public int getSelectedTimeLimit() {
+        return selectedTimeLimit;
     }
 
     public Characters getSelectedCharacterObject() {

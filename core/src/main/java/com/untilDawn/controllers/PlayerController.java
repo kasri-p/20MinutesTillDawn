@@ -35,7 +35,11 @@ public class PlayerController {
     }
 
     public void update() {
-        stateTime += Gdx.graphics.getDeltaTime();
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        stateTime += deltaTime;
+
+        player.update(deltaTime);
+
         player.getPlayerSprite().setPosition(
             player.getPosX() - player.getPlayerSprite().getWidth() / 2,
             player.getPosY() - player.getPlayerSprite().getHeight() / 2
@@ -43,7 +47,7 @@ public class PlayerController {
 
         updateAnimation();
 
-        player.updateLevelUpAnimation(Gdx.graphics.getDeltaTime());
+        player.updateLevelUpAnimation(deltaTime);
 
         player.getPlayerSprite().draw(Main.getBatch());
 

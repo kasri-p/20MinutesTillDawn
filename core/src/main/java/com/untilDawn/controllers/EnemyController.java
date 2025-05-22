@@ -10,6 +10,7 @@ import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Bullet;
 import com.untilDawn.models.Enemy;
+import com.untilDawn.models.Player;
 import com.untilDawn.models.enums.EnemyType;
 import com.untilDawn.models.utils.GameAssetManager;
 
@@ -33,12 +34,15 @@ public class EnemyController {
     private int numberOfTrees = 30;
     private boolean autoAim = false;
     private float autoAimCooldown = 0;
+
     // Helper variables for collision detection
     private Circle bulletCircle = new Circle();
     private Circle enemyCircle = new Circle();
     private Vector2 bulletVelocity = new Vector2();
     private Vector2 prevBulletPos = new Vector2();
     private Vector2 currentBulletPos = new Vector2();
+
+    // Spawn counters for different enemy types
     private int tentacleSpawned = 0;
     private int eyeBatSpawned = 0;
 
@@ -68,12 +72,14 @@ public class EnemyController {
 
         updateSpawnRate();
 
+        // Spawn tentacle monsters every 30 + 3*i seconds (i is the number spawned)
         while (gameTime >= 30 + 3 * tentacleSpawned) {
             spawnTentacleMonster();
             tentacleSpawned++;
         }
 
-        float eyebatStartTime = 30 + 4 * eyeBatSpawned - gameTime;
+        // Spawn EyeBats: after 30 + 4*i - t seconds have passed, spawn every 10 seconds
+        float eyebatStartTime = 30 + 4 * eyeBatSpawned;
         if (gameTime >= eyebatStartTime) {
             while (gameTime >= 30 + 10 * eyeBatSpawned) {
                 spawnEyeBat();
@@ -81,17 +87,26 @@ public class EnemyController {
             }
         }
 
-        // Update all existing enemies
+//        if (timeSinceLastSpawn >= currentSpawnRate) {
+//            spawnRegularEnemy();
+//            timeSinceLastSpawn = 0;
+//        }
+
         updateEnemies(delta);
 
-        // Check for collisions with bullets
         checkBulletCollisions(delta);
+
+        // Check for collisions with enemy bullets
+        checkEnemyBulletCollisions(delta);
 
         // Check for collisions with player
         checkPlayerCollisions();
 
         // Draw all active enemies
         drawEnemies();
+
+        // Draw enemy bullets
+        drawEnemyBullets();
 
         // check auto aim
         checkAutoAim();
@@ -107,14 +122,12 @@ public class EnemyController {
             float playerX = playerController.getPlayer().getPosX();
             float playerY = playerController.getPlayer().getPosY();
 
-            // Check distance from player
             float distanceToPlayer = Vector2.dst(x, y, playerX, playerY);
 
-            // Define minimum distance between trees
-            float treeRadius = 75f; // Adjust based on your tree size
+            float treeRadius = 75f;
             boolean tooCloseToOtherTree = false;
 
-            // Check distance from other trees
+
             for (Circle existingTree : treePositions) {
                 float distanceToTree = Vector2.dst(x, y, existingTree.x, existingTree.y);
                 if (distanceToTree < (treeRadius * 2)) {
@@ -145,22 +158,11 @@ public class EnemyController {
         }
     }
 
-    private void spawnRegularEnemy() {
-        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
-
-        Enemy enemy = new Enemy(EnemyType.TENTACLE, spawnPos.x, spawnPos.y);
-        enemies.add(enemy);
-
-        Gdx.app.log("EnemyController", "Spawned regular enemy at " + spawnPos.x + ", " + spawnPos.y);
-    }
-
     private void spawnTentacleMonster() {
         Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
 
         Enemy enemy = new Enemy(EnemyType.TENTACLE, spawnPos.x, spawnPos.y);
         enemies.add(enemy);
-
-        Gdx.app.log("EnemyController", "Spawned tentacle monster at " + spawnPos.x + ", " + spawnPos.y);
     }
 
     private void spawnEyeBat() {
@@ -168,8 +170,6 @@ public class EnemyController {
 
         Enemy enemy = new Enemy(EnemyType.EYEBAT, spawnPos.x, spawnPos.y);
         enemies.add(enemy);
-
-        Gdx.app.log("EnemyController", "Spawned eye bat at " + spawnPos.x + ", " + spawnPos.y);
     }
 
     private void updateEnemies(float delta) {
@@ -242,54 +242,72 @@ public class EnemyController {
                     System.out.println("enemy hit by damage " + bullet.getDamage());
                     bullet.setActive(false);
 
-                    if (killed) {
-                        dropItem(enemy);
-                    }
-
                     break;
                 }
             }
         }
     }
 
-    private void dropItem(Enemy enemy) {
-        if (enemy.getType() == EnemyType.TREE) {
-            // TODO
+    private void checkEnemyBulletCollisions(float delta) {
+        Player player = playerController.getPlayer();
+        if (player == null) return;
+
+        float playerX = player.getPosX();
+        float playerY = player.getPosY();
+        float playerRadius = Math.min(player.getPlayerSprite().getWidth(), player.getPlayerSprite().getHeight()) / 3.0f;
+        Circle playerCircle = new Circle(playerX, playerY, playerRadius);
+
+        for (Enemy enemy : enemies) {
+            if (!enemy.isActive()) continue;
+
+            ArrayList<Enemy.EnemyBullet> enemyBullets = enemy.getBullets();
+            Iterator<Enemy.EnemyBullet> bulletIterator = enemyBullets.iterator();
+
+            while (bulletIterator.hasNext()) {
+                Enemy.EnemyBullet bullet = bulletIterator.next();
+
+                if (!bullet.isActive()) {
+                    bullet.dispose();
+                    bulletIterator.remove();
+                    continue;
+                }
+
+                if (Intersector.overlaps(playerCircle, bullet.getCollisionCircle())) {
+                    if (!player.isInvincible()) {
+                        player.takeDamage(1);
+                        player.setInvincible(true, 1.0f);
+                    }
+
+                    bullet.setActive(false);
+                    bullet.dispose();
+                    bulletIterator.remove();
+                }
+            }
         }
-
-        float roll = MathUtils.random(0f, 100f);
-        String dropType = null;
-//
-//        if (roll < HEALTH_DROP_CHANCE) {
-//            dropType = "health";
-//        } else if (roll < HEALTH_DROP_CHANCE + SPEED_DROP_CHANCE) {
-//            dropType = "speed";
-//        } else if (roll < HEALTH_DROP_CHANCE + SPEED_DROP_CHANCE + AMMO_DROP_CHANCE) {
-//            dropType = "ammo";
-//        }
-
-//        // If we decided to drop something, create the drop
-//        if (dropType != null) {
-//            createDrop(enemy, dropType);
-//        }
     }
 
+    private void drawEnemyBullets() {
+        for (Enemy enemy : enemies) {
+            if (!enemy.isActive()) continue;
 
-//    private void createDrop(Enemy enemy, String dropType) {
-//        // The actual implementation will be handled by the Enemy class
-//        // Just logging here to show the concept
-//        Gdx.app.log("EnemyController", "Created " + dropType + " drop at " +
-//            enemy.getPosX() + ", " + enemy.getPosY());
-//    }
+            for (Enemy.EnemyBullet bullet : enemy.getBullets()) {
+                if (bullet.isActive()) {
+                    bullet.getSprite().draw(Main.getBatch());
+                }
+            }
+        }
+    }
+
 
     private void checkPlayerCollisions() {
         if (playerController == null || playerController.getPlayer() == null) return;
 
-        Sprite playerSprite = playerController.getPlayer().getPlayerSprite();
+        Player player = playerController.getPlayer();
+        Sprite playerSprite = player.getPlayerSprite();
         Rectangle playerRect = playerSprite.getBoundingRectangle();
 
-        float playerX = playerController.getPlayer().getPosX();
-        float playerY = playerController.getPlayer().getPosY();
+        float playerX = player.getPosX();
+        float playerY = player.getPosY();
 
         float playerRadius = Math.min(playerRect.width, playerRect.height) / 3.0f;
 
@@ -311,17 +329,18 @@ public class EnemyController {
             Circle enemyCircle = new Circle(enemyX, enemyY, enemyRadius);
 
             if (enemy.isActive() && Intersector.overlaps(playerCircle, enemyCircle)) {
-                Gdx.app.log("Player Health", "Player health: " + playerController.getPlayer().getPlayerHealth());
+                if (!player.isInvincible()) {
+                    Gdx.app.log("Player Health", "Player health: " + player.getPlayerHealth());
 
-                playerController.getPlayer().setPlayerHealth(
-                    playerController.getPlayer().getPlayerHealth() - 1
-                );
+                    player.setPlayerHealth(player.getPlayerHealth() - 1);
+                    player.setInvincible(true, 1.0f); // 1 second of invincibility
 
-                Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
+                    Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
+                }
                 return;
             } else if (!enemy.isActive() && enemy.isDropActive()) {
                 if (Intersector.overlaps(playerCircle, enemyCircle)) {
-                    enemy.collectDrop(playerController.getPlayer());
+                    enemy.collectDrop(player);
                 }
             }
         }

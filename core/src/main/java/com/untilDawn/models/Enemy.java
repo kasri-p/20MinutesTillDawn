@@ -4,11 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.untilDawn.models.enums.EnemyType;
 import com.untilDawn.models.utils.GameAssetManager;
+
+import java.util.ArrayList;
 
 public class Enemy {
     private final EnemyType type;
@@ -29,12 +32,20 @@ public class Enemy {
     private boolean dropActive = false;
     private String dropType;
 
-    // Improved properties for hit flash effect
     private boolean isFlashing = false;
-    private float flashDuration = 0.4f;  // Longer duration for smoother effect
+    private float flashDuration = 0.4f;
     private float flashTimer = 0;
     private Color originalColor = new Color(1f, 1f, 1f, 1f);
-    private Color flashColor = new Color(1f, 0.3f, 0.3f, 1f);  // Less intense red
+    private Color flashColor = new Color(1f, 0.3f, 0.3f, 1f);
+
+    private float shootTimer = 0f;
+    private ArrayList<EnemyBullet> bullets = new ArrayList<>();
+
+    private boolean isKnockedBack = false;
+    private float knockbackTimer = 0f;
+    private float knockbackDuration = 0.5f;
+    private Vector2 knockbackDirection = new Vector2();
+    private float knockbackForce = 100f;
 
     public Enemy(EnemyType type, float posX, float posY) {
         this.type = type;
@@ -68,7 +79,7 @@ public class Enemy {
                 x = marginFromEdge;
                 y = MathUtils.random(marginFromEdge, mapHeight - marginFromEdge);
                 break;
-            default: // Fallback (shouldn't happen)
+            default:
                 x = MathUtils.random(mapWidth);
                 y = MathUtils.random(mapHeight);
         }
@@ -90,9 +101,8 @@ public class Enemy {
 
         float scale = 1.0f;
 
-        // Make trees significantly larger
         if (type == EnemyType.TREE) {
-            scale = 2.3f; // Increase tree size by 2.5x
+            scale = 2.3f;
         }
 
         sprite.setSize(texture.getWidth() * scale, texture.getHeight() * scale);
@@ -109,27 +119,82 @@ public class Enemy {
     }
 
     public void update(float delta, Player player) {
-        // Only update if active
         if (!isActive) return;
 
         spawnTime += delta;
 
-        if (type.canMove()) {
+        updateKnockback(delta);
+
+        if (!isKnockedBack && type.canMove()) {
             moveTowardsPlayer(player, delta);
         }
 
-        sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
+        if (type.canShoot() && type == EnemyType.EYEBAT) {
+            updateShooting(delta, player);
+        }
 
+        updateBullets(delta);
+
+        sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
         boundingBox.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
 
-        // Update hit flash effect
         updateFlashEffect(delta);
 
         if (dropActive && dropSprite != null) {
             float pulsate = 0.7f + 0.3f * (float) Math.sin(spawnTime * 3);
             dropSprite.setAlpha(pulsate);
-
             dropSprite.setRotation(dropSprite.getRotation() + 60 * delta);
+        }
+    }
+
+    private void updateKnockback(float delta) {
+        if (isKnockedBack) {
+            knockbackTimer += delta;
+
+            // Apply knockback movement
+            float knockbackSpeed = knockbackForce * (1 - knockbackTimer / knockbackDuration);
+            posX += knockbackDirection.x * knockbackSpeed * delta;
+            posY += knockbackDirection.y * knockbackSpeed * delta;
+
+            if (knockbackTimer >= knockbackDuration) {
+                isKnockedBack = false;
+                knockbackTimer = 0f;
+            }
+        }
+    }
+
+    private void updateShooting(float delta, Player player) {
+        shootTimer += delta;
+
+        float shootInterval = 3f;
+        if (shootTimer >= shootInterval) {
+            shootAtPlayer(player);
+            shootTimer = 0f;
+        }
+    }
+
+    private void shootAtPlayer(Player player) {
+        if (player == null) return;
+
+        float dirX = player.getPosX() - posX;
+        float dirY = player.getPosY() - posY;
+        Vector2 shootDirection = new Vector2(dirX, dirY).nor();
+
+        EnemyBullet bullet = new EnemyBullet(posX, posY, shootDirection);
+        bullets.add(bullet);
+
+        // GameAssetManager.getGameAssetManager().playEnemyShoot();
+    }
+
+    private void updateBullets(float delta) {
+        for (int i = bullets.size() - 1; i >= 0; i--) {
+            EnemyBullet bullet = bullets.get(i);
+            bullet.update(delta);
+
+            if (!bullet.isActive()) {
+                bullet.dispose();
+                bullets.remove(i);
+            }
         }
     }
 
@@ -142,13 +207,10 @@ public class Enemy {
                 flashTimer = 0;
                 sprite.setColor(originalColor);
             } else {
-                // Create a smoother transition from flash color to original color
                 float progress = flashTimer / flashDuration;
 
-                // Use a smoother easing function
                 float smoothProgress = 1 - (1 - progress) * (1 - progress);
 
-                // Interpolate between flash color and original color
                 Color currentColor = new Color(
                     flashColor.r + (originalColor.r - flashColor.r) * smoothProgress,
                     flashColor.g + (originalColor.g - flashColor.g) * smoothProgress,
@@ -184,6 +246,11 @@ public class Enemy {
 
         startFlashEffect();
 
+        // Apply knockback when hit (except for trees)
+        if (type != EnemyType.TREE) {
+            applyKnockback();
+        }
+
         if (health <= 0 && isActive) {
             isActive = false;
             dropItem();
@@ -196,6 +263,18 @@ public class Enemy {
         }
 
         return false;
+    }
+
+    private void applyKnockback() {
+        isKnockedBack = true;
+        knockbackTimer = 0f;
+
+        if (direction.len() > 0) {
+            knockbackDirection.set(-direction.x, -direction.y).nor();
+        } else {
+            float angle = MathUtils.random(0, 2 * MathUtils.PI);
+            knockbackDirection.set(MathUtils.cos(angle), MathUtils.sin(angle));
+        }
     }
 
     private void startFlashEffect() {
@@ -247,8 +326,8 @@ public class Enemy {
         }
     }
 
-    public boolean collectDrop(Player player) {
-        if (!dropActive) return false;
+    public void collectDrop(Player player) {
+        if (!dropActive) return;
 
         Rectangle dropRect = new Rectangle(
             dropSprite.getX(),
@@ -261,9 +340,7 @@ public class Enemy {
             applyDropEffect(player);
             dropActive = false;
             GameAssetManager.getGameAssetManager().playObtain();
-            return true;
         }
-        return false;
     }
 
     private void applyDropEffect(Player player) {
@@ -323,12 +400,123 @@ public class Enemy {
         return sprite;
     }
 
+    public ArrayList<EnemyBullet> getBullets() {
+        return bullets;
+    }
+
     public void dispose() {
         if (texture != null) texture.dispose();
         if (dropTexture != null) dropTexture.dispose();
+
+        for (EnemyBullet bullet : bullets) {
+            bullet.dispose();
+        }
+        bullets.clear();
     }
 
     public void setFlashDuration(float duration) {
         this.flashDuration = duration;
+    }
+
+    public static class EnemyBullet {
+        private final Sprite sprite;
+        private Texture texture;
+        private Vector2 position = new Vector2();
+        private Vector2 direction = new Vector2();
+        private boolean isActive = true;
+        private Rectangle boundingBox;
+        private Circle collisionCircle = new Circle();
+        private float speed = 8.0f;
+        private float radius;
+        private float lifeTime = 0f;
+        private float maxLifeTime = 5f;
+
+        public EnemyBullet(float x, float y, Vector2 direction) {
+            createTexture();
+
+            this.sprite = new Sprite(texture);
+            sprite.setSize(16, 16);
+            this.position.set(x, y);
+            this.direction.set(direction).nor();
+
+            sprite.setPosition(x - sprite.getWidth() / 2, y - sprite.getHeight() / 2);
+
+            radius = sprite.getWidth() / 2.0f;
+            collisionCircle.set(x, y, radius);
+            boundingBox = new Rectangle(x - radius, y - radius, radius * 2, radius * 2);
+        }
+
+        private void createTexture() {
+            try {
+                texture = new Texture(Gdx.files.internal("Images/Enemies/eyebat/projectile.png"));
+            } catch (Exception e) {
+                texture = new Texture(Gdx.files.internal("Images/bullet.png"));
+            }
+        }
+
+        public void update(float delta) {
+            if (!isActive) return;
+
+            lifeTime += delta;
+
+            if (lifeTime >= maxLifeTime) {
+                isActive = false;
+                return;
+            }
+
+            position.x += direction.x * speed * delta * 60;
+            position.y += direction.y * speed * delta * 60;
+
+            sprite.setPosition(position.x - sprite.getWidth() / 2, position.y - sprite.getHeight() / 2);
+            sprite.setColor(Color.RED);
+            collisionCircle.setPosition(position.x, position.y);
+            boundingBox.setPosition(position.x - radius, position.y - radius);
+        }
+
+        public Texture getTexture() {
+            return texture;
+        }
+
+        public Sprite getSprite() {
+            return sprite;
+        }
+
+        public Vector2 getPosition() {
+            return position;
+        }
+
+        public Vector2 getDirection() {
+            return direction;
+        }
+
+        public float getSpeed() {
+            return speed;
+        }
+
+        public Circle getCollisionCircle() {
+            return collisionCircle;
+        }
+
+        public float getRadius() {
+            return radius;
+        }
+
+        public Rectangle getBoundingBox() {
+            return boundingBox;
+        }
+
+        public boolean isActive() {
+            return isActive;
+        }
+
+        public void setActive(boolean active) {
+            this.isActive = active;
+        }
+
+        public void dispose() {
+            if (texture != null) {
+                texture.dispose();
+            }
+        }
     }
 }
