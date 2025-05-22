@@ -1,11 +1,13 @@
 package com.untilDawn.controllers;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Bullet;
@@ -17,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class WeaponController {
-    private final float MUZZLE_FLASH_DURATION = 0.05f; // Duration to show muzzle flash in seconds
+    private final float MUZZLE_FLASH_DURATION = 0.05f;
     private Weapon weapon;
     private ArrayList<Bullet> bullets = new ArrayList<>();
     private float screenCenterX;
@@ -27,12 +29,16 @@ public class WeaponController {
     private float reloadTimer = 0;
     private float reloadDuration = 1.0f;
 
+    // Camera for proper coordinate conversion
+    private OrthographicCamera camera;
+    private Vector3 worldCoords = new Vector3();
+
     // Reload bar progress
     private Texture reloadBarBg;
     private Texture reloadBarFill;
     private float reloadBarWidth = 60f;
     private float reloadBarHeight = 8f;
-    private float reloadBarOffsetY = 37f; // Distance above player head
+    private float reloadBarOffsetY = 37f;
     private Animation<Texture> reloadAnimation;
     private float reloadAnimationTime = 0;
     private boolean usingReloadAnimation = false;
@@ -42,8 +48,8 @@ public class WeaponController {
     private Texture muzzleFlashTexture;
     private boolean showMuzzleFlash = false;
     private float muzzleFlashTimer = 0;
-    private float muzzleFlashOffsetX = 0; // Will be calculated based on weapon
-    private float muzzleFlashOffsetY = 0; // Will be calculated based on weapon
+    private float muzzleFlashOffsetX = 0;
+    private float muzzleFlashOffsetY = 0;
     private float muzzleFlashScale = 1.0f;
 
     public WeaponController(Weapon weapon) {
@@ -52,13 +58,15 @@ public class WeaponController {
 
         if (weapon.getWeapon() != null) {
             this.reloadDuration = weapon.getWeapon().getReloadTime();
-            // Load the still texture for the weapon
             loadStillTexture();
         }
 
         muzzleFlashTexture = GameAssetManager.getGameAssetManager().getMuzzleFlash();
-
         updateMuzzleFlashProperties();
+    }
+
+    public void setCamera(OrthographicCamera camera) {
+        this.camera = camera;
     }
 
     private void loadStillTexture() {
@@ -103,9 +111,25 @@ public class WeaponController {
         this.playerController = playerController;
     }
 
+    private Vector2 screenToWorldCoordinates(int screenX, int screenY) {
+        if (camera != null) {
+            // Use LibGDX's unproject method for accurate coordinate conversion
+            worldCoords.set(screenX, screenY, 0);
+            camera.unproject(worldCoords);
+            return new Vector2(worldCoords.x, worldCoords.y);
+        } else {
+            // Fallback to manual conversion if camera not available
+            float playerX = playerController != null ? playerController.getPlayer().getPosX() : 0;
+            float playerY = playerController != null ? playerController.getPlayer().getPosY() : 0;
+
+            float worldX = screenX - (float) Gdx.graphics.getWidth() / 2 + playerX;
+            float worldY = Gdx.graphics.getHeight() - screenY - (float) Gdx.graphics.getHeight() / 2 + playerY;
+            return new Vector2(worldX, worldY);
+        }
+    }
+
     public void update() {
         float deltaTime = Gdx.graphics.getDeltaTime();
-
         updateScreenCenter();
 
         if (playerController != null) {
@@ -115,8 +139,10 @@ public class WeaponController {
             int mouseX = Gdx.input.getX();
             int mouseY = Gdx.input.getY();
 
-            float worldMouseX = mouseX - (float) Gdx.graphics.getWidth() / 2 + playerX;
-            float worldMouseY = Gdx.graphics.getHeight() - mouseY - (float) Gdx.graphics.getHeight() / 2 + playerY;
+            // Convert screen coordinates to world coordinates properly
+            Vector2 worldMouse = screenToWorldCoordinates(mouseX, mouseY);
+            float worldMouseX = worldMouse.x;
+            float worldMouseY = worldMouse.y;
 
             float dirX = worldMouseX - playerX;
             float dirY = worldMouseY - playerY;
@@ -143,7 +169,6 @@ public class WeaponController {
             }
 
             weapon.getSprite().setRotation(angle);
-
             weapon.getSprite().setFlip(false, angle > 90 || angle < -90);
 
             if (showMuzzleFlash) {
@@ -162,6 +187,104 @@ public class WeaponController {
         }
 
         updateBullets(deltaTime);
+    }
+
+    public void handleWeaponRotation(int x, int y) {
+        Sprite weaponSprite = weapon.getSprite();
+
+        float playerX = 0;
+        float playerY = 0;
+
+        if (playerController != null) {
+            playerX = playerController.getPlayer().getPosX();
+            playerY = playerController.getPlayer().getPosY();
+        }
+
+        Vector2 worldMouse = screenToWorldCoordinates(x, y);
+        float worldMouseX = worldMouse.x;
+        float worldMouseY = worldMouse.y;
+
+        float dirX = worldMouseX - playerX;
+        float dirY = worldMouseY - playerY;
+
+        float angle = (float) Math.toDegrees(Math.atan2(dirY, dirX));
+
+        boolean shouldFlip = (angle > 90 && angle < 270) || (angle < -90 && angle > -270);
+
+        if (weaponSprite.isFlipY() != shouldFlip) {
+            weaponSprite.setFlip(false, shouldFlip);
+        }
+
+        weaponSprite.setRotation(angle);
+    }
+
+    public void handleWeaponShoot(int x, int y) {
+        if (isReloading || weapon.getAmmo() <= 0) {
+            if (weapon.getAmmo() <= 0) {
+                checkAutoReload();
+            }
+            return;
+        }
+
+        GameAssetManager.getGameAssetManager().playShot();
+
+        showMuzzleFlash = true;
+        muzzleFlashTimer = 0;
+
+        float playerX = playerController.getPlayer().getPosX();
+        float playerY = playerController.getPlayer().getPosY();
+
+        int projectileCount = 1;
+        float bulletSpeed = 10.0f;
+        int bulletDamage = weapon.getWeapon().getDamage();
+
+        if (weapon.getWeapon() != null) {
+            projectileCount = weapon.getWeapon().getProjectileCount();
+
+            if (weapon.getWeapon() == Weapons.Shotgun) {
+                bulletSpeed = 8.0f;
+                bulletDamage = 10;
+            } else if (weapon.getWeapon() == Weapons.Dual_Smg) {
+                bulletSpeed = 15.0f;
+                bulletDamage = 3;
+            } else if (weapon.getWeapon() == Weapons.Revolver) {
+                bulletSpeed = 12.0f;
+                bulletDamage = 8;
+            }
+        }
+
+        for (int i = 0; i < projectileCount; i++) {
+            Bullet newBullet = new Bullet((int) playerX, (int) playerY);
+            newBullet.setDamage(bulletDamage);
+
+            Vector2 direction = new Vector2(x - playerX, y - playerY).nor();
+
+            if (projectileCount > 1) {
+                float spreadAngle = 15f;
+                float angle = (float) Math.toDegrees(Math.atan2(direction.y, direction.x));
+
+                float bulletAngle = angle + (i - (projectileCount - 1) / 2f) * (spreadAngle / (projectileCount - 1));
+
+                float radians = (float) Math.toRadians(bulletAngle);
+                direction = new Vector2((float) Math.cos(radians), (float) Math.sin(radians));
+
+                float speedVariation = MathUtils.random(-0.5f, 0.5f);
+                newBullet.setSpeed(bulletSpeed + speedVariation);
+            } else {
+                newBullet.setSpeed(bulletSpeed);
+            }
+
+            newBullet.setDirection(direction);
+
+            newBullet.getSprite().setPosition(
+                playerX - newBullet.getSprite().getWidth() / 2,
+                playerY - newBullet.getSprite().getHeight() / 2
+            );
+
+            bullets.add(newBullet);
+        }
+
+        weapon.setAmmo(weapon.getAmmo() - 1);
     }
 
     private void updateMuzzleFlashTimer(float deltaTime) {
@@ -229,7 +352,6 @@ public class WeaponController {
         reloadTimer = 0;
         usingReloadAnimation = false;
 
-        // Reset to the still texture when reload is complete
         if (stillTexture != null) {
             weapon.getSprite().setTexture(stillTexture);
         }
@@ -262,105 +384,12 @@ public class WeaponController {
         float progress = reloadTimer / reloadDuration;
         float indicatorWidth = reloadBarFill.getWidth();
         float indicatorHeight = reloadBarHeight;
-        
+
         float indicatorX = barX + (reloadBarWidth - indicatorWidth) * progress;
 
         Main.getBatch().draw(reloadBarFill, indicatorX, barY, indicatorWidth, indicatorHeight);
     }
 
-    public void handleWeaponRotation(int x, int y) {
-        Sprite weaponSprite = weapon.getSprite();
-
-        float playerX = 0;
-        float playerY = 0;
-
-        if (playerController != null) {
-            playerX = playerController.getPlayer().getPosX();
-            playerY = playerController.getPlayer().getPosY();
-        }
-
-        float angle = (float) Math.atan2(y - playerY, x - playerX);
-        float degrees = (float) Math.toDegrees(angle);
-
-        boolean shouldFlip = (degrees > 90 && degrees < 270) || (degrees < -90 && degrees > -270);
-
-        if (weaponSprite.isFlipY() != shouldFlip) {
-            weaponSprite.setFlip(false, shouldFlip);
-        }
-
-        weaponSprite.setRotation(degrees);
-    }
-
-    public void handleWeaponShoot(int x, int y) {
-        if (isReloading || weapon.getAmmo() <= 0) {
-            if (weapon.getAmmo() <= 0) {
-                checkAutoReload();
-            }
-            return;
-        }
-
-        GameAssetManager.getGameAssetManager().playShot();
-
-        showMuzzleFlash = true;
-        muzzleFlashTimer = 0;
-
-        float playerX = playerController.getPlayer().getPosX();
-        float playerY = playerController.getPlayer().getPosY();
-
-        int projectileCount = 1;
-        float bulletSpeed = 10.0f;
-        int bulletDamage = 5;
-
-        if (weapon.getWeapon() != null) {
-            projectileCount = weapon.getWeapon().getProjectileCount();
-
-            if (weapon.getWeapon() == Weapons.Shotgun) {
-                bulletSpeed = 8.0f;
-                bulletDamage = 10;
-            } else if (weapon.getWeapon() == Weapons.Dual_Smg) {
-                bulletSpeed = 15.0f;
-                bulletDamage = 3;
-            } else if (weapon.getWeapon() == Weapons.Revolver) {
-                bulletSpeed = 12.0f;
-                bulletDamage = 8;
-            }
-        }
-
-        for (int i = 0; i < projectileCount; i++) {
-            Bullet newBullet = new Bullet((int) playerX, (int) playerY);
-            newBullet.setDamage(bulletDamage);
-
-            Vector2 direction = new Vector2(x - playerX, y - playerY).nor();
-
-            if (projectileCount > 1) {
-                float spreadAngle = 15f;
-                float angle = (float) Math.toDegrees(Math.atan2(direction.y, direction.x));
-
-                float bulletAngle = angle + (i - (projectileCount - 1) / 2f) * (spreadAngle / (projectileCount - 1));
-
-                float radians = (float) Math.toRadians(bulletAngle);
-                direction = new Vector2((float) Math.cos(radians), (float) Math.sin(radians));
-
-                float speedVariation = MathUtils.random(-0.5f, 0.5f);
-                newBullet.setSpeed(bulletSpeed + speedVariation);
-            } else {
-                newBullet.setSpeed(bulletSpeed);
-            }
-
-            newBullet.setDirection(direction);
-
-            newBullet.getSprite().setPosition(
-                playerX - newBullet.getSprite().getWidth() / 2,
-                playerY - newBullet.getSprite().getHeight() / 2
-            );
-
-            bullets.add(newBullet);
-        }
-
-        weapon.setAmmo(weapon.getAmmo() - 1);
-    }
-
-    // Updated WeaponController.startReload() method
     public void startReload() {
         if (!isReloading && weapon.getAmmo() < weapon.getWeapon().getAmmoMax()) {
             isReloading = true;
@@ -400,7 +429,6 @@ public class WeaponController {
             reloadTimer = 0;
             usingReloadAnimation = false;
 
-            // Reset to still texture
             if (stillTexture != null) {
                 weapon.getSprite().setTexture(stillTexture);
             }
@@ -418,7 +446,6 @@ public class WeaponController {
             }
 
             bullet.update(deltaTime);
-
             bullet.getSprite().draw(Main.getBatch());
 
             float playerX = playerController != null ? playerController.getPlayer().getPosX() : 0;

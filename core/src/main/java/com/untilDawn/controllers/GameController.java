@@ -5,9 +5,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
-import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.main.GameView;
-import com.untilDawn.views.main.MainMenu;
 
 public class GameController {
     private GameView view;
@@ -35,6 +33,9 @@ public class GameController {
         this.playerController = new PlayerController(App.getGame().getPlayer());
         this.weaponController = new WeaponController(App.getGame().getSelectedWeapon());
         this.weaponController.setPlayerController(playerController);
+
+        this.weaponController.setCamera(view.getCamera());
+        
         this.worldController = new WorldController(playerController);
         playerController.setWeaponController(weaponController);
         this.enemyController = new EnemyController(playerController, weaponController, mapWidth, mapHeight);
@@ -63,33 +64,33 @@ public class GameController {
     }
 
     private void checkGameOver() {
-        if (playerController.getPlayer().getPlayerHealth() <= 0) {
-            gameOver = true;
-            App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
-            Gdx.app.log("GameController", "Player health:" + playerController.getPlayer().getPlayerHealth());
-            Gdx.app.postRunnable(() -> {
+//        if (playerController.getPlayer().getPlayerHealth() <= 0) {
+//            gameOver = true;
+//            App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
+//            Gdx.app.log("GameController", "Player health:" + playerController.getPlayer().getPlayerHealth());
+//            Gdx.app.postRunnable(() -> {
+////                try {
+////                    Thread.sleep(2000); // 2-second delay
+//                Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
+////                } catch (InterruptedException e) {
+////                    e.printStackTrace();
+////                }
+//            });
+//        }
+//
+//        int timeLimit = App.getGame().getTimeLimit() * 60;
+//        if (gameTime >= timeLimit) {
+//            gameOver = true;
+//
+//            Gdx.app.postRunnable(() -> {
 //                try {
 //                    Thread.sleep(2000); // 2-second delay
-                Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
+//                    Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
 //                } catch (InterruptedException e) {
 //                    e.printStackTrace();
 //                }
-            });
-        }
-
-        int timeLimit = App.getGame().getTimeLimit() * 60;
-        if (gameTime >= timeLimit) {
-            gameOver = true;
-
-            Gdx.app.postRunnable(() -> {
-                try {
-                    Thread.sleep(2000); // 2-second delay
-                    Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
+//            });
+//        }
     }
 
     public WeaponController getWeaponController() {

@@ -41,7 +41,7 @@ public class LevelBar {
         backgroundPixmap.dispose();
 
         Pixmap fillPixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        fillPixmap.setColor(new Color(0.4f, 0.2f, 0.8f, 1.0f));
+        fillPixmap.setColor(Color.valueOf("113201")); // Darker green
         fillPixmap.fill();
         fillTexture = new Texture(fillPixmap);
         fillPixmap.dispose();
@@ -77,7 +77,7 @@ public class LevelBar {
 
         batch.draw(fillTexture, x, y, screenWidth * progress, height);
 
-        String levelText = "Level " + level + " (" + currentXP + "/" + xpForNextLevel + " XP)";
+        String levelText = "Level         " + level;
         glyphLayout.setText(font, levelText);
         float textX = (screenWidth - glyphLayout.width) / 2;
         float textY = y + (height + glyphLayout.height) / 2;

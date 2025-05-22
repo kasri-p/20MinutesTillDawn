@@ -239,6 +239,7 @@ public class EnemyController {
 
                 if (collision) {
                     boolean killed = enemy.hit(bullet.getDamage());
+                    System.out.println("enemy hit by damage " + bullet.getDamage());
                     bullet.setActive(false);
 
                     if (killed) {

@@ -43,9 +43,81 @@ public class PlayerController {
 
         updateAnimation();
 
+        player.updateLevelUpAnimation(Gdx.graphics.getDeltaTime());
+
         player.getPlayerSprite().draw(Main.getBatch());
 
+        if (player.isLevelingUp()) {
+            drawLevelUpAnimation();
+        }
+
         handlePlayerInput();
+    }
+
+    private void drawLevelUpAnimation() {
+        Texture levelUpFrame = player.getLevelUpFrame();
+        if (levelUpFrame != null) {
+            float animationProgress = player.getLevelUpAnimationProgress();
+
+            float scale;
+            float animationHeight;
+            float animationWidth;
+
+            if (animationProgress < 0.2f) {
+                float strikeProgress = animationProgress / 0.2f;
+                scale = 0.8f + strikeProgress * 0.4f;
+
+                animationWidth = 32f * scale;
+
+                float screenTop = player.getPosY() + 600f;
+                animationHeight = screenTop - player.getPosY();
+
+            } else if (animationProgress < 0.3f) {
+                scale = 1.2f + ((animationProgress - 0.2f) / 0.1f) * 0.3f;
+                animationWidth = 48f * scale;
+                animationHeight = 48f * scale;
+
+            } else {
+
+                scale = 1.5f + ((animationProgress - 0.3f) / 0.7f) * 0.2f;
+                animationWidth = 110f * scale;
+                animationHeight = 55f * scale;
+            }
+
+            float centerX = player.getPosX();
+            float centerY = player.getPosY();
+
+            float animationX, animationY;
+
+            if (animationProgress < 0.2f) {
+                float screenTop = centerY + 600f;
+                animationX = centerX - animationWidth / 2;
+                animationY = centerY;
+            } else {
+                animationX = centerX - animationWidth / 2;
+                animationY = centerY - animationHeight / 2;
+            }
+
+            float alpha = 1.0f;
+            if (animationProgress < 0.25f) {
+                alpha = 0.9f + 0.1f * (float) Math.sin(animationProgress * 25f);
+            } else {
+                alpha = 0.95f + 0.05f * (float) Math.sin(animationProgress * 6f);
+            }
+
+            float originalAlpha = Main.getBatch().getColor().a;
+            Main.getBatch().setColor(1f, 1f, 1f, alpha);
+
+            Main.getBatch().draw(
+                levelUpFrame,
+                animationX,
+                animationY,
+                animationWidth,
+                animationHeight
+            );
+
+            Main.getBatch().setColor(1f, 1f, 1f, originalAlpha);
+        }
     }
 
     private void updateAnimation() {

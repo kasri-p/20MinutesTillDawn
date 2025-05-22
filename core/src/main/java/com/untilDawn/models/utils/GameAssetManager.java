@@ -47,10 +47,11 @@ public class GameAssetManager {
     private final Texture levelUpAnimation7 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp7.png"));
     private final Texture levelUpAnimation8 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp8.png"));
 
-    private final Animation<Texture> levelUpAnimation = new Animation<>(0.1f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
+    private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
     private int footstepsCounter = 1;
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
     private Animation<Texture> heartAnimation = new Animation<>(0.1f, heartAnimation0, heartAnimation1, heartAnimation2, heartAnimation3);
+
     GameAssetManager() {
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
 //        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep2.wav")));

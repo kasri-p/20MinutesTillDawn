@@ -151,7 +151,7 @@ public class GameView implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
-        viewport.unproject(worldCoords);
+        camera.unproject(worldCoords);
 
         controller.getWeaponController().handleWeaponShoot((int) worldCoords.x, (int) worldCoords.y);
 
@@ -176,7 +176,7 @@ public class GameView implements Screen, InputProcessor {
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
         Vector3 worldCoords = new Vector3(screenX, screenY, 0);
-        viewport.unproject(worldCoords);
+        camera.unproject(worldCoords);
 
         controller.getWeaponController().handleWeaponRotation((int) worldCoords.x, (int) worldCoords.y);
         return false;
