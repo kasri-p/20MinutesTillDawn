@@ -1,27 +1,34 @@
 package com.untilDawn.models.enums;
 
-
 public enum Abilities {
-    VITALITY("Vitality", "Increases maximum HP by one unit", AbilityType.PASSIVE),
-    DAMAGER("Damager", "Increases weapon damage by 25% for 10 seconds", AbilityType.ACTIVE),
-    PROCREASE("Procrease", "Increases weapon Projectile by one unit", AbilityType.PASSIVE),
-    AMOCREASE("Amocrease", "Increases maximum weapon ammunition by 5 units", AbilityType.PASSIVE),
-    SPEEDY("Speedy", "Doubles player movement speed for 10 seconds", AbilityType.ACTIVE);
+    VITALITY("Vitality", "Increases maximum HP by one unit, providing more survivability in combat", AbilityType.PASSIVE, "💙", 0f, 0f),
+    DAMAGER("Damager", "Increases weapon damage by 25% for 10 seconds, dealing devastating blows to enemies", AbilityType.ACTIVE, "⚔️", 10f, 30f),
+    PROCREASE("Procrease", "Increases weapon projectile count by one unit, allowing for wider area coverage", AbilityType.PASSIVE, "🎯", 0f, 0f),
+    AMOCREASE("Amocrease", "Increases maximum weapon ammunition by 5 units, reducing reload frequency", AbilityType.PASSIVE, "🔫", 0f, 0f),
+    SPEEDY("Speedy", "Doubles player movement speed for 10 seconds, enabling quick escapes and positioning", AbilityType.ACTIVE, "💨", 10f, 25f),
+    REGENERATION("Regeneration", "Slowly regenerates health over time, providing continuous healing", AbilityType.PASSIVE, "💚", 0f, 0f),
+    SHIELD("Shield", "Provides temporary invincibility for 3 seconds when activated", AbilityType.ACTIVE, "🛡️", 3f, 45f),
+    MULTISHOT("Multishot", "Fire 3 bullets in a spread pattern for 15 seconds", AbilityType.ACTIVE, "🌟", 15f, 20f);
 
     private final String name;
     private final String description;
     private final AbilityType type;
+    private final String icon;
+    private final float duration;
+    private final float cooldown;
 
     private boolean active = false;
-    private float duration = 0;
-    private float cooldown = 0;
+    private float remainingDuration = 0;
+    private float remainingCooldown = 0;
 
-    Abilities(String name, String description, AbilityType type) {
+    Abilities(String name, String description, AbilityType type, String icon, float duration, float cooldown) {
         this.name = name;
         this.description = description;
         this.type = type;
+        this.icon = icon;
+        this.duration = duration;
+        this.cooldown = cooldown;
     }
-
 
     public String getName() {
         return name;
@@ -33,6 +40,10 @@ public enum Abilities {
 
     public AbilityType getType() {
         return type;
+    }
+
+    public String getIcon() {
+        return icon;
     }
 
     public boolean isActive() {
@@ -47,8 +58,80 @@ public enum Abilities {
         return cooldown;
     }
 
+    public float getRemainingDuration() {
+        return remainingDuration;
+    }
+
+    public float getRemainingCooldown() {
+        return remainingCooldown;
+    }
+
+    public void activate() {
+        if (type == AbilityType.ACTIVE && remainingCooldown <= 0) {
+            active = true;
+            remainingDuration = duration;
+            remainingCooldown = cooldown;
+        }
+    }
+
+    public void update(float delta) {
+        if (type == AbilityType.ACTIVE) {
+            if (active && remainingDuration > 0) {
+                remainingDuration -= delta;
+                if (remainingDuration <= 0) {
+                    active = false;
+                    remainingDuration = 0;
+                }
+            }
+
+            if (remainingCooldown > 0) {
+                remainingCooldown -= delta;
+                if (remainingCooldown < 0) {
+                    remainingCooldown = 0;
+                }
+            }
+        }
+    }
+
+    public boolean canActivate() {
+        return type == AbilityType.ACTIVE && remainingCooldown <= 0 && !active;
+    }
+
+    public void reset() {
+        active = false;
+        remainingDuration = 0;
+        remainingCooldown = 0;
+    }
+
+    public String getStatusText() {
+        if (type == AbilityType.PASSIVE) {
+            return "Passive";
+        } else if (active) {
+            return String.format("Active (%.1fs)", remainingDuration);
+        } else if (remainingCooldown > 0) {
+            return String.format("Cooldown (%.1fs)", remainingCooldown);
+        } else {
+            return "Ready";
+        }
+    }
+
     public enum AbilityType {
-        PASSIVE,
-        ACTIVE
+        PASSIVE("Passive - Always Active"),
+        ACTIVE("Active - Must Be Triggered");
+
+        private final String description;
+
+        AbilityType(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public String toString() {
+            return name().charAt(0) + name().substring(1).toLowerCase();
+        }
     }
 }

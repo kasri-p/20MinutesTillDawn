@@ -17,6 +17,7 @@ import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GrayscaleShader;
 import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.views.GameHUD;
+import com.untilDawn.views.window.LevelUpWindow;
 
 public class GameView implements Screen, InputProcessor {
     private Stage stage;
@@ -31,7 +32,14 @@ public class GameView implements Screen, InputProcessor {
     private float mapWidth;
     private float mapHeight;
 
+    // Level up window
+    private LevelUpWindow levelUpWindow;
+    private boolean gameIsPaused = false;
+    private Skin skin;
+
     public GameView(Skin skin) {
+        this.skin = skin;
+
         // Initialize camera
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -46,10 +54,8 @@ public class GameView implements Screen, InputProcessor {
 
         this.stage = new Stage(viewport);
 
-        // Initialize the GameHUD
         this.gameHUD = new GameHUD(controller, camera);
 
-        // Initialize the lighting manager
         this.lightingManager = LightingManager.getInstance();
 
         this.grayscaleShader = GrayscaleShader.getInstance();
@@ -64,48 +70,88 @@ public class GameView implements Screen, InputProcessor {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        float camHalfWidth = camera.viewportWidth / 2;
-        float camHalfHeight = camera.viewportHeight / 2;
-
-        float playerX = controller.getPlayerController().getPlayer().getPosX();
-        float playerY = controller.getPlayerController().getPlayer().getPosY();
-
-        float clampedX = MathUtils.clamp(playerX, camHalfWidth, mapWidth - camHalfWidth);
-        float clampedY = MathUtils.clamp(playerY, camHalfHeight, mapHeight - camHalfHeight);
-
-        camera.position.set(clampedX, clampedY, 0);
-        camera.update();
-
-        // Apply black and white shader if enabled
-        if (App.isBlackAndWhiteEnabled()) {
-            grayscaleShader.enable(Main.getBatch());
+        if (controller.getPlayerController().getPlayer().shouldShowLevelUpWindow() && !gameIsPaused) {
+            showLevelUpWindow();
         }
 
-        Main.getBatch().setProjectionMatrix(camera.combined);
-        Main.getBatch().begin();
+        if (!gameIsPaused) {
+            float camHalfWidth = camera.viewportWidth / 2;
+            float camHalfHeight = camera.viewportHeight / 2;
 
-        controller.updateGame();
+            float playerX = controller.getPlayerController().getPlayer().getPosX();
+            float playerY = controller.getPlayerController().getPlayer().getPosY();
 
-        lightingManager.render(Main.getBatch(), camera, playerX, playerY);
+            float clampedX = MathUtils.clamp(playerX, camHalfWidth, mapWidth - camHalfWidth);
+            float clampedY = MathUtils.clamp(playerY, camHalfHeight, mapHeight - camHalfHeight);
 
-        Main.getBatch().end();
+            camera.position.set(clampedX, clampedY, 0);
+            camera.update();
 
-        // Restore default shader
-        if (App.isBlackAndWhiteEnabled()) {
-            grayscaleShader.disable(Main.getBatch());
+            // Apply black and white shader if enabled
+            if (App.isBlackAndWhiteEnabled()) {
+                grayscaleShader.enable(Main.getBatch());
+            }
+
+            Main.getBatch().setProjectionMatrix(camera.combined);
+            Main.getBatch().begin();
+
+            controller.updateGame();
+
+            lightingManager.render(Main.getBatch(), camera, playerX, playerY);
+
+            Main.getBatch().end();
+
+            if (App.isBlackAndWhiteEnabled()) {
+                grayscaleShader.disable(Main.getBatch());
+            }
+
+            gameHUD.render();
         }
-
-        // Render the HUD after everything else
-        gameHUD.render();
 
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
+    }
+
+    private void showLevelUpWindow() {
+        gameIsPaused = true;
+
+        levelUpWindow = new LevelUpWindow(
+            skin,
+            controller.getPlayerController().getPlayer(),
+            stage,
+            () -> {
+                resumeGame();
+            }
+        );
+
+        stage.addActor(levelUpWindow);
+
+        controller.getPlayerController().getPlayer().setLevelUpWindowShown();
+
+        // Change input processor to stage to handle window interactions
+        Gdx.input.setInputProcessor(stage);
+    }
+
+    private void resumeGame() {
+        gameIsPaused = false;
+
+        // Remove level up window if it exists
+        if (levelUpWindow != null) {
+            levelUpWindow.dispose();
+            levelUpWindow = null;
+        }
+
+        // Restore input processor to this GameView
+        Gdx.input.setInputProcessor(this);
     }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         gameHUD.resize(width, height);
+
+        // Update stage viewport as well
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
@@ -131,10 +177,21 @@ public class GameView implements Screen, InputProcessor {
         if (mapTexture != null) {
             mapTexture.dispose();
         }
+        if (levelUpWindow != null) {
+            levelUpWindow.dispose();
+        }
     }
 
     @Override
     public boolean keyDown(int keycode) {
+        // Only process game input if not paused
+        if (!gameIsPaused) {
+            // Handle escape key to pause game or show menu
+            if (keycode == com.badlogic.gdx.Input.Keys.ESCAPE) {
+                // You could implement a pause menu here
+                return true;
+            }
+        }
         return false;
     }
 
@@ -150,11 +207,13 @@ public class GameView implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
-        camera.unproject(worldCoords);
+        // Only process game input if not paused
+        if (!gameIsPaused) {
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            camera.unproject(worldCoords);
 
-        controller.getWeaponController().handleWeaponShoot((int) worldCoords.x, (int) worldCoords.y);
-
+            controller.getWeaponController().handleWeaponShoot((int) worldCoords.x, (int) worldCoords.y);
+        }
         return false;
     }
 
@@ -175,10 +234,12 @@ public class GameView implements Screen, InputProcessor {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
-        camera.unproject(worldCoords);
+        if (!gameIsPaused) {
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            camera.unproject(worldCoords);
 
-        controller.getWeaponController().handleWeaponRotation((int) worldCoords.x, (int) worldCoords.y);
+            controller.getWeaponController().handleWeaponRotation((int) worldCoords.x, (int) worldCoords.y);
+        }
         return false;
     }
 
@@ -189,5 +250,9 @@ public class GameView implements Screen, InputProcessor {
 
     public OrthographicCamera getCamera() {
         return camera;
+    }
+
+    public boolean isGamePaused() {
+        return gameIsPaused;
     }
 }

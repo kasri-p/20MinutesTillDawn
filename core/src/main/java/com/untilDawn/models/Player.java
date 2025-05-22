@@ -24,17 +24,18 @@ public class Player {
 
     private int XP;
 
-    // Level up animation properties
     private boolean isLevelingUp = false;
     private float levelUpAnimationTime = 0f;
     private Animation<Texture> levelUpAnimation;
 
-    // Invincibility properties
     private boolean isInvincible = false;
     private float invincibilityTimer = 0f;
     private float invincibilityDuration = 1f;
     private float flashTimer = 0f;
     private boolean isFlashing = false;
+
+    private boolean shouldShowLevelUpWindow = false;
+    private boolean levelUpWindowShown = false;
 
     public Player(Characters character) {
         playerSprite.setSize(playerTexture.getWidth() * 2, playerTexture.getHeight() * 2);
@@ -44,18 +45,14 @@ public class Player {
         this.speed = character.getSpeed();
         this.playerHealth = character.getHp();
 
-        // Get the level up animation from GameAssetManager
         this.levelUpAnimation = GameAssetManager.getGameAssetManager().getLevelUpAnimation();
     }
 
     public void update(float delta) {
-        // Update invincibility
         updateInvincibility(delta);
 
-        // Update level up animation
         updateLevelUpAnimation(delta);
 
-        // Update position
         updateBoundingBox();
     }
 
@@ -64,25 +61,23 @@ public class Player {
             invincibilityTimer += delta;
             flashTimer += delta;
 
-            // Flash effect during invincibility
-            if (flashTimer >= 0.1f) { // Flash every 0.1 seconds
+            if (flashTimer >= 0.1f) {
                 isFlashing = !isFlashing;
                 flashTimer = 0f;
 
                 if (isFlashing) {
-                    playerSprite.setColor(1f, 1f, 1f, 0.5f); // Semi-transparent
+                    playerSprite.setColor(1f, 1f, 1f, 0.5f);
                 } else {
-                    playerSprite.setColor(1f, 1f, 1f, 1f); // Full opacity
+                    playerSprite.setColor(1f, 1f, 1f, 1f);
                 }
             }
 
-            // End invincibility after duration
             if (invincibilityTimer >= invincibilityDuration) {
                 isInvincible = false;
                 invincibilityTimer = 0f;
                 flashTimer = 0f;
                 isFlashing = false;
-                playerSprite.setColor(1f, 1f, 1f, 1f); // Reset to full opacity
+                playerSprite.setColor(1f, 1f, 1f, 1f);
             }
         }
     }
@@ -95,14 +90,13 @@ public class Player {
 
         if (!invincible) {
             isFlashing = false;
-            playerSprite.setColor(1f, 1f, 1f, 1f); // Reset color
+            playerSprite.setColor(1f, 1f, 1f, 1f);
         }
     }
 
     public void takeDamage(int damage) {
         if (!isInvincible) {
             playerHealth -= 1;
-            Gdx.app.log("Player", "Player took " + damage + " damage. Health: " + playerHealth);
         }
     }
 
@@ -228,24 +222,19 @@ public class Player {
     }
 
     private void levelUp(int newLevel) {
-        // Start the level up animation
         isLevelingUp = true;
         levelUpAnimationTime = 0f;
 
-        // You can add other level up effects here like:
-        // - Playing a sound effect
-        // - Increasing player stats
-        // - Showing a level up message
+        shouldShowLevelUpWindow = true;
+        levelUpWindowShown = false;
 
         Gdx.app.log("Player", "Level up! New level: " + newLevel);
     }
 
-    // Method to update the level up animation
     public void updateLevelUpAnimation(float delta) {
         if (isLevelingUp && levelUpAnimation != null) {
             levelUpAnimationTime += delta;
 
-            // Check if animation is complete
             if (levelUpAnimationTime >= levelUpAnimation.getAnimationDuration()) {
                 isLevelingUp = false;
                 levelUpAnimationTime = 0f;
@@ -253,7 +242,6 @@ public class Player {
         }
     }
 
-    // Method to get the current level up animation frame
     public Texture getLevelUpFrame() {
         if (isLevelingUp && levelUpAnimation != null) {
             return levelUpAnimation.getKeyFrame(levelUpAnimationTime, false);
@@ -261,7 +249,6 @@ public class Player {
         return null;
     }
 
-    // Getters for animation state
     public boolean isLevelingUp() {
         return isLevelingUp;
     }
@@ -279,5 +266,19 @@ public class Player {
 
     public int getLevel() {
         return level;
+    }
+
+    public boolean shouldShowLevelUpWindow() {
+        return shouldShowLevelUpWindow && !levelUpWindowShown;
+    }
+
+    public void setLevelUpWindowShown() {
+        this.levelUpWindowShown = true;
+        this.shouldShowLevelUpWindow = false;
+    }
+
+    public void resetLevelUpWindow() {
+        this.shouldShowLevelUpWindow = false;
+        this.levelUpWindowShown = false;
     }
 }
