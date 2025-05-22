@@ -422,8 +422,11 @@ public class EnemyController {
             }
 
             if (closestEnemy != null) {
-                int cursorX = (int) (closestEnemy.getPosX() - playerController.getPlayer().getPosX() + (float) Gdx.graphics.getWidth() / 2);
-                int cursorY = (int) (Gdx.graphics.getHeight() - (closestEnemy.getPosY() - playerController.getPlayer().getPosY() + (float) Gdx.graphics.getHeight() / 2));
+                Vector3 enemyWorldPos = new Vector3(closestEnemy.getPosX(), closestEnemy.getPosY(), 0);
+                Vector3 screenCoords = weaponController.getCamera().project(enemyWorldPos);
+
+                int cursorX = (int) screenCoords.x;
+                int cursorY = Gdx.graphics.getHeight() - (int) screenCoords.y;
 
                 Gdx.input.setCursorPosition(cursorX, cursorY);
             }

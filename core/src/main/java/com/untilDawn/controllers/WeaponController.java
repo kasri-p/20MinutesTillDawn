@@ -65,10 +65,6 @@ public class WeaponController {
         updateMuzzleFlashProperties();
     }
 
-    public void setCamera(OrthographicCamera camera) {
-        this.camera = camera;
-    }
-
     private void loadStillTexture() {
         if (weapon.getWeapon() != null) {
             String weaponName = weapon.getWeapon().getName().replaceAll("\\s+", "").toLowerCase();
@@ -526,5 +522,13 @@ public class WeaponController {
             stillTexture.dispose();
             stillTexture = null;
         }
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public void setCamera(OrthographicCamera camera) {
+        this.camera = camera;
     }
 }
