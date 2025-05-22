@@ -11,7 +11,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Bullet;
+import com.untilDawn.models.Player;
 import com.untilDawn.models.Weapon;
+import com.untilDawn.models.enums.Abilities;
 import com.untilDawn.models.enums.Weapons;
 import com.untilDawn.models.utils.GameAssetManager;
 
@@ -109,12 +111,10 @@ public class WeaponController {
 
     private Vector2 screenToWorldCoordinates(int screenX, int screenY) {
         if (camera != null) {
-            // Use LibGDX's unproject method for accurate coordinate conversion
             worldCoords.set(screenX, screenY, 0);
             camera.unproject(worldCoords);
             return new Vector2(worldCoords.x, worldCoords.y);
         } else {
-            // Fallback to manual conversion if camera not available
             float playerX = playerController != null ? playerController.getPlayer().getPosX() : 0;
             float playerY = playerController != null ? playerController.getPlayer().getPosY() : 0;
 
@@ -135,7 +135,6 @@ public class WeaponController {
             int mouseX = Gdx.input.getX();
             int mouseY = Gdx.input.getY();
 
-            // Convert screen coordinates to world coordinates properly
             Vector2 worldMouse = screenToWorldCoordinates(mouseX, mouseY);
             float worldMouseX = worldMouse.x;
             float worldMouseY = worldMouse.y;
@@ -230,36 +229,62 @@ public class WeaponController {
         float playerX = playerController.getPlayer().getPosX();
         float playerY = playerController.getPlayer().getPosY();
 
-        int projectileCount = 1;
+        // Get base weapon stats
+        int baseProjectileCount = 1;
         float bulletSpeed = 10.0f;
-        int bulletDamage = weapon.getWeapon().getDamage();
+        int baseBulletDamage = weapon.getWeapon().getDamage();
 
         if (weapon.getWeapon() != null) {
-            projectileCount = weapon.getWeapon().getProjectileCount();
+            baseProjectileCount = weapon.getWeapon().getProjectileCount();
 
             if (weapon.getWeapon() == Weapons.Shotgun) {
                 bulletSpeed = 8.0f;
-                bulletDamage = 10;
+                baseBulletDamage = 10;
             } else if (weapon.getWeapon() == Weapons.Dual_Smg) {
                 bulletSpeed = 15.0f;
-                bulletDamage = 3;
+                baseBulletDamage = 3;
             } else if (weapon.getWeapon() == Weapons.Revolver) {
                 bulletSpeed = 12.0f;
-                bulletDamage = 8;
+                baseBulletDamage = 8;
             }
         }
 
-        for (int i = 0; i < projectileCount; i++) {
+        // Apply ability modifiers
+        Player player = playerController.getPlayer();
+
+        // Calculate final projectile count with PROCREASE and MULTISHOT bonuses
+        int finalProjectileCount = baseProjectileCount;
+        finalProjectileCount += player.getProjectileBonus(); // PROCREASE bonus
+
+        // MULTISHOT ability adds additional projectiles when active
+        if (Abilities.MULTISHOT.isActive()) {
+            finalProjectileCount += 2; // Add 2 more projectiles for multishot
+        }
+
+        // Calculate final damage with DAMAGER bonus
+        int finalBulletDamage = baseBulletDamage;
+        if (Abilities.DAMAGER.isActive()) {
+            finalBulletDamage += player.getDamageBonus();
+            // Add visual feedback for damage boost
+            showEnhancedMuzzleFlash();
+        }
+
+        Gdx.app.log("WeaponController", String.format("Shooting: %d projectiles, %d damage each",
+            finalProjectileCount, finalBulletDamage));
+
+        // Create and fire bullets
+        for (int i = 0; i < finalProjectileCount; i++) {
             Bullet newBullet = new Bullet((int) playerX, (int) playerY);
-            newBullet.setDamage(bulletDamage);
+            newBullet.setDamage(finalBulletDamage);
 
             Vector2 direction = new Vector2(x - playerX, y - playerY).nor();
 
-            if (projectileCount > 1) {
-                float spreadAngle = 15f;
+            // Apply spread for multiple projectiles
+            if (finalProjectileCount > 1) {
+                float spreadAngle = calculateSpreadAngle(finalProjectileCount);
                 float angle = (float) Math.toDegrees(Math.atan2(direction.y, direction.x));
 
-                float bulletAngle = angle + (i - (projectileCount - 1) / 2f) * (spreadAngle / (projectileCount - 1));
+                float bulletAngle = angle + (i - (finalProjectileCount - 1) / 2f) * (spreadAngle / (finalProjectileCount - 1));
 
                 float radians = (float) Math.toRadians(bulletAngle);
                 direction = new Vector2((float) Math.cos(radians), (float) Math.sin(radians));
@@ -283,12 +308,41 @@ public class WeaponController {
         weapon.setAmmo(weapon.getAmmo() - 1);
     }
 
+    /**
+     * Calculate spread angle based on number of projectiles
+     */
+    private float calculateSpreadAngle(int projectileCount) {
+        if (projectileCount <= 1) return 0f;
+
+        // Base spread angle, increases with more projectiles
+        float baseSpread = 15f;
+
+        if (projectileCount <= 3) {
+            return baseSpread;
+        } else if (projectileCount <= 5) {
+            return baseSpread * 1.5f;
+        } else {
+            return baseSpread * 2f;
+        }
+    }
+
+    /**
+     * Show enhanced muzzle flash for damage-boosted shots
+     */
+    private void showEnhancedMuzzleFlash() {
+        // Increase muzzle flash size and duration for damage boost
+        muzzleFlashScale *= 1.5f;
+        // Could also change color or add particles
+    }
+
     private void updateMuzzleFlashTimer(float deltaTime) {
         if (showMuzzleFlash) {
             muzzleFlashTimer += deltaTime;
             if (muzzleFlashTimer >= MUZZLE_FLASH_DURATION) {
                 showMuzzleFlash = false;
                 muzzleFlashTimer = 0;
+                // Reset muzzle flash scale
+                updateMuzzleFlashProperties();
             }
         }
     }
@@ -302,6 +356,11 @@ public class WeaponController {
         float radians = (float) Math.toRadians(angle);
         float flashX = weaponCenterX + (float) (Math.cos(radians) * muzzleFlashOffsetX) - muzzleFlashTexture.getWidth() * muzzleFlashScale / 2;
         float flashY = weaponCenterY + (float) (Math.sin(radians) * muzzleFlashOffsetX) - muzzleFlashTexture.getHeight() * muzzleFlashScale / 2;
+
+        // Apply enhanced color if damage boost is active
+        if (Abilities.DAMAGER.isActive()) {
+            Main.getBatch().setColor(1.2f, 0.8f, 0.6f, 1.0f); // Orange-red tint for damage boost
+        }
 
         Main.getBatch().draw(
             muzzleFlashTexture,
@@ -317,6 +376,9 @@ public class WeaponController {
             muzzleFlashTexture.getWidth(), muzzleFlashTexture.getHeight(),
             false, weapon.getSprite().isFlipY()
         );
+
+        // Reset color
+        Main.getBatch().setColor(1f, 1f, 1f, 1f);
     }
 
     private void updateScreenCenter() {
@@ -352,11 +414,17 @@ public class WeaponController {
             weapon.getSprite().setTexture(stillTexture);
         }
 
-        if (weapon.getWeapon() != null) {
-            weapon.setAmmo(weapon.getWeapon().getAmmoMax());
-        } else {
-            weapon.setAmmo(30);
+        // Apply ammo capacity bonuses from abilities
+        int baseAmmo = weapon.getWeapon() != null ? weapon.getWeapon().getAmmoMax() : 30;
+        int finalAmmo = baseAmmo;
+
+        if (playerController != null && playerController.getPlayer() != null) {
+            finalAmmo += playerController.getPlayer().getAmmoBonus(); // AMOCREASE bonus
         }
+
+        weapon.setAmmo(finalAmmo);
+
+        Gdx.app.log("WeaponController", "Reload complete: " + finalAmmo + " rounds loaded");
     }
 
     private void drawReloadBar() {
@@ -387,7 +455,7 @@ public class WeaponController {
     }
 
     public void startReload() {
-        if (!isReloading && weapon.getAmmo() < weapon.getWeapon().getAmmoMax()) {
+        if (!isReloading && weapon.getAmmo() < getMaxAmmoWithBonuses()) {
             isReloading = true;
             reloadTimer = 0;
             reloadAnimationTime = 0;
@@ -419,6 +487,19 @@ public class WeaponController {
         }
     }
 
+    /**
+     * Get maximum ammo capacity including ability bonuses
+     */
+    private int getMaxAmmoWithBonuses() {
+        int baseAmmo = weapon.getWeapon() != null ? weapon.getWeapon().getAmmoMax() : 30;
+
+        if (playerController != null && playerController.getPlayer() != null) {
+            return baseAmmo + playerController.getPlayer().getAmmoBonus();
+        }
+
+        return baseAmmo;
+    }
+
     public void cancelReload() {
         if (isReloading) {
             isReloading = false;
@@ -442,7 +523,16 @@ public class WeaponController {
             }
 
             bullet.update(deltaTime);
-            bullet.getSprite().draw(Main.getBatch());
+
+            // Apply visual effects for enhanced bullets
+            if (Abilities.DAMAGER.isActive()) {
+                // Draw enhanced bullet with damage boost visual
+                Main.getBatch().setColor(1.2f, 0.8f, 0.6f, 1.0f);
+                bullet.getSprite().draw(Main.getBatch());
+                Main.getBatch().setColor(1f, 1f, 1f, 1f);
+            } else {
+                bullet.getSprite().draw(Main.getBatch());
+            }
 
             float playerX = playerController != null ? playerController.getPlayer().getPosX() : 0;
             float playerY = playerController != null ? playerController.getPlayer().getPosY() : 0;

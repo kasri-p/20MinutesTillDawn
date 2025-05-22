@@ -45,7 +45,6 @@ public class LevelUpWindow extends Window {
     private Texture upgradeCardTexture;
     private Texture selectedUpgradeTexture;
     private Texture buttonTexture;
-    private Texture upgradeIconTexture;
 
     private float animationTime = 0f;
 
@@ -56,13 +55,9 @@ public class LevelUpWindow extends Window {
         this.onAbilitySelected = onAbilitySelected;
 
         loadTextures();
-
         selectRandomAbilities();
-
         setupWindow();
-
         createContent();
-
         setupAnimations();
     }
 
@@ -81,9 +76,6 @@ public class LevelUpWindow extends Window {
             // Create button texture
             buttonTexture = createButtonTexture(280, 60);
 
-            // Create upgrade icon texture
-            upgradeIconTexture = createUpgradeIconTexture(80, 80);
-
         } catch (Exception e) {
             Gdx.app.error("LevelUpWindow", "Error loading textures: " + e.getMessage());
         }
@@ -96,13 +88,9 @@ public class LevelUpWindow extends Window {
 
         Pixmap originalPixmap = originalTexture.getTextureData().consumePixmap();
         try {
-            // Use intermediate scaling steps for better quality
             Pixmap resizedPixmap = highQualityResizePixmap(originalPixmap, width, height);
             Texture resizedTexture = new Texture(resizedPixmap);
-
-            // Set proper filtering on the new texture
             resizedTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
             return resizedTexture;
         } finally {
             originalPixmap.dispose();
@@ -110,12 +98,9 @@ public class LevelUpWindow extends Window {
     }
 
     private Pixmap highQualityResizePixmap(Pixmap original, int targetWidth, int targetHeight) {
-        // If downscaling, use intermediate steps
         if (targetWidth < original.getWidth() || targetHeight < original.getHeight()) {
             return downscalePixmap(original, targetWidth, targetHeight);
-        }
-        // If upscaling, use single step with bilinear
-        else {
+        } else {
             Pixmap resized = new Pixmap(targetWidth, targetHeight, original.getFormat());
             resized.setFilter(Pixmap.Filter.BiLinear);
             resized.drawPixmap(original,
@@ -129,12 +114,10 @@ public class LevelUpWindow extends Window {
         int currentWidth = original.getWidth();
         int currentHeight = original.getHeight();
 
-        // Create first intermediate pixmap at half size
         Pixmap current = new Pixmap(currentWidth, currentHeight, original.getFormat());
         current.drawPixmap(original, 0, 0);
 
         try {
-            // Progressive downscaling
             while (currentWidth / 2 >= targetWidth && currentHeight / 2 >= targetHeight) {
                 int newWidth = Math.max(currentWidth / 2, targetWidth);
                 int newHeight = Math.max(currentHeight / 2, targetHeight);
@@ -145,14 +128,12 @@ public class LevelUpWindow extends Window {
                     0, 0, currentWidth, currentHeight,
                     0, 0, newWidth, newHeight);
 
-                // Replace current with smaller
                 current.dispose();
                 current = smaller;
                 currentWidth = newWidth;
                 currentHeight = newHeight;
             }
 
-            // Final scaling to exact target size if needed
             if (currentWidth != targetWidth || currentHeight != targetHeight) {
                 Pixmap finalPixmap = new Pixmap(targetWidth, targetHeight, current.getFormat());
                 finalPixmap.setFilter(Pixmap.Filter.BiLinear);
@@ -172,13 +153,13 @@ public class LevelUpWindow extends Window {
     }
 
     private Texture createUpgradeCardTexture(int width, int height) {
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(width, height, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
         // Dark background
         pixmap.setColor(new Color(0.1f, 0.15f, 0.2f, 0.9f));
         pixmap.fill();
 
-        // Hexagonal border effect
+        // Border effect
         pixmap.setColor(new Color(0.3f, 0.4f, 0.5f, 0.8f));
         pixmap.drawRectangle(0, 0, width, height);
         pixmap.drawRectangle(1, 1, width - 2, height - 2);
@@ -195,7 +176,7 @@ public class LevelUpWindow extends Window {
     }
 
     private Texture createSelectedUpgradeTexture(int width, int height) {
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(width, height, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
         // Slightly brighter background
         pixmap.setColor(new Color(0.15f, 0.2f, 0.25f, 0.95f));
@@ -219,7 +200,7 @@ public class LevelUpWindow extends Window {
     }
 
     private Texture createButtonTexture(int width, int height) {
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(width, height, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
         pixmap.setColor(new Color(0.08f, 0.12f, 0.16f, 0.9f));
         pixmap.fill();
@@ -228,23 +209,6 @@ public class LevelUpWindow extends Window {
         for (int i = 0; i < 2; i++) {
             pixmap.drawRectangle(i, i, width - 2 * i, height - 2 * i);
         }
-
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return texture;
-    }
-
-    private Texture createUpgradeIconTexture(int width, int height) {
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(width, height, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
-
-        pixmap.setColor(Color.CLEAR);
-        pixmap.fill();
-
-        pixmap.setColor(new Color(0.8f, 0.9f, 1.0f, 0.9f));
-        pixmap.fillCircle(width / 2, height / 2, width / 3);
-
-        pixmap.setColor(new Color(0.4f, 0.6f, 0.8f, 1.0f));
-        pixmap.fillCircle(width / 2, height / 2, width / 5);
 
         Texture texture = new Texture(pixmap);
         pixmap.dispose();
@@ -295,11 +259,8 @@ public class LevelUpWindow extends Window {
         mainTable.pad(40);
 
         createTitleSection(mainTable);
-
         createUpgradeIconsSection(mainTable);
-
         createDescriptionSection(mainTable);
-
         createButtonsSection(mainTable);
 
         add(mainTable).expand().fill();
@@ -367,13 +328,26 @@ public class LevelUpWindow extends Window {
 
         Table contentTable = new Table();
 
-        Image icon = new Image(createAbilitySpecificIcon(ability));
-        contentTable.add(icon).size(60, 60).pad(5).row();
+        // Try to use the ability's texture first, fallback to icon
+        Image icon;
+        Texture abilityTexture = ability.getTexture();
+        if (abilityTexture != null) {
+            icon = new Image(abilityTexture);
+            contentTable.add(icon).size(60, 60).pad(5).row();
+        } else {
+            // Fallback to emoji icon
+            Label iconLabel = new Label(ability.getIcon(), getSkin());
+            iconLabel.setAlignment(Align.center);
+            iconLabel.setFontScale(2.0f);
+            contentTable.add(iconLabel).pad(5).row();
+        }
 
-        Label nameLabel = new Label(ability.getIcon(), getSkin());
+        // Add ability name below icon
+        Label nameLabel = new Label(ability.getName(), getSkin());
         nameLabel.setAlignment(Align.center);
-        nameLabel.setFontScale(2.0f);
-        contentTable.add(nameLabel).padTop(5);
+        nameLabel.setFontScale(0.7f);
+        nameLabel.setWrap(true);
+        contentTable.add(nameLabel).width(100).padTop(5);
 
         container.add(contentTable).expand().fill();
 
@@ -458,7 +432,6 @@ public class LevelUpWindow extends Window {
         Abilities selectedAbility = selectedAbilities.get(index);
 
         updateUpgradeSelection();
-
         updateDescription(selectedAbility);
     }
 
@@ -473,7 +446,6 @@ public class LevelUpWindow extends Window {
                     }
                     iconContainer.setScale(1.15f);
                 } else {
-                    // Normal state
                     if (upgradeCardTexture != null) {
                         iconContainer.setBackground(new TextureRegionDrawable(new TextureRegion(upgradeCardTexture)));
                     }
@@ -486,86 +458,12 @@ public class LevelUpWindow extends Window {
     private void updateDescription(Abilities ability) {
         upgradeNameLabel.setText(ability.getName());
         upgradeDescriptionLabel.setText(ability.getDescription());
-        unlocksLabel.setText(ability.getType().getDescription());
-    }
 
-    private Texture createAbilitySpecificIcon(Abilities ability) {
-        Color iconColor = getAbilityColor(ability);
-        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(60, 60, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
-
-        pixmap.setColor(Color.CLEAR);
-        pixmap.fill();
-
-        pixmap.setColor(iconColor);
-
-        switch (ability) {
-            case VITALITY:
-                // Heart shape
-                pixmap.fillCircle(20, 35, 12);
-                pixmap.fillCircle(40, 35, 12);
-                pixmap.fillTriangle(15, 25, 45, 25, 30, 15);
-                break;
-            case DAMAGER:
-                // Sword/blade shape
-                pixmap.fillRectangle(28, 10, 4, 40);
-                pixmap.fillRectangle(20, 45, 20, 8);
-                pixmap.fillTriangle(25, 10, 35, 10, 30, 5);
-                break;
-            case PROCREASE:
-                // Multiple projectiles
-                for (int i = 0; i < 3; i++) {
-                    pixmap.fillCircle(15 + i * 15, 30, 4);
-                    pixmap.fillTriangle(11 + i * 15, 30, 19 + i * 15, 30, 15 + i * 15, 20);
-                }
-                break;
-            case AMOCREASE:
-                pixmap.fillRectangle(25, 15, 10, 30);
-                pixmap.fillRectangle(23, 12, 14, 6);
-                break;
-            case SPEEDY:
-                for (int i = 0; i < 4; i++) {
-                    pixmap.fillRectangle(15, 20 + i * 5, 20 - i * 3, 2);
-                    pixmap.fillRectangle(20, 22 + i * 5, 25 - i * 3, 2);
-                }
-                break;
-            case REGENERATION:
-                pixmap.fillRectangle(25, 15, 10, 30);
-                pixmap.fillRectangle(15, 25, 30, 10);
-                break;
-            case SHIELD:
-                pixmap.fillTriangle(30, 10, 45, 25, 30, 50);
-                pixmap.fillTriangle(30, 10, 15, 25, 30, 50);
-                break;
-            case MULTISHOT:
-                for (int i = 0; i < 8; i++) {
-                    float angle = (float) (i * Math.PI / 4);
-                    int x1 = (int) (30 + Math.cos(angle) * 8);
-                    int y1 = (int) (30 + Math.sin(angle) * 8);
-                    int x2 = (int) (30 + Math.cos(angle) * 20);
-                    int y2 = (int) (30 + Math.sin(angle) * 20);
-                    pixmap.drawLine(x1, y1, x2, y2);
-                }
-                pixmap.fillCircle(30, 30, 6);
-                break;
+        String typeDescription = ability.getType().getDescription();
+        if (ability.getType() == Abilities.AbilityType.ACTIVE) {
+            typeDescription += "\nDuration: " + ability.getDuration() + "s, Cooldown: " + ability.getCooldown() + "s";
         }
-
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return texture;
-    }
-
-    private Color getAbilityColor(Abilities ability) {
-        return switch (ability) {
-            case VITALITY -> new Color(0.8f, 0.3f, 0.3f, 1f); // Red for health
-            case DAMAGER -> new Color(0.9f, 0.6f, 0.2f, 1f); // Orange for damage
-            case PROCREASE -> new Color(0.3f, 0.6f, 0.9f, 1f); // Blue for projectiles
-            case AMOCREASE -> new Color(0.6f, 0.8f, 0.3f, 1f); // Green for ammo
-            case SPEEDY -> new Color(0.9f, 0.9f, 0.3f, 1f); // Yellow for speed
-            case REGENERATION -> new Color(0.3f, 0.8f, 0.3f, 1f); // Green for healing
-            case SHIELD -> new Color(0.6f, 0.6f, 0.9f, 1f); // Blue for protection
-            case MULTISHOT -> new Color(0.9f, 0.3f, 0.9f, 1f); // Purple for special
-            default -> new Color(0.7f, 0.7f, 0.7f, 1f); // Gray default
-        };
+        unlocksLabel.setText(typeDescription);
     }
 
     private void selectCurrentAbility() {
@@ -585,7 +483,6 @@ public class LevelUpWindow extends Window {
             child.addAction(Actions.sequence(
                 Actions.scaleTo(0f, 0f, 0.2f),
                 Actions.run(() -> {
-                    // After animation, reroll abilities
                     selectRandomAbilities();
                     recreateUpgradeIcons();
                     selectUpgrade(0);
@@ -618,13 +515,15 @@ public class LevelUpWindow extends Window {
     }
 
     private void applyAbilityToPlayer(Abilities ability) {
-        // Apply the selected ability's effects to the player and game systems
+        Gdx.app.log("LevelUpWindow", "Applying ability: " + ability.getName());
+
         switch (ability) {
             case VITALITY:
                 player.applyVitality();
                 break;
 
             case DAMAGER:
+                ability.activate();
                 player.activateDamager();
                 break;
 
@@ -637,6 +536,7 @@ public class LevelUpWindow extends Window {
                 break;
 
             case SPEEDY:
+                ability.activate();
                 player.activateSpeedy();
                 break;
 
@@ -645,10 +545,12 @@ public class LevelUpWindow extends Window {
                 break;
 
             case SHIELD:
+                ability.activate();
                 player.activateShield();
                 break;
 
             case MULTISHOT:
+                ability.activate();
                 player.activateMultishot();
                 break;
         }
@@ -689,6 +591,7 @@ public class LevelUpWindow extends Window {
             selectedIcon.setScale(pulse);
         }
 
+        // Update all abilities
         for (Abilities ability : Abilities.values()) {
             ability.update(delta);
         }
@@ -705,6 +608,5 @@ public class LevelUpWindow extends Window {
         if (upgradeCardTexture != null) upgradeCardTexture.dispose();
         if (selectedUpgradeTexture != null) selectedUpgradeTexture.dispose();
         if (buttonTexture != null) buttonTexture.dispose();
-        if (upgradeIconTexture != null) upgradeIconTexture.dispose();
     }
 }

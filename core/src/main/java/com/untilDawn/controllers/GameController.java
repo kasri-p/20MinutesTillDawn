@@ -19,6 +19,7 @@ public class GameController {
 
     private float gameTime = 0;
     private boolean gameOver = false;
+    private int timeLimit; // Store time limit for HUD display
 
     public GameController(GameView view) {
         this.view = view;
@@ -29,13 +30,16 @@ public class GameController {
         this.mapHeight = mapTexture.getHeight();
         mapTexture.dispose();
 
+        // Get time limit from the current game
+        this.timeLimit = App.getGame() != null ? App.getGame().getTimeLimit() : 5; // Default 5 minutes
+
         // Initialize controllers
         this.playerController = new PlayerController(App.getGame().getPlayer());
         this.weaponController = new WeaponController(App.getGame().getSelectedWeapon());
         this.weaponController.setPlayerController(playerController);
 
         this.weaponController.setCamera(view.getCamera());
-        
+
         this.worldController = new WorldController(playerController);
         playerController.setWeaponController(weaponController);
         this.enemyController = new EnemyController(playerController, weaponController, mapWidth, mapHeight);
@@ -64,33 +68,77 @@ public class GameController {
     }
 
     private void checkGameOver() {
-//        if (playerController.getPlayer().getPlayerHealth() <= 0) {
-//            gameOver = true;
-//            App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
-//            Gdx.app.log("GameController", "Player health:" + playerController.getPlayer().getPlayerHealth());
-//            Gdx.app.postRunnable(() -> {
-////                try {
-////                    Thread.sleep(2000); // 2-second delay
-//                Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
-////                } catch (InterruptedException e) {
-////                    e.printStackTrace();
-////                }
-//            });
-//        }
-//
-//        int timeLimit = App.getGame().getTimeLimit() * 60;
-//        if (gameTime >= timeLimit) {
-//            gameOver = true;
-//
-//            Gdx.app.postRunnable(() -> {
-//                try {
-//                    Thread.sleep(2000); // 2-second delay
-//                    Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()));
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//        }
+        // Check if player health is 0 or below
+        if (playerController.getPlayer().getPlayerHealth() <= 0) {
+            gameOver = true;
+            App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
+            Gdx.app.log("GameController", "Player died - Health: " + playerController.getPlayer().getPlayerHealth());
+
+            // Could transition to game over screen here
+            // For now, just log the event
+        }
+
+        // Check if time limit is reached
+        int timeLimitSeconds = timeLimit * 60;
+        if (gameTime >= timeLimitSeconds) {
+            gameOver = true;
+            Gdx.app.log("GameController", "Time limit reached - Game Over");
+
+            // Could transition to victory/results screen here
+            // For now, just log the event
+        }
+    }
+
+    /**
+     * Get the current game time in seconds
+     */
+    public float getGameTime() {
+        return gameTime;
+    }
+
+    /**
+     * Get the time limit in minutes
+     */
+    public int getTimeLimit() {
+        return timeLimit;
+    }
+
+
+    public float getRemainingTime() {
+        return Math.max(0, (timeLimit * 60) - gameTime);
+    }
+
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public float getGameProgress() {
+        return Math.min(1.0f, gameTime / (timeLimit * 60));
+    }
+
+    /**
+     * Format remaining time as MM:SS string
+     */
+    public String getFormattedRemainingTime() {
+        float remainingTime = getRemainingTime();
+        int minutes = (int) (remainingTime / 60);
+        int seconds = (int) (remainingTime % 60);
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    /**
+     * Check if time is running low (less than 1 minute)
+     */
+    public boolean isTimeRunningLow() {
+        return getRemainingTime() <= 60;
+    }
+
+    /**
+     * Check if time is critically low (less than 10 seconds)
+     */
+    public boolean isTimeCritical() {
+        return getRemainingTime() <= 10;
     }
 
     public WeaponController getWeaponController() {
@@ -110,10 +158,6 @@ public class GameController {
             enemyController.dispose();
         }
         playerController.getPlayer().dispose();
-    }
-
-    public float getGameTime() {
-        return gameTime;
     }
 
     public float getMapWidth() {

@@ -24,7 +24,7 @@ public class PlayerController {
     private Texture mapTexture;
     private float mapWidth;
     private float mapHeight;
-    // Ability cooldowns to prevent spam activation
+
     private float lastAbilityActivation = 0f;
 
     public PlayerController(Player player) {
@@ -48,9 +48,7 @@ public class PlayerController {
         );
 
         updateAnimation();
-
         player.updateLevelUpAnimation(deltaTime);
-
         player.getPlayerSprite().draw(Main.getBatch());
 
         if (player.isLevelingUp()) {
@@ -59,6 +57,63 @@ public class PlayerController {
 
         handlePlayerInput();
         handleAbilityInput();
+
+        updateAbilities(deltaTime);
+    }
+
+    private void updateAbilities(float deltaTime) {
+        for (Abilities ability : Abilities.values()) {
+            ability.update(deltaTime);
+        }
+
+        applyActiveAbilityEffects();
+    }
+
+    private void applyActiveAbilityEffects() {
+        if (Abilities.SPEEDY.isActive()) {
+            if (isMoving) {
+                addSpeedEffects();
+            }
+        }
+
+        if (Abilities.DAMAGER.isActive()) {
+
+            addDamageEffects();
+        }
+
+        if (Abilities.SHIELD.isActive()) {
+            addShieldEffects();
+        }
+
+        if (Abilities.MULTISHOT.isActive()) {
+            addMultishotEffects();
+        }
+    }
+
+
+    private void addSpeedEffects() {
+
+        if (stateTime % 1.0f < 0.016f) {
+            Gdx.app.debug("PlayerController", "Speed boost active - remaining: " +
+                String.format("%.1f", Abilities.SPEEDY.getRemainingDuration()));
+        }
+    }
+
+
+    private void addDamageEffects() {
+        // Could implement weapon glow, player aura, or damage indicators
+        // Player sprite could have a red tint or glow effect
+    }
+
+
+    private void addShieldEffects() {
+        // Could implement a blue/white shield bubble around player
+        // Or make player sprite have a shield glow
+    }
+
+
+    private void addMultishotEffects() {
+        // Could add crosshair effects or weapon modifications
     }
 
     private void drawLevelUpAnimation() {
@@ -73,19 +128,14 @@ public class PlayerController {
             if (animationProgress < 0.2f) {
                 float strikeProgress = animationProgress / 0.2f;
                 scale = 0.8f + strikeProgress * 0.4f;
-
                 animationWidth = 32f * scale;
-
                 float screenTop = player.getPosY() + 600f;
                 animationHeight = screenTop - player.getPosY();
-
             } else if (animationProgress < 0.3f) {
                 scale = 1.2f + ((animationProgress - 0.2f) / 0.1f) * 0.3f;
                 animationWidth = 48f * scale;
                 animationHeight = 48f * scale;
-
             } else {
-
                 scale = 1.5f + ((animationProgress - 0.3f) / 0.7f) * 0.2f;
                 animationWidth = 110f * scale;
                 animationHeight = 55f * scale;
@@ -93,7 +143,6 @@ public class PlayerController {
 
             float centerX = player.getPosX();
             float centerY = player.getPosY();
-
             float animationX, animationY;
 
             if (animationProgress < 0.2f) {
@@ -200,6 +249,7 @@ public class PlayerController {
             return;
         }
 
+        // Handle ability activation keys (1-4 for quick activation)
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             activateAbility(Abilities.DAMAGER);
         }
@@ -214,28 +264,67 @@ public class PlayerController {
         }
     }
 
+
     private void activateAbility(Abilities ability) {
         if (ability.canActivate()) {
+            ability.activate();
+
             switch (ability) {
                 case DAMAGER:
                     player.activateDamager();
+                    Gdx.app.log("PlayerController", "Damager ability activated!");
                     break;
                 case SPEEDY:
                     player.activateSpeedy();
+                    Gdx.app.log("PlayerController", "Speedy ability activated!");
                     break;
                 case SHIELD:
                     player.activateShield();
+                    Gdx.app.log("PlayerController", "Shield ability activated!");
                     break;
                 case MULTISHOT:
                     player.activateMultishot();
+                    Gdx.app.log("PlayerController", "Multishot ability activated!");
+                    break;
+                default:
+                    Gdx.app.log("PlayerController", "Attempted to activate passive ability: " + ability.getName());
                     break;
             }
+
             lastAbilityActivation = 0f;
 
             if (App.isSFX()) {
                 Main.getMain().getClickSound().play();
             }
+        } else {
+            if (ability.isActive()) {
+                Gdx.app.log("PlayerController", ability.getName() + " is already active!");
+            } else if (ability.getRemainingCooldown() > 0) {
+                Gdx.app.log("PlayerController", ability.getName() + " is on cooldown: " +
+                    String.format("%.1f", ability.getRemainingCooldown()) + "s remaining");
+            }
         }
+    }
+
+    public String getAbilityStatusText() {
+        StringBuilder status = new StringBuilder();
+        status.append("Abilities:\n");
+
+        for (Abilities ability : Abilities.values()) {
+            if (ability.getType() == Abilities.AbilityType.ACTIVE) {
+                status.append(ability.getName()).append(": ");
+                if (ability.isActive()) {
+                    status.append("Active (").append(String.format("%.1f", ability.getRemainingDuration())).append("s)");
+                } else if (ability.getRemainingCooldown() > 0) {
+                    status.append("Cooldown (").append(String.format("%.1f", ability.getRemainingCooldown())).append("s)");
+                } else {
+                    status.append("Ready");
+                }
+                status.append("\n");
+            }
+        }
+
+        return status.toString();
     }
 
     public Player getPlayer() {

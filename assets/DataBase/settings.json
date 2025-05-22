@@ -9,9 +9,9 @@
     "Move Up": "W",
     "Move Right": "D"
   },
-  "isSFX": true,
+  "isSFX": false,
   "language": "en",
-  "currentMusicTrack": "For Whom The Bell Tolls",
-  "musicVolume": 0.45,
+  "currentMusicTrack": "South Of Heaven",
+  "musicVolume": 0.0,
   "blackAndWhiteEnabled": false
 }
