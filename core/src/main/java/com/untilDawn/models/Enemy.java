@@ -259,6 +259,7 @@ public class Enemy {
             } else if (type != EnemyType.TREE) {
                 GameAssetManager.getGameAssetManager().playSplash();
             }
+            App.getGame().getPlayer().addKill();
             return true;
         }
 

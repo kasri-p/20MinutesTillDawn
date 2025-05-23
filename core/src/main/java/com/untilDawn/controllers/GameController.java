@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
+import com.untilDawn.models.User;
 import com.untilDawn.views.main.GameView;
 
 public class GameController {
@@ -68,18 +69,25 @@ public class GameController {
     }
 
     private void checkGameOver() {
-        // Check if player health is 0 or below
+        User user = App.getLoggedInUser();
         if (playerController.getPlayer().getPlayerHealth() <= 0) {
             gameOver = true;
             App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
+            if (!user.isGuest()) {
+                user.setKills(user.getKills() + App.getGame().getPlayer().getKills());
+                user.setSurvivalTime(user.getSurvivalTime() + gameTime);
+            }
             Gdx.app.log("GameController", "Player died - Health: " + playerController.getPlayer().getPlayerHealth());
 
         }
 
-        // Check if time limit is reached
         int timeLimitSeconds = timeLimit * 60;
         if (gameTime >= timeLimitSeconds) {
             gameOver = true;
+            if (!user.isGuest()) {
+                user.setKills(user.getKills() + App.getGame().getPlayer().getKills());
+                user.setSurvivalTime(user.getSurvivalTime() + gameTime);
+            }
             Gdx.app.log("GameController", "Time limit reached - You Won");
         }
     }
@@ -88,11 +96,11 @@ public class GameController {
     public float getGameTime() {
         return gameTime;
     }
-    
+
     public void setGameTime(float newGameTime) {
         this.gameTime = newGameTime;
-        Gdx.app.log("GameController", "Game time set to: " + newGameTime + " seconds");
     }
+
 
     public int getTimeLimit() {
         return timeLimit;
@@ -110,7 +118,6 @@ public class GameController {
         return Math.min(1.0f, gameTime / (timeLimit * 60));
     }
 
-
     public String getFormattedRemainingTime() {
         float remainingTime = getRemainingTime();
         int minutes = (int) (remainingTime / 60);
@@ -121,7 +128,6 @@ public class GameController {
     public boolean isTimeRunningLow() {
         return getRemainingTime() <= 60;
     }
-
 
     public boolean isTimeCritical() {
         return getRemainingTime() <= 10;

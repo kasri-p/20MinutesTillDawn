@@ -41,7 +41,7 @@ public class LevelBar {
         backgroundPixmap.dispose();
 
         Pixmap fillPixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        fillPixmap.setColor(Color.valueOf("113201")); // Darker green
+        fillPixmap.setColor(Color.valueOf("113201"));
         fillPixmap.fill();
         fillTexture = new Texture(fillPixmap);
         fillPixmap.dispose();

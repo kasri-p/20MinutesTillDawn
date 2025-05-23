@@ -31,6 +31,12 @@ public class GameHUD {
     private Animation<Texture> heartAnimation;
     private float animationTime = 0f;
 
+    //hey
+    private BitmapFont ammoFont;
+    private Texture ammoTexture;
+    private BitmapFont zombieKillFont;
+    private Texture zombieKillTexture;
+
     public GameHUD(GameController gameController, OrthographicCamera camera) {
         this.gameController = gameController;
         this.camera = camera;
@@ -46,6 +52,12 @@ public class GameHUD {
 
         smallFont = new BitmapFont();
         smallFont.getData().setScale(0.8f);
+
+        ammoFont = new BitmapFont();
+        ammoFont.getData().setScale(1.5f);
+
+        zombieKillFont = new BitmapFont();
+        zombieKillFont.getData().setScale(1.5f);
 
         levelBar = new LevelBar(font, screenWidth, LEVEL_BAR_HEIGHT);
         heartAnimation = GameAssetManager.getGameAssetManager().getHeartAnimation();
@@ -64,45 +76,13 @@ public class GameHUD {
         levelBar.render(batch, screenWidth);
 
         drawHealthBar(batch, player);
-        drawAmmoCounter(batch);
         drawGameTimer(batch);
         drawAbilityStatus(batch);
 
         batch.end();
+        renderHealthAndAmmoUI();
 
         batch.setProjectionMatrix(camera.combined);
-    }
-
-    private void drawAmmoCounter(SpriteBatch batch) {
-        int ammoCount = gameController.getWeaponController().getWeapon().getAmmo();
-        int ammoMax = gameController.getWeaponController().getWeapon().getWeapon().getAmmoMax();
-
-        // Add ammo bonus from abilities
-        Player player = gameController.getPlayerController().getPlayer();
-        int totalAmmoMax = ammoMax + player.getAmmoBonus();
-
-        String ammoText = ammoCount + " / " + totalAmmoMax;
-        float x = screenWidth - 150;
-        float y = 100; // Moved down to accommodate timer
-
-        font.setColor(Color.WHITE);
-        font.draw(batch, "AMMO", x, y + 20);
-
-        if (ammoCount <= 0) {
-            font.setColor(Color.RED);
-        } else if (ammoCount <= totalAmmoMax * 0.25f) {
-            font.setColor(Color.ORANGE);
-        } else {
-            font.setColor(Color.WHITE);
-        }
-
-        font.draw(batch, ammoText, x, y);
-
-        // Show ammo bonus if active
-        if (player.getAmmoBonus() > 0) {
-            smallFont.setColor(Color.GREEN);
-            smallFont.draw(batch, "+" + player.getAmmoBonus(), x + 80, y - 15);
-        }
     }
 
 
@@ -117,20 +97,23 @@ public class GameHUD {
 
         String timeText = String.format("%02d:%02d", minutes, seconds);
 
-        // Position in top right corner
-        float x = screenWidth - 150;
+        float x = screenWidth - 100;
         float y = screenHeight - 30;
 
+        float bigScale = 2.5f;
         font.setColor(Color.WHITE);
-
-        font.draw(batch, "TIME", x, y + 20);
+        font.getData().setScale(bigScale);
         font.draw(batch, timeText, x, y);
+
+        float surviveY = y - 40;
+        font.getData().setScale(1.0f);
+        font.draw(batch, "Survive!", x, surviveY);
 
         if (remainingTime <= 10 && remainingTime > 0) {
             float pulse = 1.0f + 0.3f * (float) Math.sin(animationTime * 8);
-            font.getData().setScale(1.2f * pulse);
+            font.getData().setScale(bigScale * pulse);
             font.draw(batch, timeText, x, y);
-            font.getData().setScale(1.2f);
+            font.getData().setScale(bigScale);
         }
     }
 
@@ -213,7 +196,6 @@ public class GameHUD {
         } else if (ability.getRemainingCooldown() > 0) {
             drawAbilityProgressBar(batch, x, y - 8, ABILITY_ICON_SIZE, 4, ability.getCooldownProgress(), Color.RED);
         }
-
         if (ability.isActive()) {
             smallFont.setColor(Color.WHITE);
             String timeText = String.format("%.1f", ability.getRemainingDuration());
@@ -229,7 +211,6 @@ public class GameHUD {
 
 
     private void drawAbilityProgressBar(SpriteBatch batch, float x, float y, float width, float height, float progress, Color color) {
-        // Background
         batch.setColor(0.2f, 0.2f, 0.2f, 0.8f);
         batch.draw(reloadBarBg, x, y, width, height);
 
@@ -276,6 +257,60 @@ public class GameHUD {
         batch.setColor(Color.WHITE);
     }
 
+    private void renderHealthAndAmmoUI() {
+        Main.getBatch().begin();
+
+        int maxAmmo = gameController.getWeaponController().getWeapon().getMaxAmmoWithBonus();
+        int currentAmmo = gameController.getWeaponController().getWeapon().getAmmo();
+
+        int killCount = gameController.getPlayerController().getPlayer().getKills();
+
+
+        float ammoIconX = 20;
+        float ammoIconY = screenHeight - 200;
+        float ammoTextX = ammoIconX + 70;
+        float ammoTextY = ammoIconY + 40;
+
+        float zombieKillX = 30;
+        float zombieKillY = ammoIconY - 60;
+        float zombieKillTextX = zombieKillX + 70;
+        float zombieKillTextY = zombieKillY + 40;
+
+
+        Texture ammoIcon = GameAssetManager.getGameAssetManager().getAmmoIcon();
+        if (ammoIcon != null) {
+            float ammoScale = 2.0f;
+            float ammoWidth = ammoIcon.getWidth() * ammoScale;
+            float ammoHeight = ammoIcon.getHeight() * ammoScale;
+
+            Main.getBatch().draw(ammoIcon, ammoIconX, ammoIconY, ammoWidth, ammoHeight);
+        }
+
+        if (ammoFont != null) {
+            String ammoText = String.format("%03d/%03d", currentAmmo, maxAmmo);
+            ammoFont.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            ammoFont.draw(Main.getBatch(), ammoText, ammoTextX, ammoTextY);
+        }
+
+        Texture zombieKill = GameAssetManager.getGameAssetManager().getZombieSkull();
+        if (zombieKill != null) {
+            float zombieScale = 4.5f;
+            float zombieWidth = zombieKill.getWidth() * zombieScale;
+            float zombieHeight = zombieKill.getHeight() * zombieScale;
+
+            Main.getBatch().draw(zombieKill, zombieKillX, zombieKillY, zombieWidth, zombieHeight);
+        }
+        if (zombieKillFont != null) {
+            String zombieText = String.valueOf(killCount);
+            zombieKillFont.setColor(1.0f, 1.0f, 1.0f, 1.0f); // White color
+            zombieKillFont.draw(Main.getBatch(), zombieText, zombieKillTextX, zombieKillTextY);
+        }
+
+
+        Main.getBatch().end();
+    }
+
+
     private void drawAbilityHotkeys(SpriteBatch batch) {
         float x = screenWidth - 200;
         float y = screenHeight - 150;
@@ -283,10 +318,10 @@ public class GameHUD {
 
         smallFont.setColor(Color.LIGHT_GRAY);
         smallFont.draw(batch, "Ability Hotkeys:", x, y);
-        smallFont.draw(batch, "1/Q - Damager", x, y - lineHeight);
-        smallFont.draw(batch, "2/E - Speedy", x, y - lineHeight * 2);
-        smallFont.draw(batch, "3/F - Shield", x, y - lineHeight * 3);
-        smallFont.draw(batch, "4/C - Multishot", x, y - lineHeight * 4);
+        smallFont.draw(batch, "1 - Damager", x, y - lineHeight);
+        smallFont.draw(batch, "2 - Speedy", x, y - lineHeight * 2);
+        smallFont.draw(batch, "3 - Shield", x, y - lineHeight * 3);
+        smallFont.draw(batch, "4 - Multishot", x, y - lineHeight * 4);
     }
 
     public void resize(int width, int height) {

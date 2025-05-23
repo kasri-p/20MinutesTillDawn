@@ -7,7 +7,8 @@
     "isGuest": false,
     "score": 0,
     "avatarPath": "avatar2.png",
-    "deaths": 0,
-    "kills": 0
+    "deaths": 2,
+    "kills": 13,
+    "survivalTime": 57.194836
   }
 }

@@ -48,6 +48,7 @@ public class GameAssetManager {
     private final Texture levelUpAnimation7 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp7.png"));
     private final Texture levelUpAnimation8 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp8.png"));
 
+    private final Texture zombieSkull = new Texture(Gdx.files.internal("Images/zombieSkull.png"));
     private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
 
     private int footstepsCounter = 1;
@@ -74,6 +75,10 @@ public class GameAssetManager {
 
     public Texture getAmmoIcon() {
         return ammoIcon;
+    }
+
+    public Texture getZombieSkull() {
+        return zombieSkull;
     }
 
     public Animation<Texture> getLevelUpAnimation() {

@@ -89,8 +89,14 @@ public class PauseMenuWindow extends Window {
         setMovable(false);
         getTitleLabel().setText("");
 
-        // Set window color for darker appearance
         setColor(PANEL_COLOR);
+
+        Table root = new Table();
+        root.setFillParent(true);
+        root.center();
+        root.add(contentArea).center().expand();
+
+        stage.addActor(root);
     }
 
     private void createContent(Skin skin) {
@@ -100,10 +106,8 @@ public class PauseMenuWindow extends Window {
         mainContainer.setFillParent(true);
         mainContainer.pad(PADDING);
 
-        // Create main title
         createMainTitle(mainContainer, skin);
 
-        // Create navigation bar
         createNavigationBar(mainContainer, skin);
 
         // Create content area with dark panel background
@@ -728,7 +732,6 @@ public class PauseMenuWindow extends Window {
         }
     }
 
-    // Enum for menu sections
     private enum MenuSection {
         MAIN, ABILITIES, CHEATS, SETTINGS
     }

@@ -232,6 +232,7 @@ public class MainMenuController {
                 if (App.getLoggedInUser().isGuest()) {
                     return;
                 }
+                // TODO: show the game info
                 GameSaveSystem.GameSaveData saveData = GameSaveSystem.loadGame(App.getLoggedInUser());
                 if (saveData == null) {
                     return;

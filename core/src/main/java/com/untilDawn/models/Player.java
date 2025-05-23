@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
-    private final float REGENERATION_INTERVAL = 2f; // Heal every 2 seconds
     private int kills;
     private Texture playerTexture = new Texture(Gdx.files.internal("Images/characters/Shana/run0.png"));
     private Sprite playerSprite = new Sprite(playerTexture);
@@ -98,10 +97,11 @@ public class Player {
     private void updateRegeneration(float delta) {
         if (hasRegeneration && playerHealth < maxHealth) {
             regenerationTimer += delta;
+            // Heal every 2 seconds
+            float REGENERATION_INTERVAL = 2f;
             if (regenerationTimer >= REGENERATION_INTERVAL) {
                 playerHealth = Math.min(playerHealth + 1, maxHealth);
                 regenerationTimer = 0f;
-                Gdx.app.log("Player", "Regenerated 1 HP. Current: " + playerHealth + "/" + maxHealth);
             }
         }
     }
@@ -156,17 +156,14 @@ public class Player {
     public void applyVitality() {
         maxHealth += 1;
         playerHealth = Math.min(playerHealth + 1, maxHealth);
-        Gdx.app.log("Player", "Vitality applied: Max HP increased to " + maxHealth);
     }
 
     public void applyProcrease() {
         projectileBonus += 1;
-        Gdx.app.log("Player", "Procrease applied: +1 projectile (Total bonus: " + projectileBonus + ")");
     }
 
     public void applyAmocrease() {
         ammoBonus += 5;
-        Gdx.app.log("Player", "Amocrease applied: +5 max ammo (Total bonus: " + ammoBonus + ")");
     }
 
     public void enableRegeneration() {
@@ -346,7 +343,6 @@ public class Player {
             xpNeeded = 20 * newLevel;
         }
 
-        // If level has increased
         if (newLevel > level) {
             levelUp(newLevel);
         }

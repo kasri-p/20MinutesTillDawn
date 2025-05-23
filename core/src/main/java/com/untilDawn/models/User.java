@@ -11,6 +11,7 @@ public class User {
     private String avatarPath;
     private int deaths;
     private int kills;
+    private float survivalTime;
 
     public User(String username, String password, String avatarPath) {
         this.username = username;
@@ -19,6 +20,7 @@ public class User {
         this.isGuest = false;
         this.SecurityQuestionIndex = 0;
         this.SecurityAnswer = "";
+        this.survivalTime = 0;
     }
 
 
@@ -98,6 +100,14 @@ public class User {
 
     public void setKills(int kills) {
         this.kills = kills;
+    }
+
+    public float getSurvivalTime() {
+        return survivalTime;
+    }
+
+    public void setSurvivalTime(float survivalTime) {
+        this.survivalTime = survivalTime;
     }
 
     @Override

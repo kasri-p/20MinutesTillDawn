@@ -138,7 +138,6 @@ public class GameSaveSystem {
             character = Characters.Shana;
         }
 
-        // Find weapon
         Weapons weapon = null;
         for (Weapons w : Weapons.values()) {
             if (w.getName().equals(saveData.weaponName)) {

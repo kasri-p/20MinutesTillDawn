@@ -131,13 +131,17 @@ public class GameView implements Screen, InputProcessor {
         );
 
         levelUpWindow.pack();
-        levelUpWindow.setPosition(
-            (stage.getWidth() - levelUpWindow.getWidth()) / 2,
-            (stage.getHeight() - levelUpWindow.getHeight()) / 2
-        );
+        levelUpWindow.layout();
 
         stage.addActor(levelUpWindow);
-        levelUpWindow.toFront();
+
+        Gdx.app.postRunnable(() -> {
+            levelUpWindow.setPosition(
+                (stage.getViewport().getWorldWidth() - levelUpWindow.getWidth()) / 2f,
+                (stage.getViewport().getWorldHeight() - levelUpWindow.getHeight()) / 2f
+            );
+            levelUpWindow.toFront();
+        });
 
         controller.getPlayerController().getPlayer().setLevelUpWindowShown();
         Gdx.input.setInputProcessor(stage);
@@ -157,15 +161,19 @@ public class GameView implements Screen, InputProcessor {
         );
 
         pauseMenuWindow.pack();
-        pauseMenuWindow.setPosition(
-            (stage.getWidth() - pauseMenuWindow.getWidth()) / 2,
-            (stage.getHeight() - pauseMenuWindow.getHeight()) / 2
-        );
+        pauseMenuWindow.layout();
 
         stage.clear();
         stage.addActor(pauseMenuWindow);
-        pauseMenuWindow.toFront();
-        pauseMenuWindow.setZIndex(1000);
+
+        Gdx.app.postRunnable(() -> {
+            pauseMenuWindow.setPosition(
+                (stage.getViewport().getWorldWidth() - pauseMenuWindow.getWidth()) / 2f,
+                (stage.getViewport().getWorldHeight() - pauseMenuWindow.getHeight()) / 2f
+            );
+            pauseMenuWindow.toFront();
+            pauseMenuWindow.setZIndex(1000);
+        });
 
         Gdx.input.setInputProcessor(stage);
     }
