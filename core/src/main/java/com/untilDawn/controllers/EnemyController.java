@@ -445,8 +445,7 @@ public class EnemyController {
                     sprite.setColor(1.0f, 0.9f, 0.8f, 1.0f);
                     sprite.draw(Main.getBatch());
 
-                    boss.drawBarriers();
-
+                    
                 } else {
                     Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
                     if (animation != null) {

@@ -196,7 +196,7 @@ public class SettingsMenu implements Screen {
         addKeybindRow("Move Down", "S");
         addKeybindRow("Move Left", "A");
         addKeybindRow("Move Right", "D");
-        addKeybindRow("Auto Shoot", "SPACE");
+        addKeybindRow("Auto Aim", "SPACE");
         addKeybindRow("Reload", "R");
         addKeybindRow("Pause", "ESC");
 

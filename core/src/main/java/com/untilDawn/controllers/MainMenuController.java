@@ -229,6 +229,7 @@ public class MainMenuController {
         view.getContinueGameButton().addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                playClick();
                 if (App.getLoggedInUser().isGuest()) {
                     return;
                 }
@@ -240,6 +241,14 @@ public class MainMenuController {
                 Game game = GameSaveSystem.restoreGameFromSave(saveData);
                 App.setGame(game);
                 Main.getMain().setScreen(new GameView(GameAssetManager.getGameAssetManager().getSkin()));
+            }
+        });
+
+        view.getTalentsButton().addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                Main.getMain().setScreen(new HintMenu(GameAssetManager.getGameAssetManager().getSkin(), () -> Main.getMain().setScreen(new MainMenu(GameAssetManager.getGameAssetManager().getSkin()))));
             }
         });
     }

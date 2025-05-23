@@ -9,10 +9,10 @@ import java.util.Map;
 
 public class CheatCodeManager {
     // Cheat code strings
-    public static final String REDUCE_TIME = "TIMEREDUCTION";
+    public static final String REDUCE_TIME = "TIMEREDUCT";
     public static final String LEVEL_UP = "LEVELUP";
     public static final String HEAL_PLAYER = "HEALME";
-    public static final String BOSS_FIGHT = "SPAWNELDERBOSS";
+    public static final String BOSS_FIGHT = "SPAWNELDER";
     public static final String GOD_MODE = "GODMODE";
     private static CheatCodeManager instance;
     private Map<String, CheatCode> cheatCodes;
@@ -39,7 +39,7 @@ public class CheatCodeManager {
         cheatCodes = new HashMap<>();
 
         cheatCodes.put(REDUCE_TIME, new CheatCode(
-            "TIMEREDUCTION",
+            "TIMEREDUCT",
             "Time Reduction",
             "Reduces remaining game time by 1 minute",
             () -> reduceTime()
@@ -60,7 +60,7 @@ public class CheatCodeManager {
         ));
 
         cheatCodes.put(BOSS_FIGHT, new CheatCode(
-            "SPAWNELDERBOSS",
+            "SPAWNELDER",
             "Spawn Elder Boss",
             "Spawns the Elder Boss immediately for testing",
             () -> spawnElderBoss()

@@ -10,5 +10,17 @@
     "deaths": 2,
     "kills": 13,
     "survivalTime": 57.194836
+  },
+  "samin": {
+    "username": "samin",
+    "password": "5DNzrrorEuOh+W+q1EiiiIMBXLKVy9je9vCyWX2y0Xw\u003d",
+    "SecurityQuestionIndex": 0,
+    "SecurityAnswer": "gnr",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar1.png",
+    "deaths": 0,
+    "kills": 0,
+    "survivalTime": 0.0
   }
 }

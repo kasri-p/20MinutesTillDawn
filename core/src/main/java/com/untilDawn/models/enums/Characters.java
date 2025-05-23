@@ -32,7 +32,12 @@ public enum Characters {
         return hp;
     }
 
-    public String getPath() {
-        return "Images/avatars/" + name + "/";
+    @Override
+    public String toString() {
+        return " ( Speed: " + speed + " | HP: " + hp + " )";
+    }
+
+    public String getImagePath() {
+        return "Images/characters/" + name.toLowerCase() + "/portrait.png";
     }
 }
