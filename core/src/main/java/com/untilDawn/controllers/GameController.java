@@ -73,7 +73,7 @@ public class GameController {
             gameOver = true;
             App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
             Gdx.app.log("GameController", "Player died - Health: " + playerController.getPlayer().getPlayerHealth());
-            
+
         }
 
         // Check if time limit is reached
@@ -88,17 +88,19 @@ public class GameController {
     public float getGameTime() {
         return gameTime;
     }
-
+    
+    public void setGameTime(float newGameTime) {
+        this.gameTime = newGameTime;
+        Gdx.app.log("GameController", "Game time set to: " + newGameTime + " seconds");
+    }
 
     public int getTimeLimit() {
         return timeLimit;
     }
 
-
     public float getRemainingTime() {
         return Math.max(0, (timeLimit * 60) - gameTime);
     }
-
 
     public boolean isGameOver() {
         return gameOver;
@@ -108,9 +110,7 @@ public class GameController {
         return Math.min(1.0f, gameTime / (timeLimit * 60));
     }
 
-    /**
-     * Format remaining time as MM:SS string
-     */
+
     public String getFormattedRemainingTime() {
         float remainingTime = getRemainingTime();
         int minutes = (int) (remainingTime / 60);
@@ -118,16 +118,11 @@ public class GameController {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
-    /**
-     * Check if time is running low (less than 1 minute)
-     */
     public boolean isTimeRunningLow() {
         return getRemainingTime() <= 60;
     }
 
-    /**
-     * Check if time is critically low (less than 10 seconds)
-     */
+
     public boolean isTimeCritical() {
         return getRemainingTime() <= 10;
     }
@@ -157,5 +152,19 @@ public class GameController {
 
     public float getMapHeight() {
         return mapHeight;
+    }
+
+    public void reduceGameTime(float seconds) {
+        gameTime += seconds;
+        Gdx.app.log("GameController", "Game time reduced by " + seconds + " seconds");
+    }
+
+    public void addGameTime(float seconds) {
+        gameTime += seconds;
+        if (seconds > 0) {
+            Gdx.app.log("GameController", "Game time increased by " + seconds + " seconds");
+        } else {
+            Gdx.app.log("GameController", "Game time reduced by " + Math.abs(seconds) + " seconds");
+        }
     }
 }

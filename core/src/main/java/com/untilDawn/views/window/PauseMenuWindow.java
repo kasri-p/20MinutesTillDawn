@@ -1,99 +1,84 @@
 package com.untilDawn.views.window;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.untilDawn.Main;
+import com.untilDawn.controllers.GameController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.Player;
 import com.untilDawn.models.enums.Abilities;
+import com.untilDawn.models.utils.CheatCodeManager;
 import com.untilDawn.models.utils.GameAssetManager;
+
+import java.util.Map;
 
 public class PauseMenuWindow extends Window {
     // Constants
     private static final float WINDOW_WIDTH = 1200f;
     private static final float WINDOW_HEIGHT = 800f;
     private static final float PADDING = 25f;
-    private static final float SECTION_SPACING = 30f;
+    private static final float SECTION_SPACING = 20f;
     private static final float BUTTON_WIDTH = 180f;
-    private static final float BUTTON_HEIGHT = 60f;
+    private static final float BUTTON_HEIGHT = 50f;
 
-    // Color scheme
-    private static final Color TITLE_COLOR = Color.YELLOW;
-    private static final Color SECTION_HEADER_COLOR = Color.CYAN;
-    private static final Color CHEAT_COLOR = Color.ORANGE;
-    private static final Color ABILITY_ACTIVE_COLOR = Color.GREEN;
-    private static final Color ABILITY_COOLDOWN_COLOR = Color.YELLOW;
-    private static final Color ABILITY_READY_COLOR = Color.CYAN;
-    private static final Color STATS_COLOR = Color.LIGHT_GRAY;
-
-    // Cheat codes organized by category
-    private static final String[][] CHEAT_CATEGORIES = {
-        {"COMBAT CHEATS",
-            "🗡️ GODMODE - Infinite Health",
-            "💥 DAMAGE2X - Double Damage",
-            "🛡️ INVINCIBLE - Temporary Invincibility",
-            "⚡ LEVELUP - Instant Level Up"
-        },
-        {"EQUIPMENT CHEATS",
-            "🔫 AMMOMAX - Infinite Ammo",
-            "⚡ NORELOAD - No Reload Time",
-            "🎯 ALLABILITIES - Unlock All Abilities"
-        },
-        {"MOVEMENT CHEATS",
-            "🏃 SPEEDUP - Double Movement Speed",
-            "👻 NOCLIP - Walk Through Walls",
-            "🦘 JUMPBOOST - Super Jump"
-        }
-    };
+    // Dark color scheme
+    private static final Color TITLE_COLOR = new Color(0.9f, 0.9f, 0.9f, 1f);
+    private static final Color SECTION_HEADER_COLOR = new Color(0.7f, 0.8f, 0.9f, 1f);
+    private static final Color ABILITY_ACTIVE_COLOR = new Color(0.3f, 0.8f, 0.3f, 1f);
+    private static final Color ABILITY_COOLDOWN_COLOR = new Color(0.8f, 0.6f, 0.2f, 1f);
+    private static final Color ABILITY_READY_COLOR = new Color(0.4f, 0.7f, 0.9f, 1f);
+    private static final Color TEXT_COLOR = new Color(0.8f, 0.8f, 0.8f, 1f);
+    private static final Color CHEAT_SUCCESS_COLOR = new Color(0.3f, 0.8f, 0.3f, 1f);
+    private static final Color CHEAT_ERROR_COLOR = new Color(0.8f, 0.3f, 0.3f, 1f);
+    private static final Color PANEL_COLOR = new Color(0.1f, 0.1f, 0.15f, 0.95f);
 
     // Core components
     private final Player player;
+    private final GameController gameController;
     private final Runnable onResume;
     private final Runnable onGiveUp;
     private final Runnable onSaveAndExit;
 
     // UI Components
-    private ScrollPane abilitiesScrollPane;
-    private ScrollPane cheatScrollPane;
-    private ScrollPane statsScrollPane;
-    private Table abilitiesTable;
-    private Table statsTable;
+    private Table contentArea;
+    private TextField cheatInputField;
+    private Label cheatStatusLabel;
     private CheckBox blackWhiteCheckBox;
     private CheckBox soundEffectsCheckBox;
-    private CheckBox musicCheckBox;
-    private Slider volumeSlider;
-    private Label volumeLabel;
-    private boolean originalBlackWhiteState;
-    private boolean originalSfxState;
-    private boolean originalMusicState;
-    private Tab currentTab = Tab.ABILITIES;
+    private CheatCodeManager cheatManager;
 
-    public PauseMenuWindow(Skin skin, Player player, Stage stage, Runnable onResume, Runnable onGiveUp, Runnable onSaveAndExit) {
-        super("", skin); // Empty title, we'll create custom
+    // Navigation state
+    private MenuSection currentSection = MenuSection.MAIN;
+    private TextButton[] navigationButtons;
+
+    public PauseMenuWindow(Skin skin, Player player, GameController gameController, Stage stage,
+                           Runnable onResume, Runnable onGiveUp, Runnable onSaveAndExit) {
+        super("", skin);
         this.player = player;
+        this.gameController = gameController;
         this.onResume = onResume;
         this.onGiveUp = onGiveUp;
         this.onSaveAndExit = onSaveAndExit;
 
-        // Store original states
-        this.originalBlackWhiteState = App.isBlackAndWhiteEnabled();
-        this.originalSfxState = App.isSFX();
+        this.cheatManager = CheatCodeManager.getInstance();
+        this.cheatManager.setGameController(gameController);
 
         setupWindow(stage);
         createContent(skin);
     }
 
     private void setupWindow(Stage stage) {
-        // Enhanced background with border effect
-        setBackground(new TextureRegionDrawable(
-            new TextureRegion(GameAssetManager.getGameAssetManager().getPanel())
-        ));
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
 
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         float centerX = (stage.getWidth() - getWidth()) / 2;
@@ -102,9 +87,10 @@ public class PauseMenuWindow extends Window {
 
         setModal(true);
         setMovable(false);
-
-        // Remove default title
         getTitleLabel().setText("");
+
+        // Set window color for darker appearance
+        setColor(PANEL_COLOR);
     }
 
     private void createContent(Skin skin) {
@@ -117,384 +103,465 @@ public class PauseMenuWindow extends Window {
         // Create main title
         createMainTitle(mainContainer, skin);
 
-        // Create tab navigation
-        createTabNavigation(mainContainer, skin);
+        // Create navigation bar
+        createNavigationBar(mainContainer, skin);
 
-        // Create content area
-        createContentArea(mainContainer, skin);
+        // Create content area with dark panel background
+        contentArea = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        contentArea.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        contentArea.setColor(new Color(0.05f, 0.05f, 0.1f, 0.9f));
+        contentArea.pad(20);
 
-        // Create bottom action buttons
+        showMainSection(skin);
+
+        mainContainer.add(contentArea).size(WINDOW_WIDTH - 80, 500).padBottom(SECTION_SPACING).row();
+
         createActionButtons(mainContainer, skin);
 
         add(mainContainer).expand().fill();
     }
 
     private void createMainTitle(Table container, Skin skin) {
+        Label titleLabel = new Label("GAME PAUSED", skin, "title");
+        titleLabel.setAlignment(Align.center);
+        titleLabel.setFontScale(2.2f);
+        titleLabel.setColor(TITLE_COLOR);
+
+        Label subtitleLabel = new Label("Game progress is automatically saved", skin);
+        subtitleLabel.setAlignment(Align.center);
+        subtitleLabel.setFontScale(0.9f);
+        subtitleLabel.setColor(TEXT_COLOR);
+
         Table titleTable = new Table();
-
-        Label mainTitle = new Label("⏸️ GAME PAUSED", skin, "title");
-        mainTitle.setAlignment(Align.center);
-        mainTitle.setFontScale(2.2f);
-        mainTitle.setColor(TITLE_COLOR);
-
-        Label subtitle = new Label("Game Progress Saved Automatically", skin);
-        subtitle.setAlignment(Align.center);
-        subtitle.setFontScale(0.9f);
-        subtitle.setColor(STATS_COLOR);
-
-        titleTable.add(mainTitle).row();
-        titleTable.add(subtitle).padTop(5);
+        titleTable.add(titleLabel).row();
+        titleTable.add(subtitleLabel).padTop(5);
 
         container.add(titleTable).padBottom(SECTION_SPACING).row();
     }
 
-    private void createTabNavigation(Table container, Skin skin) {
-        Table tabTable = new Table();
-        tabTable.defaults().width(180).height(50).space(10);
+    private void createNavigationBar(Table container, Skin skin) {
+        Table navBar = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        navBar.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        navBar.setColor(new Color(0.08f, 0.08f, 0.12f, 0.95f));
+        navBar.pad(10);
 
-        for (Tab tab : Tab.values()) {
-            TextButton tabButton = new TextButton(tab.getDisplayName(), skin);
+        navigationButtons = new TextButton[4];
+        String[] buttonTexts = {"Main Menu", "Abilities", "Cheat Codes", "Settings"};
+        MenuSection[] sections = {MenuSection.MAIN, MenuSection.ABILITIES, MenuSection.CHEATS, MenuSection.SETTINGS};
 
-            // Highlight current tab
-            if (tab == currentTab) {
-                tabButton.setColor(SECTION_HEADER_COLOR);
-                tabButton.getLabel().setColor(Color.BLACK);
-            } else {
-                tabButton.setColor(Color.GRAY);
-                tabButton.getLabel().setColor(Color.WHITE);
-            }
+        for (int i = 0; i < buttonTexts.length; i++) {
+            final MenuSection section = sections[i];
+            TextButton navButton = new TextButton(buttonTexts[i], skin);
+            navButton.getLabel().setFontScale(1.0f);
 
-            tabButton.addListener(new ClickListener() {
+            navButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     playClick();
-                    switchTab(tab, skin);
+                    switchToSection(section, skin);
                 }
             });
 
-            tabTable.add(tabButton);
+            navigationButtons[i] = navButton;
+            navBar.add(navButton).width(180).height(40).padRight(10);
         }
 
-        container.add(tabTable).padBottom(20).row();
+        updateNavigationButtons();
+        container.add(navBar).fillX().padBottom(15).row();
     }
 
-    private void createContentArea(Table container, Skin skin) {
-        Table contentArea = new Table();
-        contentArea.setBackground(new TextureRegionDrawable(
-            new TextureRegion(GameAssetManager.getGameAssetManager().getPanel())
-        ));
-        contentArea.pad(20);
-
-        refreshContentArea(contentArea, skin);
-
-        container.add(contentArea).size(WINDOW_WIDTH - 100, 450).row();
+    private void updateNavigationButtons() {
+        for (int i = 0; i < navigationButtons.length; i++) {
+            TextButton button = navigationButtons[i];
+            if (MenuSection.values()[i] == currentSection) {
+                button.setColor(SECTION_HEADER_COLOR);
+                button.getLabel().setColor(Color.BLACK);
+            } else {
+                button.setColor(Color.GRAY);
+                button.getLabel().setColor(Color.WHITE);
+            }
+        }
     }
 
-    private void refreshContentArea(Table contentArea, Skin skin) {
-        contentArea.clear();
+    private void switchToSection(MenuSection section, Skin skin) {
+        currentSection = section;
+        updateNavigationButtons();
 
-        switch (currentTab) {
+        switch (section) {
+            case MAIN:
+                showMainSection(skin);
+                break;
             case ABILITIES:
-                createAbilitiesContent(contentArea, skin);
-                break;
-            case STATS:
-                createStatsContent(contentArea, skin);
-                break;
-            case SETTINGS:
-                createSettingsContent(contentArea, skin);
+                showAbilitiesSection(skin);
                 break;
             case CHEATS:
-                createCheatsContent(contentArea, skin);
+                showCheatSection(skin);
+                break;
+            case SETTINGS:
+                showSettingsSection(skin);
                 break;
         }
     }
 
-    private void createAbilitiesContent(Table container, Skin skin) {
-        // Section header
-        Label sectionTitle = new Label("🎯 ACQUIRED ABILITIES", skin);
-        sectionTitle.setFontScale(1.4f);
-        sectionTitle.setColor(SECTION_HEADER_COLOR);
-        sectionTitle.setAlignment(Align.center);
-        container.add(sectionTitle).padBottom(20).row();
+    private void showMainSection(Skin skin) {
+        contentArea.clear();
 
-        // Abilities organized by type
-        Table abilitiesContainer = new Table();
-        abilitiesContainer.top();
+        // Game Status Section
+        Label statusTitle = new Label("GAME STATUS", skin);
+        statusTitle.setFontScale(1.4f);
+        statusTitle.setColor(SECTION_HEADER_COLOR);
+        statusTitle.setAlignment(Align.center);
+        contentArea.add(statusTitle).padBottom(20).row();
 
-        // Create sections for different ability types
-        createAbilityTypeSection(abilitiesContainer, skin, "⚔️ PASSIVE ABILITIES", Abilities.AbilityType.PASSIVE);
-        createAbilityTypeSection(abilitiesContainer, skin, "⚡ ACTIVE ABILITIES", Abilities.AbilityType.ACTIVE);
+        // Create two-column layout for stats
+        Table statsContainer = new Table();
 
-        abilitiesScrollPane = new ScrollPane(abilitiesContainer, skin);
-        abilitiesScrollPane.setFadeScrollBars(false);
-        abilitiesScrollPane.setScrollingDisabled(true, false);
-        abilitiesScrollPane.setScrollBarPositions(false, true);
+        // Left column - Player Stats
+        Table leftStats = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        leftStats.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        leftStats.setColor(new Color(0.08f, 0.08f, 0.12f, 0.8f));
+        leftStats.pad(15);
 
-        container.add(abilitiesScrollPane).expand().fill();
+        Label playerStatsTitle = new Label("Player Information", skin);
+        playerStatsTitle.setFontScale(1.1f);
+        playerStatsTitle.setColor(SECTION_HEADER_COLOR);
+        leftStats.add(playerStatsTitle).padBottom(10).row();
+
+        addStatRow(leftStats, skin, "Level:", String.valueOf(player.getLevel()));
+        addStatRow(leftStats, skin, "Health:", player.getPlayerHealth() + "/" + player.getMaxHealth());
+        addStatRow(leftStats, skin, "Experience:", String.valueOf(player.getXP()));
+        addStatRow(leftStats, skin, "Kills:", String.valueOf(player.getKills()));
+
+        Table rightStats = new Table();
+        rightStats.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        rightStats.setColor(new Color(0.08f, 0.08f, 0.12f, 0.8f));
+        rightStats.pad(15);
+
+        Label gameStatsTitle = new Label("Game Information", skin);
+        gameStatsTitle.setFontScale(1.1f);
+        gameStatsTitle.setColor(SECTION_HEADER_COLOR);
+        rightStats.add(gameStatsTitle).padBottom(10).row();
+
+        addStatRow(rightStats, skin, "Time Remaining:", gameController.getFormattedRemainingTime());
+        addStatRow(rightStats, skin, "Time Limit:", gameController.getTimeLimit() + " minutes");
+        addStatRow(rightStats, skin, "Weapon:", gameController.getWeaponController().getWeapon().getWeapon().getName());
+        addStatRow(rightStats, skin, "Ammo:", String.valueOf(gameController.getWeaponController().getWeapon().getAmmo()));
+
+        statsContainer.add(leftStats).width(350).padRight(20);
+        statsContainer.add(rightStats).width(350).padLeft(20);
+
+        contentArea.add(statsContainer).padBottom(30).row();
+
+        Label quickNavTitle = new Label("QUICK NAVIGATION", skin);
+        quickNavTitle.setFontScale(1.2f);
+        quickNavTitle.setColor(SECTION_HEADER_COLOR);
+        quickNavTitle.setAlignment(Align.center);
+        contentArea.add(quickNavTitle).padBottom(15).row();
+
+        Table quickNavTable = new Table();
+        quickNavTable.defaults().width(160).height(35).space(15);
+
+        TextButton viewAbilitiesBtn = new TextButton("View Abilities", skin);
+        viewAbilitiesBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                switchToSection(MenuSection.ABILITIES, skin);
+            }
+        });
+
+        TextButton openCheatsBtn = new TextButton("Cheat Codes", skin);
+        openCheatsBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                switchToSection(MenuSection.CHEATS, skin);
+            }
+        });
+
+        TextButton settingsBtn = new TextButton("Game Settings", skin);
+        settingsBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                switchToSection(MenuSection.SETTINGS, skin);
+            }
+        });
+
+        quickNavTable.add(viewAbilitiesBtn);
+        quickNavTable.add(openCheatsBtn);
+        quickNavTable.add(settingsBtn);
+
+        contentArea.add(quickNavTable);
+    }
+
+    private void showAbilitiesSection(Skin skin) {
+        contentArea.clear();
+
+        Label title = new Label("ACQUIRED ABILITIES", skin);
+        title.setFontScale(1.4f);
+        title.setColor(SECTION_HEADER_COLOR);
+        title.setAlignment(Align.center);
+        contentArea.add(title).padBottom(20).row();
+
+        Table scrollContent = new Table();
+        scrollContent.top();
+
+        createAbilityTypeSection(scrollContent, skin, "PASSIVE ABILITIES", Abilities.AbilityType.PASSIVE);
+
+        createAbilityTypeSection(scrollContent, skin, "ACTIVE ABILITIES", Abilities.AbilityType.ACTIVE);
+
+        ScrollPane scrollPane = new ScrollPane(scrollContent, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false);
+        scrollPane.setScrollBarPositions(false, true);
+
+        contentArea.add(scrollPane).expand().fill();
     }
 
     private void createAbilityTypeSection(Table container, Skin skin, String sectionName, Abilities.AbilityType type) {
-        Label typeHeader = new Label(sectionName, skin);
-        typeHeader.setFontScale(1.1f);
-        typeHeader.setColor(Color.WHITE);
-        container.add(typeHeader).left().padTop(15).padBottom(10).row();
+        Label sectionHeader = new Label(sectionName, skin);
+        sectionHeader.setFontScale(1.2f);
+        sectionHeader.setColor(SECTION_HEADER_COLOR);
+        container.add(sectionHeader).left().padTop(15).padBottom(10).row();
 
-        boolean hasAbilitiesOfType = false;
+        boolean hasAbilities = false;
 
         for (Abilities ability : Abilities.values()) {
             if (ability.getType() == type && hasPlayerAcquiredAbility(ability)) {
-                hasAbilitiesOfType = true;
-                Table abilityRow = createEnhancedAbilityRow(ability, skin);
+                hasAbilities = true;
+                Table abilityRow = createAbilityRow(ability, skin);
                 container.add(abilityRow).fillX().padBottom(8).row();
             }
         }
 
-        if (!hasAbilitiesOfType) {
-            Label noAbilitiesLabel = new Label("No " + type.toString().toLowerCase() + " abilities acquired", skin);
-            noAbilitiesLabel.setColor(Color.GRAY);
+        if (!hasAbilities) {
+            Label noAbilitiesLabel = new Label("No " + type.toString().toLowerCase() + " abilities acquired yet", skin);
+            noAbilitiesLabel.setColor(TEXT_COLOR);
             noAbilitiesLabel.setFontScale(0.9f);
-            container.add(noAbilitiesLabel).left().padLeft(20).padBottom(10).row();
+            container.add(noAbilitiesLabel).left().padLeft(20).padBottom(15).row();
         }
     }
 
-    private Table createEnhancedAbilityRow(Abilities ability, Skin skin) {
+    private Table createAbilityRow(Abilities ability, Skin skin) {
         Table row = new Table();
-        row.setBackground(new TextureRegionDrawable(
-            new TextureRegion(GameAssetManager.getGameAssetManager().getPanel())
-        ));
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        row.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        row.setColor(new Color(0.12f, 0.12f, 0.18f, 0.9f));
         row.pad(12);
 
-        // Ability icon
-        Label iconLabel = new Label(ability.getIcon(), skin);
-        iconLabel.setFontScale(1.5f);
-        row.add(iconLabel).width(50).left();
-
-        // Main info column
-        Table infoTable = new Table();
-
-        // Ability name
+        // Ability icon/name
         Label nameLabel = new Label(ability.getName(), skin);
         nameLabel.setFontScale(1.1f);
         nameLabel.setColor(Color.WHITE);
+        row.add(nameLabel).width(150).left();
 
-        // Ability description (if available)
+        // Ability description
         Label descLabel = new Label(getAbilityDescription(ability), skin);
-        descLabel.setFontScale(0.8f);
-        descLabel.setColor(STATS_COLOR);
+        descLabel.setFontScale(0.85f);
+        descLabel.setColor(TEXT_COLOR);
         descLabel.setWrap(true);
+        row.add(descLabel).width(350).left().padLeft(15);
 
-        infoTable.add(nameLabel).left().row();
-        infoTable.add(descLabel).width(400).left().padTop(3);
-
-        row.add(infoTable).expandX().left().padLeft(15);
-
-        // Status/Progress column
-        Table statusTable = new Table();
-
+        // Status/Effect
         if (ability.getType() == Abilities.AbilityType.ACTIVE) {
             Label statusLabel = createAbilityStatusLabel(ability, skin);
-            statusTable.add(statusLabel).row();
-
-
+            row.add(statusLabel).width(120).right();
         } else {
-            // Show passive effect level/bonus
             Label effectLabel = new Label(getAbilityEffectText(ability), skin);
             effectLabel.setFontScale(0.9f);
             effectLabel.setColor(ABILITY_ACTIVE_COLOR);
-            statusTable.add(effectLabel);
+            row.add(effectLabel).width(120).right();
         }
-
-        row.add(statusTable).right().width(120);
 
         return row;
     }
 
-    private void createStatsContent(Table container, Skin skin) {
-        Label sectionTitle = new Label("📊 PLAYER STATISTICS", skin);
-        sectionTitle.setFontScale(1.4f);
-        sectionTitle.setColor(SECTION_HEADER_COLOR);
-        sectionTitle.setAlignment(Align.center);
-        container.add(sectionTitle).padBottom(20).row();
+    private void showCheatSection(Skin skin) {
+        contentArea.clear();
 
-        statsTable = new Table();
-        statsTable.top();
+        Label title = new Label("CHEAT CODES", skin);
+        title.setFontScale(1.4f);
+        title.setColor(SECTION_HEADER_COLOR);
+        title.setAlignment(Align.center);
+        contentArea.add(title).padBottom(20).row();
 
-        // Create organized stats sections
-        createStatsSection(statsTable, skin, "⚔️ COMBAT STATS", new String[][]{
-            {"Health", player.getPlayerHealth() + " / " + player.getMaxHealth()},
-            {"Critical Hit Chance", "15%"}, // Example stat
+        // Cheat input section
+        Table inputSection = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        inputSection.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        inputSection.setColor(new Color(0.08f, 0.08f, 0.12f, 0.9f));
+        inputSection.pad(15);
+
+        Label inputLabel = new Label("Enter Cheat Code:", skin);
+        inputLabel.setColor(Color.WHITE);
+        inputLabel.setFontScale(1.1f);
+        inputSection.add(inputLabel).padRight(15);
+
+        cheatInputField = new TextField("", skin);
+        cheatInputField.setMessageText("Type cheat code here...");
+        inputSection.add(cheatInputField).width(250).padRight(15);
+
+        TextButton executeBtn = new TextButton("Execute", skin);
+        executeBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                executeCheatCode();
+            }
         });
+        inputSection.add(executeBtn).width(100);
 
-        createStatsSection(statsTable, skin, "🎒 EQUIPMENT STATS", new String[][]{
-            {"Current Weapon", "Assault Rifle"}, // Example
-        });
+        contentArea.add(inputSection).fillX().padBottom(15).row();
 
-        createStatsSection(statsTable, skin, "🏆 GAME PROGRESS", new String[][]{
-            {"Current Level", String.valueOf(player.getLevel())},
-            {"Enemies Defeated", "147"}, // Example stat
-            {"Time Survived", "12:34"}, // Example stat
-            {"Score", "2,450"}, // Example stat
-        });
+        // Status label
+        cheatStatusLabel = new Label("", skin);
+        cheatStatusLabel.setAlignment(Align.center);
+        cheatStatusLabel.setFontScale(1.0f);
+        contentArea.add(cheatStatusLabel).padBottom(20).row();
 
-        statsScrollPane = new ScrollPane(statsTable, skin);
-        statsScrollPane.setFadeScrollBars(false);
-        statsScrollPane.setScrollingDisabled(true, false);
+        // Available cheats
+        Label availableTitle = new Label("AVAILABLE CHEAT CODES", skin);
+        availableTitle.setFontScale(1.2f);
+        availableTitle.setColor(SECTION_HEADER_COLOR);
+        availableTitle.setAlignment(Align.center);
+        contentArea.add(availableTitle).padBottom(15).row();
 
-        container.add(statsScrollPane).expand().fill();
-    }
+        Table cheatsContainer = new Table();
+        cheatsContainer.top();
 
-    private void createStatsSection(Table container, Skin skin, String sectionName, String[][] stats) {
-        // Section header
-        Label sectionHeader = new Label(sectionName, skin);
-        sectionHeader.setFontScale(1.1f);
-        sectionHeader.setColor(Color.WHITE);
-        container.add(sectionHeader).left().padTop(15).padBottom(10).colspan(2).row();
-
-        // Stats rows
-        for (String[] stat : stats) {
-            Label statName = new Label(stat[0] + ":", skin);
-            statName.setColor(STATS_COLOR);
-            statName.setFontScale(0.9f);
-
-            Label statValue = new Label(stat[1], skin);
-            statValue.setColor(Color.WHITE);
-            statValue.setFontScale(0.9f);
-
-            container.add(statName).left().width(200).padLeft(20);
-            container.add(statValue).left().expandX().row();
+        Map<String, CheatCodeManager.CheatCode> cheats = cheatManager.getAllCheatCodes();
+        for (CheatCodeManager.CheatCode cheat : cheats.values()) {
+            Table cheatRow = createCheatRow(cheat, skin);
+            cheatsContainer.add(cheatRow).fillX().padBottom(8).row();
         }
+
+        ScrollPane scrollPane = new ScrollPane(cheatsContainer, skin);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false);
+
+        contentArea.add(scrollPane).expand().fill();
     }
 
-    private void createSettingsContent(Table container, Skin skin) {
-        Label sectionTitle = new Label("⚙️ GAME SETTINGS", skin);
-        sectionTitle.setFontScale(1.4f);
-        sectionTitle.setColor(SECTION_HEADER_COLOR);
-        sectionTitle.setAlignment(Align.center);
-        container.add(sectionTitle).padBottom(20).row();
+    private Table createCheatRow(CheatCodeManager.CheatCode cheat, Skin skin) {
+        Table row = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        row.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        row.setColor(new Color(0.12f, 0.12f, 0.18f, 0.9f));
+        row.pad(10);
 
-        Table settingsTable = new Table();
-        settingsTable.defaults().space(15);
+        Label codeLabel = new Label(cheat.getCode(), skin);
+        codeLabel.setFontScale(1.0f);
+        codeLabel.setColor(new Color(1f, 0.8f, 0.4f, 1f)); // Orange color for cheat codes
+        row.add(codeLabel).width(140).left();
 
-        // Display Settings Section
-        createSettingsSection(settingsTable, skin, "🖥️ DISPLAY SETTINGS");
+        Label nameLabel = new Label(cheat.getName(), skin);
+        nameLabel.setFontScale(0.95f);
+        nameLabel.setColor(Color.WHITE);
+        row.add(nameLabel).width(120).left().padLeft(10);
+
+        Label descLabel = new Label(cheat.getDescription(), skin);
+        descLabel.setFontScale(0.8f);
+        descLabel.setColor(TEXT_COLOR);
+        descLabel.setWrap(true);
+        row.add(descLabel).expandX().left().padLeft(10);
+
+        return row;
+    }
+
+    private void showSettingsSection(Skin skin) {
+        contentArea.clear();
+
+        Label title = new Label("GAME SETTINGS", skin);
+        title.setFontScale(1.4f);
+        title.setColor(SECTION_HEADER_COLOR);
+        title.setAlignment(Align.center);
+        contentArea.add(title).padBottom(20).row();
+
+        // Display Settings
+        Table displaySection = createSettingsSection(skin, "DISPLAY SETTINGS");
 
         blackWhiteCheckBox = new CheckBox("Black & White Mode", skin);
         blackWhiteCheckBox.setChecked(App.isBlackAndWhiteEnabled());
-        blackWhiteCheckBox.addListener(new ClickListener() {
+        blackWhiteCheckBox.getLabel().setColor(Color.WHITE);
+        blackWhiteCheckBox.addListener(new ChangeListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                playClick();
+            public void changed(ChangeEvent event, Actor actor) {
                 App.setBlackAndWhiteEnabled(blackWhiteCheckBox.isChecked());
+                playClick();
             }
         });
-        settingsTable.add(blackWhiteCheckBox).left().padLeft(20).row();
+        displaySection.add(blackWhiteCheckBox).left().padLeft(20).row();
 
-        // Audio Settings Section
-        createSettingsSection(settingsTable, skin, "🔊 AUDIO SETTINGS");
+        contentArea.add(displaySection).fillX().padBottom(20).row();
+
+        // Audio Settings
+        Table audioSection = createSettingsSection(skin, "AUDIO SETTINGS");
 
         soundEffectsCheckBox = new CheckBox("Sound Effects", skin);
         soundEffectsCheckBox.setChecked(App.isSFX());
-        soundEffectsCheckBox.addListener(new ClickListener() {
+        soundEffectsCheckBox.getLabel().setColor(Color.WHITE);
+        soundEffectsCheckBox.addListener(new ChangeListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                playClick();
+            public void changed(ChangeEvent event, Actor actor) {
                 App.setSFX(soundEffectsCheckBox.isChecked());
-            }
-        });
-        settingsTable.add(soundEffectsCheckBox).left().padLeft(20).row();
-
-        musicCheckBox = new CheckBox("Background Music", skin);
-        musicCheckBox.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
                 playClick();
             }
         });
-        settingsTable.add(musicCheckBox).left().padLeft(20).row();
+        audioSection.add(soundEffectsCheckBox).left().padLeft(20).row();
 
-        // Volume slider
-        Table volumeTable = new Table();
-        volumeLabel = new Label("Master Volume: 75%", skin);
-        volumeLabel.setColor(STATS_COLOR);
-        volumeSlider = new Slider(0, 100, 1, false, skin);
-        volumeSlider.setValue(75);
-        volumeSlider.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                volumeLabel.setText("Master Volume: " + (int) volumeSlider.getValue() + "%");
-            }
-        });
-
-        volumeTable.add(volumeLabel).width(150).left();
-        volumeTable.add(volumeSlider).width(200).padLeft(10);
-        settingsTable.add(volumeTable).left().padLeft(20).row();
-
-        container.add(settingsTable).expand().fill().top();
+        contentArea.add(audioSection).fillX();
     }
 
-    private void createSettingsSection(Table container, Skin skin, String sectionName) {
-        Label sectionHeader = new Label(sectionName, skin);
-        sectionHeader.setFontScale(1.1f);
-        sectionHeader.setColor(Color.WHITE);
-        container.add(sectionHeader).left().padTop(20).padBottom(10).row();
+    private Table createSettingsSection(Skin skin, String sectionTitle) {
+        Table section = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        section.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        section.setColor(new Color(0.08f, 0.08f, 0.12f, 0.9f));
+        section.pad(15);
+
+        Label titleLabel = new Label(sectionTitle, skin);
+        titleLabel.setFontScale(1.1f);
+        titleLabel.setColor(SECTION_HEADER_COLOR);
+        section.add(titleLabel).left().padBottom(10).row();
+
+        return section;
     }
 
-    private void createCheatsContent(Table container, Skin skin) {
-        Label sectionTitle = new Label("🎮 CHEAT CODES", skin);
-        sectionTitle.setFontScale(1.4f);
-        sectionTitle.setColor(SECTION_HEADER_COLOR);
-        sectionTitle.setAlignment(Align.center);
-        container.add(sectionTitle).padBottom(20).row();
+    private void executeCheatCode() {
+        String cheatCode = cheatInputField.getText().trim().toUpperCase();
 
-        Table cheatTable = new Table();
-        cheatTable.top();
-
-        for (String[] category : CHEAT_CATEGORIES) {
-            // Category header
-            Label categoryHeader = new Label(category[0], skin);
-            categoryHeader.setFontScale(1.1f);
-            categoryHeader.setColor(Color.WHITE);
-            cheatTable.add(categoryHeader).left().padTop(15).padBottom(10).row();
-
-            // Cheat codes in category
-            for (int i = 1; i < category.length; i++) {
-                Table cheatRow = new Table();
-                cheatRow.setBackground(new TextureRegionDrawable(
-                    new TextureRegion(GameAssetManager.getGameAssetManager().getPanel())
-                ));
-                cheatRow.pad(8);
-
-                Label cheatLabel = new Label(category[i], skin);
-                cheatLabel.setFontScale(0.9f);
-                cheatLabel.setColor(CHEAT_COLOR);
-                cheatLabel.setWrap(true);
-
-                cheatRow.add(cheatLabel).width(450).left();
-                cheatTable.add(cheatRow).fillX().padLeft(20).padBottom(5).row();
-            }
+        if (cheatCode.isEmpty()) {
+            cheatStatusLabel.setText("Please enter a cheat code");
+            cheatStatusLabel.setColor(CHEAT_ERROR_COLOR);
+            return;
         }
 
-        // Instructions
-        Label instructionLabel = new Label("💡 Note: These cheat codes are for reference only.\nActivation system not implemented in this demo.", skin);
-        instructionLabel.setFontScale(0.8f);
-        instructionLabel.setColor(Color.GRAY);
-        instructionLabel.setAlignment(Align.center);
-        instructionLabel.setWrap(true);
-        cheatTable.add(instructionLabel).width(500).padTop(20).row();
+        boolean success = cheatManager.executeCheatCode(cheatCode);
 
-        cheatScrollPane = new ScrollPane(cheatTable, skin);
-        cheatScrollPane.setFadeScrollBars(false);
-        cheatScrollPane.setScrollingDisabled(true, false);
-
-        container.add(cheatScrollPane).expand().fill();
+        if (success) {
+            cheatStatusLabel.setText("Cheat code executed successfully: " + cheatCode);
+            cheatStatusLabel.setColor(CHEAT_SUCCESS_COLOR);
+            cheatInputField.setText("");
+        } else {
+            cheatStatusLabel.setText("Invalid cheat code: " + cheatCode);
+            cheatStatusLabel.setColor(CHEAT_ERROR_COLOR);
+        }
     }
 
     private void createActionButtons(Table container, Skin skin) {
         Table buttonContainer = new Table();
+        Texture panelTexture = GameAssetManager.getGameAssetManager().getPanel();
+        buttonContainer.setBackground(new TextureRegionDrawable(new TextureRegion(panelTexture)));
+        buttonContainer.setColor(new Color(0.08f, 0.08f, 0.12f, 0.9f));
+        buttonContainer.pad(15);
         buttonContainer.defaults().width(BUTTON_WIDTH).height(BUTTON_HEIGHT).space(20);
 
         // Resume Button
-        TextButton resumeButton = new TextButton("▶️ Resume Game", skin);
+        TextButton resumeButton = new TextButton("Resume Game", skin);
         resumeButton.getLabel().setColor(ABILITY_ACTIVE_COLOR);
         resumeButton.getLabel().setFontScale(1.1f);
         resumeButton.addListener(new ClickListener() {
@@ -506,8 +573,8 @@ public class PauseMenuWindow extends Window {
         });
 
         // Save & Exit Button
-        TextButton saveExitButton = new TextButton("💾 Save & Exit", skin);
-        saveExitButton.getLabel().setColor(Color.CYAN);
+        TextButton saveExitButton = new TextButton("Save & Exit", skin);
+        saveExitButton.getLabel().setColor(ABILITY_READY_COLOR);
         saveExitButton.getLabel().setFontScale(1.1f);
         saveExitButton.addListener(new ClickListener() {
             @Override
@@ -517,21 +584,9 @@ public class PauseMenuWindow extends Window {
             }
         });
 
-        // Settings Reset Button
-        TextButton resetButton = new TextButton("🔄 Reset Settings", skin);
-        resetButton.getLabel().setColor(ABILITY_COOLDOWN_COLOR);
-        resetButton.getLabel().setFontScale(1.1f);
-        resetButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                playClick();
-                resetSettings();
-            }
-        });
-
         // Give Up Button
-        TextButton giveUpButton = new TextButton("❌ Give Up", skin);
-        giveUpButton.getLabel().setColor(Color.RED);
+        TextButton giveUpButton = new TextButton("Give Up", skin);
+        giveUpButton.getLabel().setColor(CHEAT_ERROR_COLOR);
         giveUpButton.getLabel().setFontScale(1.1f);
         giveUpButton.addListener(new ClickListener() {
             @Override
@@ -543,19 +598,23 @@ public class PauseMenuWindow extends Window {
 
         buttonContainer.add(resumeButton);
         buttonContainer.add(saveExitButton);
-        buttonContainer.add(resetButton);
         buttonContainer.add(giveUpButton);
 
-        container.add(buttonContainer).padTop(SECTION_SPACING);
+        container.add(buttonContainer).fillX();
     }
 
     // Helper methods
-    private void switchTab(Tab newTab, Skin skin) {
-        if (currentTab != newTab) {
-            currentTab = newTab;
-            // Recreate the entire content to refresh tab buttons and content
-            createContent(skin);
-        }
+    private void addStatRow(Table table, Skin skin, String label, String value) {
+        Label nameLabel = new Label(label, skin);
+        nameLabel.setColor(TEXT_COLOR);
+        nameLabel.setFontScale(0.9f);
+
+        Label valueLabel = new Label(value, skin);
+        valueLabel.setColor(Color.WHITE);
+        valueLabel.setFontScale(0.9f);
+
+        table.add(nameLabel).left().width(120).padBottom(5);
+        table.add(valueLabel).left().expandX().padBottom(5).row();
     }
 
     private boolean hasPlayerAcquiredAbility(Abilities ability) {
@@ -581,33 +640,33 @@ public class PauseMenuWindow extends Window {
     private Label createAbilityStatusLabel(Abilities ability, Skin skin) {
         Label statusLabel;
         if (ability.isActive()) {
-            statusLabel = new Label("ACTIVE", skin);
+            statusLabel = new Label("ACTIVE (" + String.format("%.1fs", ability.getRemainingDuration()) + ")", skin);
             statusLabel.setColor(ABILITY_ACTIVE_COLOR);
         } else if (ability.getRemainingCooldown() > 0) {
-            statusLabel = new Label(String.format("%.1fs", ability.getRemainingCooldown()), skin);
+            statusLabel = new Label("COOLDOWN (" + String.format("%.1fs", ability.getRemainingCooldown()) + ")", skin);
             statusLabel.setColor(ABILITY_COOLDOWN_COLOR);
         } else {
             statusLabel = new Label("READY", skin);
             statusLabel.setColor(ABILITY_READY_COLOR);
         }
-        statusLabel.setFontScale(0.9f);
+        statusLabel.setFontScale(0.8f);
         return statusLabel;
     }
 
     private String getAbilityDescription(Abilities ability) {
         switch (ability) {
             case VITALITY:
-                return "Increases maximum health permanently";
+                return "Permanently increases maximum health";
             case PROCREASE:
-                return "Adds extra projectiles to attacks";
+                return "Adds extra projectiles to weapon attacks";
             case AMOCREASE:
                 return "Increases maximum ammunition capacity";
             case REGENERATION:
                 return "Slowly restores health over time";
             case DAMAGER:
-                return "Temporarily doubles damage output";
+                return "Temporarily increases damage output";
             case SPEEDY:
-                return "Increases movement speed temporarily";
+                return "Temporarily increases movement speed";
             case SHIELD:
                 return "Provides temporary damage immunity";
             case MULTISHOT:
@@ -620,20 +679,19 @@ public class PauseMenuWindow extends Window {
     private String getAbilityEffectText(Abilities ability) {
         switch (ability) {
             case VITALITY:
-                return "+" + (player.getMaxHealth() - player.getCharacter().getHp()) + " HP";
+                return "+" + (player.getMaxHealth() - player.getCharacter().getHp()) + " Max HP";
             case PROCREASE:
-                return "+" + player.getProjectileBonus() + " shots";
+                return "+" + player.getProjectileBonus() + " Projectiles";
             case AMOCREASE:
-                return "+" + player.getAmmoBonus() + " ammo";
+                return "+" + player.getAmmoBonus() + " Max Ammo";
             case REGENERATION:
-                return "+2 HP/sec";
+                return "Health Regen";
             default:
-                return "Active";
+                return "Acquired";
         }
     }
 
     private void handleResume() {
-        confirmSettingsChanges();
         if (onResume != null) {
             onResume.run();
         }
@@ -641,7 +699,6 @@ public class PauseMenuWindow extends Window {
     }
 
     private void handleSaveAndExit() {
-        confirmSettingsChanges();
         if (onSaveAndExit != null) {
             onSaveAndExit.run();
         }
@@ -649,33 +706,10 @@ public class PauseMenuWindow extends Window {
     }
 
     private void handleGiveUp() {
-        restoreOriginalSettings();
         if (onGiveUp != null) {
             onGiveUp.run();
         }
         remove();
-    }
-
-    private void resetSettings() {
-        App.setBlackAndWhiteEnabled(false);
-        App.setSFX(true);
-
-        if (blackWhiteCheckBox != null) blackWhiteCheckBox.setChecked(false);
-        if (soundEffectsCheckBox != null) soundEffectsCheckBox.setChecked(true);
-        if (musicCheckBox != null) musicCheckBox.setChecked(true);
-        if (volumeSlider != null) {
-            volumeSlider.setValue(75);
-            volumeLabel.setText("Master Volume: 75%");
-        }
-    }
-
-    private void confirmSettingsChanges() {
-        // Settings are applied in real-time, so no need to do anything special
-    }
-
-    private void restoreOriginalSettings() {
-        App.setBlackAndWhiteEnabled(originalBlackWhiteState);
-        App.setSFX(originalSfxState);
     }
 
     private void playClick() {
@@ -688,27 +722,14 @@ public class PauseMenuWindow extends Window {
     public void act(float delta) {
         super.act(delta);
 
-        // Update ability statuses in real-time
+        // Update abilities in real-time
         for (Abilities ability : Abilities.values()) {
             ability.update(delta);
         }
     }
 
-    // Tabs for better organization
-    private enum Tab {
-        ABILITIES("🎯 Abilities"),
-        STATS("📊 Statistics"),
-        SETTINGS("⚙️ Settings"),
-        CHEATS("🎮 Cheats");
-
-        private final String displayName;
-
-        Tab(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
+    // Enum for menu sections
+    private enum MenuSection {
+        MAIN, ABILITIES, CHEATS, SETTINGS
     }
 }

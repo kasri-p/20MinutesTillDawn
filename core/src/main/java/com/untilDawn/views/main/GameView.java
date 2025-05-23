@@ -96,7 +96,6 @@ public class GameView implements Screen, InputProcessor {
             camera.position.set(clampedX, clampedY, 0);
             camera.update();
 
-            // Apply black and white shader if enabled
             if (App.isBlackAndWhiteEnabled()) {
                 grayscaleShader.enable(Main.getBatch());
             }
@@ -128,16 +127,13 @@ public class GameView implements Screen, InputProcessor {
             skin,
             controller.getPlayerController().getPlayer(),
             stage,
-            () -> {
-                resumeGame();
-            }
+            this::resumeGame
         );
 
         stage.addActor(levelUpWindow);
 
         controller.getPlayerController().getPlayer().setLevelUpWindowShown();
 
-        // Change input processor to stage to handle window interactions
         Gdx.input.setInputProcessor(stage);
     }
 
@@ -147,64 +143,55 @@ public class GameView implements Screen, InputProcessor {
         pauseMenuWindow = new PauseMenuWindow(
             skin,
             controller.getPlayerController().getPlayer(),
+            controller, // Pass the GameController for cheat code functionality
             stage,
-            () -> resumeGame(), // onResume
-            () -> giveUpGame(),  // onGiveUp
+            () -> resumeGame(),     // onResume
+            () -> giveUpGame(),     // onGiveUp
             () -> saveAndExitGame() // onSaveAndExit
         );
 
-        // Clear any existing actors that might interfere
         stage.clear();
         stage.addActor(pauseMenuWindow);
 
-        // Force the window to be centered and on top
         pauseMenuWindow.toFront();
-        pauseMenuWindow.setZIndex(1000); // Ensure it's on top
+        pauseMenuWindow.setZIndex(1000);
 
-        // Change input processor to stage to handle window interactions
         Gdx.input.setInputProcessor(stage);
 
-        // Debug: Log window position
-        System.out.println("Pause menu created at: " + pauseMenuWindow.getX() + ", " + pauseMenuWindow.getY());
+        System.out.println("Organized pause menu created at: " + pauseMenuWindow.getX() + ", " + pauseMenuWindow.getY());
         System.out.println("Window size: " + pauseMenuWindow.getWidth() + "x" + pauseMenuWindow.getHeight());
     }
 
     private void resumeGame() {
         gameIsPaused = false;
 
-        // Remove level up window if it exists
         if (levelUpWindow != null) {
             levelUpWindow.dispose();
             levelUpWindow = null;
         }
 
-        // Remove pause menu if it exists
         if (pauseMenuWindow != null) {
             pauseMenuWindow.remove();
             pauseMenuWindow = null;
         }
 
-        // Restore input processor to this GameView
         Gdx.input.setInputProcessor(this);
     }
 
     private void giveUpGame() {
         gameIsPaused = false;
 
-        // Update user stats
         if (App.getLoggedInUser() != null) {
             App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
             App.save();
         }
 
-        // Return to start menu
         StartMenu startMenu = new StartMenu(GameAssetManager.getGameAssetManager().getSkin());
         Main.getMain().setScreen(startMenu);
     }
 
     private void saveAndExitGame() {
         if (App.getLoggedInUser() != null && !App.getLoggedInUser().isGuest()) {
-            // Save the current game state
             boolean saved = GameSaveSystem.saveGame(
                 App.getLoggedInUser(),
                 App.getGame(),
@@ -219,10 +206,8 @@ public class GameView implements Screen, InputProcessor {
             }
         }
 
-        // Save user data
         App.save();
 
-        // Return to main menu
         MainMenu mainMenu = new MainMenu(GameAssetManager.getGameAssetManager().getSkin());
         Main.getMain().setScreen(mainMenu);
     }
