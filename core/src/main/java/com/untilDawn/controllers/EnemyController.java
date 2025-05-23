@@ -7,10 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.*;
 import com.untilDawn.Main;
-import com.untilDawn.models.App;
-import com.untilDawn.models.Bullet;
-import com.untilDawn.models.Enemy;
-import com.untilDawn.models.Player;
+import com.untilDawn.models.*;
 import com.untilDawn.models.enums.EnemyType;
 import com.untilDawn.models.utils.GameAssetManager;
 
@@ -43,6 +40,10 @@ public class EnemyController {
     private float lastEyeBatSpawnTime = 0;
     private float totalGameTimeLimit;
 
+    // Elder Boss fields
+    private ElderBoss elderBoss;
+    private boolean elderBossSpawned = false;
+
     public EnemyController(PlayerController playerController, WeaponController weaponController, float mapWidth, float mapHeight) {
         this.playerController = playerController;
         this.weaponController = weaponController;
@@ -70,6 +71,9 @@ public class EnemyController {
 
         updateSpawnRate();
 
+        // Check for Elder Boss spawn
+        checkElderBossSpawn();
+
         spawnTentacleMonsters();
         spawnEyeBats();
 
@@ -86,6 +90,68 @@ public class EnemyController {
         drawEnemyBullets();
 
         checkAutoAim();
+    }
+
+    private void checkElderBossSpawn() {
+        // Check if we've reached the halfway point of the game
+        float halfwayPoint = totalGameTimeLimit / 2.0f;
+
+        if (!elderBossSpawned && gameTime >= halfwayPoint) {
+            spawnElderBoss();
+            elderBossSpawned = true;
+        }
+    }
+
+    private void spawnElderBoss() {
+        // Spawn the Elder Boss at a position away from the player
+        Vector2 spawnPos = getElderBossSpawnPosition();
+        elderBoss = new ElderBoss(spawnPos.x, spawnPos.y, mapWidth, mapHeight);
+        enemies.add(elderBoss);
+
+        Gdx.app.log("EnemyController", "Elder Boss spawned at halfway point! Position: (" +
+            spawnPos.x + ", " + spawnPos.y + ")");
+
+        // Play dramatic sound effect
+        GameAssetManager.getGameAssetManager().playBatDeath(); // Use dramatic sound
+    }
+
+    // Public method for cheat codes
+    public void forceSpawnElderBoss() {
+        if (!elderBossSpawned) {
+            spawnElderBoss();
+            elderBossSpawned = true;
+        }
+    }
+
+    private Vector2 getElderBossSpawnPosition() {
+        // Spawn the boss at a safe distance from the player
+        float playerX = playerController.getPlayer().getPosX();
+        float playerY = playerController.getPlayer().getPosY();
+
+        // Try to spawn boss at least 300 units away from player
+        float minDistance = 300f;
+        float maxAttempts = 10;
+
+        for (int i = 0; i < maxAttempts; i++) {
+            float angle = MathUtils.random(0, MathUtils.PI2);
+            float distance = minDistance + MathUtils.random(0, 200f);
+
+            float spawnX = playerX + MathUtils.cos(angle) * distance;
+            float spawnY = playerY + MathUtils.sin(angle) * distance;
+
+            // Clamp to map bounds
+            spawnX = MathUtils.clamp(spawnX, 100, mapWidth - 100);
+            spawnY = MathUtils.clamp(spawnY, 100, mapHeight - 100);
+
+            // Check if position is far enough from player
+            float actualDistance = Vector2.dst(spawnX, spawnY, playerX, playerY);
+            if (actualDistance >= minDistance) {
+                return new Vector2(spawnX, spawnY);
+            }
+        }
+
+        // Fallback: spawn at map center if we can't find a good position
+        return new Vector2(mapWidth / 2, mapHeight / 2);
     }
 
     private void spawnTentacleMonsters() {
@@ -152,7 +218,6 @@ public class EnemyController {
 
             float treeRadius = 75f;
             boolean tooCloseToOtherTree = false;
-
 
             for (Circle existingTree : treePositions) {
                 float distanceToTree = Vector2.dst(x, y, existingTree.x, existingTree.y);
@@ -234,6 +299,9 @@ public class EnemyController {
 
                 if (enemy.getType() == EnemyType.TREE) {
                     enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 3.0f;
+                } else if (enemy.getType() == EnemyType.ELDER) {
+                    // Elder boss has larger collision radius
+                    enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.0f;
                 } else {
                     enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.5f;
                 }
@@ -310,7 +378,6 @@ public class EnemyController {
         }
     }
 
-
     private void checkPlayerCollisions() {
         if (playerController == null || playerController.getPlayer() == null) return;
 
@@ -334,6 +401,9 @@ public class EnemyController {
 
             if (enemy.getType() == EnemyType.TREE) {
                 enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 3.0f;
+            } else if (enemy.getType() == EnemyType.ELDER) {
+                // Elder boss has larger collision radius
+                enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.0f;
             } else {
                 enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.5f;
             }
@@ -363,37 +433,70 @@ public class EnemyController {
 
         for (Enemy enemy : enemies) {
             if (enemy.isActive()) {
-                Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
-                if (animation != null) {
-                    animation.setPlayMode(Animation.PlayMode.LOOP);
-                    Texture currentFrame = animation.getKeyFrame(gameTime, true);
+                // Special handling for Elder Boss
+                if (enemy instanceof ElderBoss) {
+                    ElderBoss boss = (ElderBoss) enemy;
+                    // Elder boss handles its own animation internally
+                    Sprite sprite = boss.getSprite();
 
-                    Sprite sprite = enemy.getSprite();
-                    sprite.setTexture(currentFrame);
+                    // Scale the boss to be larger than normal enemies
+                    float scale = 3.0f;
+                    sprite.setSize(sprite.getTexture().getWidth() * scale,
+                        sprite.getTexture().getHeight() * scale);
+                    sprite.setPosition(boss.getPosX() - sprite.getWidth() / 2,
+                        boss.getPosY() - sprite.getHeight() / 2);
 
-                    float scale = 1.0f;
+                    // Flip sprite based on direction to player
+                    float playerX = playerController.getPlayer().getPosX();
+                    float bossX = boss.getPosX();
 
-                    if (enemy.getType() == EnemyType.TREE) {
-                        scale = 2.2f;
-                    } else if (enemy.getType() == EnemyType.TENTACLE) {
-                        scale = 1.5f;
+                    if (bossX < playerX) {
+                        sprite.setFlip(false, false);
+                    } else {
+                        sprite.setFlip(true, false);
                     }
 
-                    sprite.setSize(currentFrame.getWidth() * scale, currentFrame.getHeight() * scale);
-                    sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
-
-                    if (enemy.getType() != EnemyType.TREE) {
-                        float playerX = playerController.getPlayer().getPosX();
-                        float enemyX = enemy.getPosX();
-
-                        if (enemyX < playerX) {
-                            sprite.setFlip(false, false);
-                        } else {
-                            sprite.setFlip(true, false);
-                        }
-                    }
-
+                    // Add boss glow effect
+                    sprite.setColor(1.0f, 0.9f, 0.8f, 1.0f);
                     sprite.draw(Main.getBatch());
+
+                    // Draw barriers
+                    boss.drawBarriers();
+
+                } else {
+                    // Handle normal enemies as before
+                    Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
+                    if (animation != null) {
+                        animation.setPlayMode(Animation.PlayMode.LOOP);
+                        Texture currentFrame = animation.getKeyFrame(gameTime, true);
+
+                        Sprite sprite = enemy.getSprite();
+                        sprite.setTexture(currentFrame);
+
+                        float scale = 1.0f;
+
+                        if (enemy.getType() == EnemyType.TREE) {
+                            scale = 2.2f;
+                        } else if (enemy.getType() == EnemyType.TENTACLE) {
+                            scale = 1.5f;
+                        }
+
+                        sprite.setSize(currentFrame.getWidth() * scale, currentFrame.getHeight() * scale);
+                        sprite.setPosition(enemy.getPosX() - sprite.getWidth() / 2, enemy.getPosY() - sprite.getHeight() / 2);
+
+                        if (enemy.getType() != EnemyType.TREE) {
+                            float playerX = playerController.getPlayer().getPosX();
+                            float enemyX = enemy.getPosX();
+
+                            if (enemyX < playerX) {
+                                sprite.setFlip(false, false);
+                            } else {
+                                sprite.setFlip(true, false);
+                            }
+                        }
+
+                        sprite.draw(Main.getBatch());
+                    }
                 }
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {
                 enemy.getDropSprite().draw(Main.getBatch());
@@ -406,6 +509,12 @@ public class EnemyController {
             enemy.dispose();
         }
         enemies.clear();
+
+        // Cleanup elder boss
+        if (elderBoss != null) {
+            elderBoss.dispose();
+            elderBoss = null;
+        }
     }
 
     public ArrayList<Enemy> getEnemies() {
@@ -443,5 +552,32 @@ public class EnemyController {
                 Gdx.input.setCursorPosition(cursorX, cursorY);
             }
         }
+    }
+
+    // Getter methods for debugging and stats
+    public boolean isElderBossSpawned() {
+        return elderBossSpawned;
+    }
+
+    public ElderBoss getElderBoss() {
+        return elderBoss;
+    }
+
+    public float getGameTime() {
+        return gameTime;
+    }
+
+    public float getTotalGameTimeLimit() {
+        return totalGameTimeLimit;
+    }
+
+    public int getActiveEnemyCount() {
+        int count = 0;
+        for (Enemy enemy : enemies) {
+            if (enemy.isActive()) {
+                count++;
+            }
+        }
+        return count;
     }
 }

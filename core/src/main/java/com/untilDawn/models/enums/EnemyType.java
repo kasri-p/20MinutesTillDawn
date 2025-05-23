@@ -4,7 +4,7 @@ public enum EnemyType {
     TREE("Tree", 1000, 0, "Images/Enemies/Tree/tree0.png", false, false),
     EYEBAT("EyeBat", 50, 2, "Images/Enemies/eyebat/eyebat0.png", true, true),
     TENTACLE("TentacleMonster", 25, 1, "Images/Enemies/tentaclemonster/tentaclemonster0.png", true, false),
-    ;
+    ELDER("Elder", 400, 3, "Images/Enemies/elder/elder0.png", true, false);
 
     private final String name;
     private final int health;

@@ -64,10 +64,10 @@ public class CheatCodeManager {
 
         // Boss fight mode
         cheatCodes.put(BOSS_FIGHT, new CheatCode(
-            "BOSSMODE",
-            "Boss Fight",
-            "Triggers a boss fight encounter",
-            () -> triggerBossFight()
+            "SPAWNELDERBOSS",
+            "Spawn Elder Boss",
+            "Spawns the Elder Boss immediately for testing",
+            () -> spawnElderBoss()
         ));
 
         // God mode (bonus cheat)
@@ -77,6 +77,17 @@ public class CheatCodeManager {
             "Makes player invincible for 30 seconds",
             () -> activateGodMode()
         ));
+    }
+
+
+    private void spawnElderBoss() {
+        if (gameController == null) return;
+
+        // Force spawn the Elder Boss by calling the enemy controller
+        gameController.getEnemyController().forceSpawnElderBoss();
+
+        Gdx.app.log("CheatCode", "Elder Boss spawned via cheat code!");
+        GameAssetManager.getGameAssetManager().playBatDeath();
     }
 
     public boolean executeCheatCode(String code) {
@@ -97,8 +108,7 @@ public class CheatCodeManager {
     private void reduceTime() {
         if (gameController == null) return;
 
-        // Reduce remaining time by 1 minute (60 seconds)
-        // This works by adding 60 seconds to the current game time
+
         gameController.addGameTime(60f);
 
         Gdx.app.log("CheatCode", "Time reduced by 1 minute");
@@ -112,7 +122,6 @@ public class CheatCodeManager {
         int currentLevel = player.getLevel();
         int xpNeeded = 20 * (currentLevel + 1);
 
-        // Add enough XP to trigger level up
         player.addXP(xpNeeded);
 
         Gdx.app.log("CheatCode", "Player leveled up from " + currentLevel + " to " + player.getLevel());
@@ -122,25 +131,13 @@ public class CheatCodeManager {
     private void healPlayer() {
         if (player == null) return;
 
-        // Only heal if player health is empty (0 or very low)
-        if (player.getPlayerHealth() <= 0) {
+        if (player.getPlayerHealth() <= 1) {
             player.setPlayerHealth(player.getMaxHealth());
             Gdx.app.log("CheatCode", "Player healed to full health");
             GameAssetManager.getGameAssetManager().playObtain();
         } else {
             Gdx.app.log("CheatCode", "Heal cheat failed: Player health is not empty");
         }
-    }
-
-    private void triggerBossFight() {
-        if (gameController == null) return;
-
-        // Spawn multiple strong enemies to simulate a boss fight
-        Gdx.app.log("CheatCode", "Boss fight triggered!");
-        GameAssetManager.getGameAssetManager().playBatDeath(); // Use dramatic sound
-
-        // In a real implementation, you'd spawn boss enemies through the EnemyController
-        // gameController.getEnemyController().spawnBossEnemies();
     }
 
     private void activateGodMode() {
