@@ -239,13 +239,10 @@ public class WeaponController {
 
             if (weapon.getWeapon() == Weapons.Shotgun) {
                 bulletSpeed = 8.0f;
-                baseBulletDamage = 10;
             } else if (weapon.getWeapon() == Weapons.Dual_Smg) {
                 bulletSpeed = 15.0f;
-                baseBulletDamage = 3;
             } else if (weapon.getWeapon() == Weapons.Revolver) {
                 bulletSpeed = 12.0f;
-                baseBulletDamage = 8;
             }
         }
 
@@ -261,7 +258,6 @@ public class WeaponController {
             finalProjectileCount += 2; // Add 2 more projectiles for multishot
         }
 
-        // Calculate final damage with DAMAGER bonus
         int finalBulletDamage = baseBulletDamage;
         if (Abilities.DAMAGER.isActive()) {
             finalBulletDamage += player.getDamageBonus();
@@ -272,14 +268,13 @@ public class WeaponController {
         Gdx.app.log("WeaponController", String.format("Shooting: %d projectiles, %d damage each",
             finalProjectileCount, finalBulletDamage));
 
-        // Create and fire bullets
         for (int i = 0; i < finalProjectileCount; i++) {
             Bullet newBullet = new Bullet((int) playerX, (int) playerY);
             newBullet.setDamage(finalBulletDamage);
+            System.out.println(newBullet.getDamage());
 
             Vector2 direction = new Vector2(x - playerX, y - playerY).nor();
 
-            // Apply spread for multiple projectiles
             if (finalProjectileCount > 1) {
                 float spreadAngle = calculateSpreadAngle(finalProjectileCount);
                 float angle = (float) Math.toDegrees(Math.atan2(direction.y, direction.x));
@@ -308,13 +303,10 @@ public class WeaponController {
         weapon.setAmmo(weapon.getAmmo() - 1);
     }
 
-    /**
-     * Calculate spread angle based on number of projectiles
-     */
+
     private float calculateSpreadAngle(int projectileCount) {
         if (projectileCount <= 1) return 0f;
 
-        // Base spread angle, increases with more projectiles
         float baseSpread = 15f;
 
         if (projectileCount <= 3) {
@@ -326,13 +318,8 @@ public class WeaponController {
         }
     }
 
-    /**
-     * Show enhanced muzzle flash for damage-boosted shots
-     */
     private void showEnhancedMuzzleFlash() {
-        // Increase muzzle flash size and duration for damage boost
         muzzleFlashScale *= 1.5f;
-        // Could also change color or add particles
     }
 
     private void updateMuzzleFlashTimer(float deltaTime) {
@@ -341,7 +328,7 @@ public class WeaponController {
             if (muzzleFlashTimer >= MUZZLE_FLASH_DURATION) {
                 showMuzzleFlash = false;
                 muzzleFlashTimer = 0;
-                // Reset muzzle flash scale
+
                 updateMuzzleFlashProperties();
             }
         }

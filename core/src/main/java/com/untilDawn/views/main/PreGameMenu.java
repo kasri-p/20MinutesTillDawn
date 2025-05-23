@@ -33,9 +33,7 @@ public class PreGameMenu implements Screen {
     private Image[] weaponBubbles;
     private Image[] weaponHighlights;
     private Image characterPortrait;
-    private Image weaponPortrait;
     private Label characterInfoLabel;
-    private Label weaponInfoLabel;
     private TextButton playButton;
 
     // Time limit selection
@@ -160,6 +158,10 @@ public class PreGameMenu implements Screen {
         selectorsTable.add(timeLimitTable).colspan(3).pad(5 * heightFactor).row();
 
         TextButton.TextButtonStyle playButtonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
+        playButtonStyle.up = null;
+        playButtonStyle.down = null;
+        playButtonStyle.over = null;
+        playButtonStyle.checked = null;
         playButtonStyle.fontColor = Color.SALMON;
         playButtonStyle.overFontColor = Color.valueOf("#f1cedb");
         playButtonStyle.downFontColor = Color.LIGHT_GRAY;
@@ -180,15 +182,15 @@ public class PreGameMenu implements Screen {
 
         selectorsTable.add(playButton).colspan(3).width(180 * widthFactor).height(50 * heightFactor).pad(15 * heightFactor).row();
 
-        contentTable.add(selectorsTable).width(stage.getWidth() * 0.55f).padRight(10 * widthFactor);
+        contentTable.add(selectorsTable).width(stage.getWidth() * 0.6f).padRight(10 * widthFactor);
 
         Table infoTable = new Table();
         createInfoSection(infoTable);
-        contentTable.add(infoTable).width(stage.getWidth() * 0.35f).top();
+        contentTable.add(infoTable).width(stage.getWidth() * 0.3f).top();
 
         mainTable.add(contentTable).expandX().row();
 
-        TextButton backButton = new TextButton("Back", skin);
+        TextButton backButton = new TextButton("Back", createTextOnlyButtonStyle());
         backButton.getLabel().setFontScale(1.1f * Math.min(widthFactor, heightFactor));
         backButton.addListener(new ClickListener() {
             @Override
@@ -215,8 +217,25 @@ public class PreGameMenu implements Screen {
         stage.addActor(mainTable);
     }
 
+    private TextButton.TextButtonStyle createTextOnlyButtonStyle() {
+        TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
+        textOnlyStyle.up = null;
+        textOnlyStyle.down = null;
+        textOnlyStyle.over = null;
+        textOnlyStyle.checked = null;
+        textOnlyStyle.fontColor = Color.WHITE;
+        textOnlyStyle.overFontColor = Color.LIGHT_GRAY;
+        textOnlyStyle.downFontColor = Color.GRAY;
+        return textOnlyStyle;
+    }
+
     private void createTimeLimitButtons(Table timeLimitTable) {
+        // Create simple text-only button style based on existing skin
         TextButton.TextButtonStyle timeLimitStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
+        timeLimitStyle.up = null;
+        timeLimitStyle.down = null;
+        timeLimitStyle.over = null;
+        timeLimitStyle.checked = null;
         timeLimitStyle.fontColor = Color.WHITE;
         timeLimitStyle.overFontColor = Color.LIGHT_GRAY;
         timeLimitStyle.downFontColor = Color.GRAY;
@@ -276,14 +295,15 @@ public class PreGameMenu implements Screen {
             }
         });
 
-        float buttonWidth = 60 * widthFactor;
+        // Organize buttons in a single row with consistent spacing
+        float buttonWidth = 80 * widthFactor;
         float buttonHeight = 40 * heightFactor;
-        float padding = 5 * Math.min(widthFactor, heightFactor);
+        float buttonSpacing = 15 * widthFactor;
 
-        timeLimitTable.add(time2Button).width(buttonWidth).height(buttonHeight).pad(5);
-        timeLimitTable.add(time5Button).width(buttonWidth).height(buttonHeight).pad(5);
-        timeLimitTable.add(time10Button).width(buttonWidth).height(buttonHeight).pad(5);
-        timeLimitTable.add(time20Button).width(buttonWidth).height(buttonHeight).pad(5);
+        timeLimitTable.add(time2Button).width(buttonWidth).height(buttonHeight).pad(buttonSpacing);
+        timeLimitTable.add(time5Button).width(buttonWidth).height(buttonHeight).pad(buttonSpacing);
+        timeLimitTable.add(time10Button).width(buttonWidth).height(buttonHeight).pad(buttonSpacing);
+        timeLimitTable.add(time20Button).width(buttonWidth).height(buttonHeight).pad(buttonSpacing);
     }
 
     private void createCharacterBubbles(Table bubblesTable) {
@@ -378,13 +398,7 @@ public class PreGameMenu implements Screen {
     }
 
     private void createInfoSection(Table infoTable) {
-        float characterPortraitSize = 150 * Math.min(widthFactor, heightFactor);
-        float weaponPortraitWidth = 150 * widthFactor;
-        float weaponPortraitHeight = 75 * heightFactor;
-        float infoWidth = 180 * widthFactor;
-        float padding = 5 * Math.min(widthFactor, heightFactor);
-
-        Table characterPortraitTable = new Table();
+        // Bigger character portrait with natural scaling
         characterPortrait = new Image();
         characterPortrait.setVisible(false);
 
@@ -394,34 +408,9 @@ public class PreGameMenu implements Screen {
         characterInfoLabel.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
         characterInfoLabel.setVisible(false);
 
-        Label characterHeader = new Label("Character", skin, "title");
-        characterHeader.setAlignment(Align.center);
-        characterHeader.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
-
-        characterPortraitTable.add(characterHeader).padBottom(padding).row();
-        characterPortraitTable.add(characterPortrait).size(characterPortraitSize, characterPortraitSize).padBottom(padding).row();
-        characterPortraitTable.add(characterInfoLabel).width(infoWidth).row();
-
-        Table weaponPortraitTable = new Table();
-        weaponPortrait = new Image();
-        weaponPortrait.setVisible(false);
-
-        weaponInfoLabel = new Label("", skin);
-        weaponInfoLabel.setWrap(true);
-        weaponInfoLabel.setAlignment(Align.center);
-        weaponInfoLabel.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
-        weaponInfoLabel.setVisible(false);
-
-        Label weaponHeader = new Label("Weapon", skin, "title");
-        weaponHeader.setAlignment(Align.center);
-        weaponHeader.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
-
-        weaponPortraitTable.add(weaponHeader).padBottom(padding).row();
-        weaponPortraitTable.add(weaponPortrait).size(weaponPortraitWidth, weaponPortraitHeight).padBottom(padding).row();
-        weaponPortraitTable.add(weaponInfoLabel).width(infoWidth).row();
-
-        infoTable.add(characterPortraitTable).padBottom(10 * heightFactor).row();
-        infoTable.add(weaponPortraitTable).row();
+        // Only character portrait section, no labels
+        infoTable.add(characterPortrait).padBottom(15 * heightFactor).row();
+        infoTable.add(characterInfoLabel).width(220 * widthFactor).row();
     }
 
     private void selectCharacter(int index) {
@@ -445,8 +434,6 @@ public class PreGameMenu implements Screen {
         if (selectedWeapon == index) {
             weaponHighlights[index].setVisible(false);
             selectedWeapon = -1;
-            weaponPortrait.setVisible(false);
-            weaponInfoLabel.setVisible(false);
         } else {
             if (selectedWeapon != -1) {
                 weaponHighlights[selectedWeapon].setVisible(false);
@@ -454,7 +441,6 @@ public class PreGameMenu implements Screen {
 
             weaponHighlights[index].setVisible(true);
             selectedWeapon = index;
-            updateWeaponPortrait(index);
         }
     }
 
@@ -465,6 +451,13 @@ public class PreGameMenu implements Screen {
         if (Gdx.files.internal(portraitPath).exists()) {
             Texture portraitTexture = new Texture(Gdx.files.internal(portraitPath));
             characterPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(portraitTexture)));
+
+            // Use natural scaling - keep the original aspect ratio and make it bigger
+            float originalWidth = portraitTexture.getWidth();
+            float originalHeight = portraitTexture.getHeight();
+            float scaleFactor = 1.8f; // Make it bigger while keeping natural proportions
+
+            characterPortrait.setSize(originalWidth * scaleFactor, originalHeight * scaleFactor);
         } else {
             Texture placeholderTex = new Texture(Gdx.files.internal("Images/characters/placeholder.png"));
             characterPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(placeholderTex)));
@@ -478,29 +471,6 @@ public class PreGameMenu implements Screen {
             "Speed: " + character.getSpeed();
         characterInfoLabel.setText(info);
         characterInfoLabel.setVisible(true);
-    }
-
-    private void updateWeaponPortrait(int index) {
-        Weapons weapon = availableWeapons[index];
-        String portraitPath = "Images/weapons/" + weapon.getName().replace(" ", "") + "_large.png";
-
-        if (Gdx.files.internal(portraitPath).exists()) {
-            Texture portraitTexture = new Texture(Gdx.files.internal(portraitPath));
-            weaponPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(portraitTexture)));
-        } else {
-            Texture placeholderTex = new Texture(Gdx.files.internal("Images/selectorBubble/SelectorBubble.png"));
-            weaponPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(placeholderTex)));
-            System.out.println("Warning: Portrait not found for " + weapon.getName() + ": " + portraitPath);
-        }
-
-        weaponPortrait.setVisible(true);
-
-        String info = weapon.getName() + "\n" +
-            "Damage: " + weapon.getDamage() + "\n" +
-            "Ammo: " + weapon.getAmmoMax() + "\n" +
-            "Reload Time: " + weapon.getReloadTime() + "s";
-        weaponInfoLabel.setText(info);
-        weaponInfoLabel.setVisible(true);
     }
 
     private void updatePlayButtonState() {
@@ -594,13 +564,6 @@ public class PreGameMenu implements Screen {
 
         if (characterPortrait != null && characterPortrait.getDrawable() instanceof TextureRegionDrawable) {
             Texture texture = ((TextureRegionDrawable) characterPortrait.getDrawable()).getRegion().getTexture();
-            if (texture != null) {
-                texture.dispose();
-            }
-        }
-
-        if (weaponPortrait != null && weaponPortrait.getDrawable() instanceof TextureRegionDrawable) {
-            Texture texture = ((TextureRegionDrawable) weaponPortrait.getDrawable()).getRegion().getTexture();
             if (texture != null) {
                 texture.dispose();
             }

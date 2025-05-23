@@ -19,6 +19,7 @@ public class GameAssetManager {
     private final Skin skin = new Skin(Gdx.files.internal("skin/pixthulhu-ui.json"));
     private final List<Sound> footSteps = new ArrayList<>();
 
+    private final Texture ammoIcon = new Texture(Gdx.files.internal("Images/AmmoIcon.png"));
     private final Texture reloadBarBg = new Texture(Gdx.files.internal("Images/reload/ReloadBar_0.png"));
     private final Texture reloadBarFill = new Texture(Gdx.files.internal("Images/reload/ReloadBar_1.png"));
 
@@ -48,6 +49,7 @@ public class GameAssetManager {
     private final Texture levelUpAnimation8 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp8.png"));
 
     private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
+
     private int footstepsCounter = 1;
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
     private Animation<Texture> heartAnimation = new Animation<>(0.5f, heartAnimation0, heartAnimation1, heartAnimation2);
@@ -68,6 +70,10 @@ public class GameAssetManager {
 
     public Texture getPanel() {
         return panel;
+    }
+
+    public Texture getAmmoIcon() {
+        return ammoIcon;
     }
 
     public Animation<Texture> getLevelUpAnimation() {
@@ -130,7 +136,6 @@ public class GameAssetManager {
         return animation;
     }
 
-    // A fixed version of getWeaponReloadAnimation method in GameAssetManager
     public Animation<Texture> getWeaponReloadAnimation(Weapons weapon) {
         String weaponName = weapon.getName().replaceAll("\\s+", "").toLowerCase();
         String cacheKey = weaponName + "_reload";
@@ -160,7 +165,6 @@ public class GameAssetManager {
             return null;
         }
 
-        // Adjust duration based on weapon reload time for smoother animations
         float frameDuration = weapon.getReloadTime() / (float) frames.size;
         Animation<Texture> animation = new Animation<>(frameDuration, frames);
         weaponReloadAnimationCache.put(cacheKey, animation);

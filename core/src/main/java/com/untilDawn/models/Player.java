@@ -14,6 +14,7 @@ import java.util.List;
 
 public class Player {
     private final float REGENERATION_INTERVAL = 2f; // Heal every 2 seconds
+    private int kills;
     private Texture playerTexture = new Texture(Gdx.files.internal("Images/characters/Shana/run0.png"));
     private Sprite playerSprite = new Sprite(playerTexture);
     private float posX = 0;
@@ -59,6 +60,7 @@ public class Player {
         this.playerHealth = maxHealth;
 
         this.levelUpAnimation = GameAssetManager.getGameAssetManager().getLevelUpAnimation();
+        this.kills = 0;
     }
 
     public void update(float delta) {
@@ -412,5 +414,13 @@ public class Player {
     public void resetLevelUpWindow() {
         this.shouldShowLevelUpWindow = false;
         this.levelUpWindowShown = false;
+    }
+
+    public void addKill() {
+        this.kills += 1;
+    }
+
+    public int getKills() {
+        return kills;
     }
 }

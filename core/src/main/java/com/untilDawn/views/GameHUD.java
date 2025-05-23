@@ -88,7 +88,6 @@ public class GameHUD {
         font.setColor(Color.WHITE);
         font.draw(batch, "AMMO", x, y + 20);
 
-        // Color ammo text based on status
         if (ammoCount <= 0) {
             font.setColor(Color.RED);
         } else if (ammoCount <= totalAmmoMax * 0.25f) {
@@ -122,16 +121,7 @@ public class GameHUD {
         float x = screenWidth - 150;
         float y = screenHeight - 30;
 
-        // Color based on remaining time
-        if (remainingTime <= 30) {
-            font.setColor(Color.RED); // Red when less than 30 seconds
-        } else if (remainingTime <= 60) {
-            font.setColor(Color.ORANGE); // Orange when less than 1 minute
-        } else if (remainingTime <= 120) {
-            font.setColor(Color.YELLOW); // Yellow when less than 2 minutes
-        } else {
-            font.setColor(Color.WHITE); // White for normal time
-        }
+        font.setColor(Color.WHITE);
 
         font.draw(batch, "TIME", x, y + 20);
         font.draw(batch, timeText, x, y);
@@ -141,11 +131,6 @@ public class GameHUD {
             font.getData().setScale(1.2f * pulse);
             font.draw(batch, timeText, x, y);
             font.getData().setScale(1.2f);
-        }
-
-        if (remainingTime <= 5 && remainingTime > 0) {
-            smallFont.setColor(Color.RED);
-            smallFont.draw(batch, "TIME'S UP!", x - 20, y - 25);
         }
     }
 
@@ -183,18 +168,16 @@ public class GameHUD {
 
     private void drawAbilityStatus(SpriteBatch batch) {
         float startX = 20f;
-        float startY = screenHeight - 120f; // Below health bar
+        float startY = screenHeight - 120f;
         float iconSpacing = ABILITY_ICON_SIZE + 10f;
         int iconIndex = 0;
 
-        // Only show active abilities
         Abilities[] activeAbilities = {Abilities.DAMAGER, Abilities.SPEEDY, Abilities.SHIELD, Abilities.MULTISHOT};
 
         for (Abilities ability : activeAbilities) {
             float iconX = startX + iconIndex * iconSpacing;
-            float iconY = startY;
 
-            drawAbilityIcon(batch, ability, iconX, iconY);
+            drawAbilityIcon(batch, ability, iconX, startY);
             iconIndex++;
         }
 
