@@ -24,8 +24,9 @@ public class ElderBoss extends Enemy {
     private Vector2 dashStartPos = new Vector2();
     private float dashSpeed = 8.0f;
     private float dashDistance = 400f;
-    private float chargeDuration = 1.5f; // Time spent charging before dash
-    private float attackDuration = 0.8f; // Time spent in attack animation
+    private float chargeDuration = 1.5f;
+    private float attackDuration = 0.8f;
+
     // Barriers
     private ArrayList<ElectricBarrier> barriers = new ArrayList<>();
     private boolean barriersActive = false;
@@ -33,6 +34,7 @@ public class ElderBoss extends Enemy {
     private float barrierSpawnInterval = 2f;
     private float mapWidth;
     private float mapHeight;
+
     // Animations
     private Animation<Texture> walkAnimation;
     private Animation<Texture> chargeAnimation;
@@ -55,7 +57,6 @@ public class ElderBoss extends Enemy {
 
     private void loadAnimations() {
         try {
-            // Walking animation (elder0, elder1, elder2)
             Texture[] walkFrames = new Texture[3];
             for (int i = 0; i < 3; i++) {
                 walkFrames[i] = new Texture(Gdx.files.internal("Images/Enemies/elder/elder" + i + ".png"));
@@ -146,19 +147,16 @@ public class ElderBoss extends Enemy {
     }
 
     private void updateWalkingState(float delta, Player player) {
-        // Normal movement towards player (slower than normal enemies)
         if (player != null) {
             float playerX = player.getPosX();
             float playerY = player.getPosY();
 
             Vector2 direction = new Vector2(playerX - getPosX(), playerY - getPosY()).nor();
 
-            // Move slower than normal enemies
             float walkSpeed = getType().getSpeed() * 0.6f;
             setPosX(getPosX() + direction.x * walkSpeed * delta * 60);
             setPosY(getPosY() + direction.y * walkSpeed * delta * 60);
 
-            // Check if it's time to dash
             if (dashTimer >= dashCooldown) {
                 startCharging(player);
             }
@@ -166,7 +164,6 @@ public class ElderBoss extends Enemy {
     }
 
     private void updateChargingState(float delta, Player player) {
-        // Stay still while charging
         if (stateTimer >= chargeDuration) {
             startAttacking(player);
         }
@@ -174,19 +171,16 @@ public class ElderBoss extends Enemy {
 
     private void updateAttackingState(float delta, Player player) {
         if (!isDashing) {
-            // Start the dash
             isDashing = true;
             dashStartPos.set(getPosX(), getPosY());
         }
 
-        // Continue dashing
         float dashProgress = stateTimer / attackDuration;
         if (dashProgress < 1.0f) {
             float currentDashDistance = dashDistance * dashProgress;
             setPosX(dashStartPos.x + dashDirection.x * currentDashDistance);
             setPosY(dashStartPos.y + dashDirection.y * currentDashDistance);
         } else {
-            // Finish attack
             finishAttack();
         }
     }
@@ -195,7 +189,6 @@ public class ElderBoss extends Enemy {
         currentState = ElderState.CHARGING;
         stateTimer = 0f;
 
-        // Calculate dash direction towards player
         if (player != null) {
             dashDirection.set(player.getPosX() - getPosX(), player.getPosY() - getPosY()).nor();
         }
@@ -214,7 +207,7 @@ public class ElderBoss extends Enemy {
     private void finishAttack() {
         currentState = ElderState.WALKING;
         stateTimer = 0f;
-        dashTimer = 0f; // Reset dash cooldown
+        dashTimer = 0f;
         isDashing = false;
 
         Gdx.app.log("ElderBoss", "Elder Boss finished attack, returning to walking");
@@ -223,12 +216,10 @@ public class ElderBoss extends Enemy {
     private void updateBarriers(float delta, Player player) {
         if (!barriersActive) return;
 
-        // Update existing barriers
         for (int i = barriers.size() - 1; i >= 0; i--) {
             ElectricBarrier barrier = barriers.get(i);
             barrier.update(delta);
 
-            // Check collision with player
             if (barrier.isActive() && player != null && !player.isInvincible()) {
                 if (barrier.checkCollision(player)) {
                     player.takeDamage(1);
@@ -237,13 +228,11 @@ public class ElderBoss extends Enemy {
                 }
             }
 
-            // Remove inactive barriers
             if (!barrier.isActive()) {
                 barriers.remove(i);
             }
         }
 
-        // Spawn new barriers periodically
         if (barrierSpawnTimer >= barrierSpawnInterval && barriers.size() < 12) {
             spawnRandomBarrier();
             barrierSpawnTimer = 0f;
@@ -251,9 +240,8 @@ public class ElderBoss extends Enemy {
     }
 
     private void spawnRandomBarrier() {
-        // Spawn barriers at random positions around the map edges
         float x, y;
-        int edge = MathUtils.random(3); // 0=top, 1=right, 2=bottom, 3=left
+        int edge = MathUtils.random(3);
 
         switch (edge) {
             case 0: // Top
@@ -278,19 +266,11 @@ public class ElderBoss extends Enemy {
     }
 
     private void updateAnimation() {
-        Animation<Texture> currentAnimation = null;
-
-        switch (currentState) {
-            case WALKING:
-                currentAnimation = walkAnimation;
-                break;
-            case CHARGING:
-                currentAnimation = chargeAnimation;
-                break;
-            case ATTACKING:
-                currentAnimation = attackAnimation;
-                break;
-        }
+        Animation<Texture> currentAnimation = switch (currentState) {
+            case WALKING -> walkAnimation;
+            case CHARGING -> chargeAnimation;
+            case ATTACKING -> attackAnimation;
+        };
 
         if (currentAnimation != null) {
             Texture currentFrame = currentAnimation.getKeyFrame(animationTime, true);
@@ -309,7 +289,6 @@ public class ElderBoss extends Enemy {
         boolean killed = super.hit(damage);
 
         if (killed) {
-            // When boss is killed, remove all barriers
             barriersActive = false;
             for (ElectricBarrier barrier : barriers) {
                 barrier.setActive(false);
@@ -325,13 +304,11 @@ public class ElderBoss extends Enemy {
     public void dispose() {
         super.dispose();
 
-        // Dispose barrier resources
         for (ElectricBarrier barrier : barriers) {
             barrier.dispose();
         }
         barriers.clear();
 
-        // Dispose animations
         if (walkAnimation != null) {
             for (Texture frame : walkAnimation.getKeyFrames()) {
                 if (frame != null) frame.dispose();
@@ -349,7 +326,6 @@ public class ElderBoss extends Enemy {
         }
     }
 
-    // Getters for debugging and UI
     public ElderState getCurrentState() {
         return currentState;
     }
@@ -368,15 +344,12 @@ public class ElderBoss extends Enemy {
 
     // Boss states
     private enum ElderState {
-        WALKING,    // Normal movement (elder0, elder1, elder2)
-        CHARGING,   // Preparing to dash (elder3-elder7)
-        ATTACKING   // Dashing towards player (elder8-elder10)
+        WALKING,
+        CHARGING,
+        ATTACKING
     }
 }
 
-/**
- * Electric Barrier class - creates damaging barriers that shrink over time
- */
 class ElectricBarrier {
     private float posX, posY;
     private float initialWidth, initialHeight;
@@ -393,7 +366,6 @@ class ElectricBarrier {
         this.posX = x;
         this.posY = y;
 
-        // Initial size based on position (barriers near edges are larger)
         float distanceFromCenter = Vector2.dst(x, y, mapWidth / 2, mapHeight / 2);
         float maxDistance = Vector2.dst(0, 0, mapWidth / 2, mapHeight / 2);
         float sizeMultiplier = 0.5f + (distanceFromCenter / maxDistance) * 1.5f;
@@ -417,7 +389,6 @@ class ElectricBarrier {
                 if (Gdx.files.internal(framePath).exists()) {
                     frames[i] = new Texture(Gdx.files.internal(framePath));
                 } else {
-                    // Fallback to a solid color texture if animation frames don't exist
                     frames[i] = createFallbackTexture();
                 }
             }
@@ -429,7 +400,6 @@ class ElectricBarrier {
     }
 
     private Texture createFallbackTexture() {
-        // Create a simple colored texture as fallback
         return new Texture(Gdx.files.internal("Images/bullet.png")); // Reuse existing texture
     }
 
@@ -454,28 +424,22 @@ class ElectricBarrier {
 
         animationTime += delta;
 
-        // Shrink over time
         currentWidth = Math.max(minSize, currentWidth - shrinkRate * delta);
         currentHeight = Math.max(minSize, currentHeight - shrinkRate * delta);
 
-        // Update bounding box
         boundingBox.set(posX - currentWidth / 2, posY - currentHeight / 2, currentWidth, currentHeight);
 
-        // Update sprite
         updateSpriteTransform();
 
-        // Update animation frame
         if (animation != null) {
             Texture currentFrame = animation.getKeyFrame(animationTime, true);
             sprite.setTexture(currentFrame);
         }
 
-        // Deactivate when too small
         if (currentWidth <= minSize && currentHeight <= minSize) {
             active = false;
         }
 
-        // Add electric effect (pulsing)
         float pulse = 0.7f + 0.3f * (float) Math.sin(animationTime * 8);
         sprite.setColor(1f, 0.8f, 0.2f, pulse);
     }

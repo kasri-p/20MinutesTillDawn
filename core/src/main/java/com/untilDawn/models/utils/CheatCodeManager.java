@@ -12,7 +12,7 @@ public class CheatCodeManager {
     public static final String REDUCE_TIME = "TIMEREDUCTION";
     public static final String LEVEL_UP = "LEVELUP";
     public static final String HEAL_PLAYER = "HEALME";
-    public static final String BOSS_FIGHT = "BOSSMODE";
+    public static final String BOSS_FIGHT = "SPAWNELDERBOSS";
     public static final String GOD_MODE = "GODMODE";
     private static CheatCodeManager instance;
     private Map<String, CheatCode> cheatCodes;
@@ -38,7 +38,6 @@ public class CheatCodeManager {
     private void initializeCheatCodes() {
         cheatCodes = new HashMap<>();
 
-        // Reduce time by 1 minute
         cheatCodes.put(REDUCE_TIME, new CheatCode(
             "TIMEREDUCTION",
             "Time Reduction",
@@ -46,7 +45,6 @@ public class CheatCodeManager {
             () -> reduceTime()
         ));
 
-        // Level up player
         cheatCodes.put(LEVEL_UP, new CheatCode(
             "LEVELUP",
             "Level Up",
@@ -54,7 +52,6 @@ public class CheatCodeManager {
             () -> levelUpPlayer()
         ));
 
-        // Heal player (only if health is empty)
         cheatCodes.put(HEAL_PLAYER, new CheatCode(
             "HEALME",
             "Heal Player",
@@ -62,7 +59,6 @@ public class CheatCodeManager {
             () -> healPlayer()
         ));
 
-        // Boss fight mode
         cheatCodes.put(BOSS_FIGHT, new CheatCode(
             "SPAWNELDERBOSS",
             "Spawn Elder Boss",
@@ -70,7 +66,6 @@ public class CheatCodeManager {
             () -> spawnElderBoss()
         ));
 
-        // God mode (bonus cheat)
         cheatCodes.put(GOD_MODE, new CheatCode(
             "GODMODE",
             "God Mode",
@@ -83,7 +78,6 @@ public class CheatCodeManager {
     private void spawnElderBoss() {
         if (gameController == null) return;
 
-        // Force spawn the Elder Boss by calling the enemy controller
         gameController.getEnemyController().forceSpawnElderBoss();
 
         Gdx.app.log("CheatCode", "Elder Boss spawned via cheat code!");

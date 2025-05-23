@@ -103,7 +103,6 @@ public class EnemyController {
     }
 
     private void spawnElderBoss() {
-        // Spawn the Elder Boss at a position away from the player
         Vector2 spawnPos = getElderBossSpawnPosition();
         elderBoss = new ElderBoss(spawnPos.x, spawnPos.y, mapWidth, mapHeight);
         enemies.add(elderBoss);
@@ -111,11 +110,9 @@ public class EnemyController {
         Gdx.app.log("EnemyController", "Elder Boss spawned at halfway point! Position: (" +
             spawnPos.x + ", " + spawnPos.y + ")");
 
-        // Play dramatic sound effect
-        GameAssetManager.getGameAssetManager().playBatDeath(); // Use dramatic sound
+        GameAssetManager.getGameAssetManager().playElderSpawn();
     }
 
-    // Public method for cheat codes
     public void forceSpawnElderBoss() {
         if (!elderBossSpawned) {
             spawnElderBoss();
@@ -124,11 +121,9 @@ public class EnemyController {
     }
 
     private Vector2 getElderBossSpawnPosition() {
-        // Spawn the boss at a safe distance from the player
         float playerX = playerController.getPlayer().getPosX();
         float playerY = playerController.getPlayer().getPosY();
 
-        // Try to spawn boss at least 300 units away from player
         float minDistance = 300f;
         float maxAttempts = 10;
 
@@ -139,18 +134,15 @@ public class EnemyController {
             float spawnX = playerX + MathUtils.cos(angle) * distance;
             float spawnY = playerY + MathUtils.sin(angle) * distance;
 
-            // Clamp to map bounds
             spawnX = MathUtils.clamp(spawnX, 100, mapWidth - 100);
             spawnY = MathUtils.clamp(spawnY, 100, mapHeight - 100);
 
-            // Check if position is far enough from player
             float actualDistance = Vector2.dst(spawnX, spawnY, playerX, playerY);
             if (actualDistance >= minDistance) {
                 return new Vector2(spawnX, spawnY);
             }
         }
 
-        // Fallback: spawn at map center if we can't find a good position
         return new Vector2(mapWidth / 2, mapHeight / 2);
     }
 
@@ -402,7 +394,6 @@ public class EnemyController {
             if (enemy.getType() == EnemyType.TREE) {
                 enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 3.0f;
             } else if (enemy.getType() == EnemyType.ELDER) {
-                // Elder boss has larger collision radius
                 enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.0f;
             } else {
                 enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 2.5f;
@@ -433,20 +424,15 @@ public class EnemyController {
 
         for (Enemy enemy : enemies) {
             if (enemy.isActive()) {
-                // Special handling for Elder Boss
-                if (enemy instanceof ElderBoss) {
-                    ElderBoss boss = (ElderBoss) enemy;
-                    // Elder boss handles its own animation internally
+                if (enemy instanceof ElderBoss boss) {
                     Sprite sprite = boss.getSprite();
 
-                    // Scale the boss to be larger than normal enemies
                     float scale = 3.0f;
                     sprite.setSize(sprite.getTexture().getWidth() * scale,
                         sprite.getTexture().getHeight() * scale);
                     sprite.setPosition(boss.getPosX() - sprite.getWidth() / 2,
                         boss.getPosY() - sprite.getHeight() / 2);
 
-                    // Flip sprite based on direction to player
                     float playerX = playerController.getPlayer().getPosX();
                     float bossX = boss.getPosX();
 
@@ -456,15 +442,12 @@ public class EnemyController {
                         sprite.setFlip(true, false);
                     }
 
-                    // Add boss glow effect
                     sprite.setColor(1.0f, 0.9f, 0.8f, 1.0f);
                     sprite.draw(Main.getBatch());
 
-                    // Draw barriers
                     boss.drawBarriers();
 
                 } else {
-                    // Handle normal enemies as before
                     Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
                     if (animation != null) {
                         animation.setPlayMode(Animation.PlayMode.LOOP);
@@ -510,7 +493,6 @@ public class EnemyController {
         }
         enemies.clear();
 
-        // Cleanup elder boss
         if (elderBoss != null) {
             elderBoss.dispose();
             elderBoss = null;
@@ -554,7 +536,6 @@ public class EnemyController {
         }
     }
 
-    // Getter methods for debugging and stats
     public boolean isElderBossSpawned() {
         return elderBossSpawned;
     }
