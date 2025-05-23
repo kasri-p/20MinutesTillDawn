@@ -7,12 +7,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
+import com.untilDawn.models.Game;
 import com.untilDawn.models.utils.GameAssetManager;
+import com.untilDawn.models.utils.GameSaveSystem;
 import com.untilDawn.views.StartMenu;
-import com.untilDawn.views.main.MainMenu;
-import com.untilDawn.views.main.PreGameMenu;
-import com.untilDawn.views.main.ProfileMenu;
-import com.untilDawn.views.main.SettingsMenu;
+import com.untilDawn.views.main.*;
 
 public class MainMenuController {
     private static final float HOVER_SCALE = 1.2f;
@@ -185,7 +184,6 @@ public class MainMenuController {
             }
         });
 
-        // Scoreboard Button (if exists)
         if (view.getScoreboardButton() != null) {
             view.getScoreboardButton().addListener(new ClickListener() {
                 @Override
@@ -227,6 +225,22 @@ public class MainMenuController {
                 }
             });
         }
+
+        view.getContinueGameButton().addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (App.getLoggedInUser().isGuest()) {
+                    return;
+                }
+                GameSaveSystem.GameSaveData saveData = GameSaveSystem.loadGame(App.getLoggedInUser());
+                if (saveData == null) {
+                    return;
+                }
+                Game game = GameSaveSystem.restoreGameFromSave(saveData);
+                App.setGame(game);
+                Main.getMain().setScreen(new GameView(GameAssetManager.getGameAssetManager().getSkin()));
+            }
+        });
     }
 
     private void disableAllButtons() {

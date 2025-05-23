@@ -1,1 +1,13 @@
-{}
+{
+  "kasra": {
+    "username": "kasra",
+    "password": "5DNzrrorEuOh+W+q1EiiiIMBXLKVy9je9vCyWX2y0Xw\u003d",
+    "SecurityQuestionIndex": 3,
+    "SecurityAnswer": "fresco",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar2.png",
+    "deaths": 0,
+    "kills": 0
+  }
+}

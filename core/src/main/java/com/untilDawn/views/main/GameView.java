@@ -130,10 +130,16 @@ public class GameView implements Screen, InputProcessor {
             this::resumeGame
         );
 
+        levelUpWindow.pack();
+        levelUpWindow.setPosition(
+            (stage.getWidth() - levelUpWindow.getWidth()) / 2,
+            (stage.getHeight() - levelUpWindow.getHeight()) / 2
+        );
+
         stage.addActor(levelUpWindow);
+        levelUpWindow.toFront();
 
         controller.getPlayerController().getPlayer().setLevelUpWindowShown();
-
         Gdx.input.setInputProcessor(stage);
     }
 
@@ -143,23 +149,25 @@ public class GameView implements Screen, InputProcessor {
         pauseMenuWindow = new PauseMenuWindow(
             skin,
             controller.getPlayerController().getPlayer(),
-            controller, // Pass the GameController for cheat code functionality
+            controller,
             stage,
-            () -> resumeGame(),     // onResume
-            () -> giveUpGame(),     // onGiveUp
-            () -> saveAndExitGame() // onSaveAndExit
+            this::resumeGame,
+            this::giveUpGame,
+            this::saveAndExitGame
+        );
+
+        pauseMenuWindow.pack();
+        pauseMenuWindow.setPosition(
+            (stage.getWidth() - pauseMenuWindow.getWidth()) / 2,
+            (stage.getHeight() - pauseMenuWindow.getHeight()) / 2
         );
 
         stage.clear();
         stage.addActor(pauseMenuWindow);
-
         pauseMenuWindow.toFront();
         pauseMenuWindow.setZIndex(1000);
 
         Gdx.input.setInputProcessor(stage);
-
-        System.out.println("Organized pause menu created at: " + pauseMenuWindow.getX() + ", " + pauseMenuWindow.getY());
-        System.out.println("Window size: " + pauseMenuWindow.getWidth() + "x" + pauseMenuWindow.getHeight());
     }
 
     private void resumeGame() {
@@ -217,7 +225,6 @@ public class GameView implements Screen, InputProcessor {
         viewport.update(width, height, true);
         gameHUD.resize(width, height);
 
-        // Update stage viewport as well
         stage.getViewport().update(width, height, true);
     }
 

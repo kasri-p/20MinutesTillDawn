@@ -19,16 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GameSaveSystem {
-    private static final String SAVE_GAMES_FILE = "Database/saved_games.json";
+    private static final String SAVE_GAMES_FILE = "DataBase/saved_games.json";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 
     public static boolean saveGame(User user, Game game, Player player, float gameTime) {
         try {
-            // Load existing saves
             Map<String, GameSaveData> savedGames = loadAllSavedGames();
 
-            // Create save data
             GameSaveData saveData = new GameSaveData();
             saveData.username = user.getUsername();
             saveData.characterName = player.getCharacter().getName();
@@ -49,7 +47,6 @@ public class GameSaveSystem {
             saveData.weaponAmmo = game.getSelectedWeapon().getAmmo();
             saveData.saveTimestamp = System.currentTimeMillis();
 
-            // Save ability states
             for (Abilities ability : Abilities.values()) {
                 AbilitySaveData abilityData = new AbilitySaveData(
                     ability.isActive(),
@@ -78,17 +75,12 @@ public class GameSaveSystem {
         }
     }
 
-    /**
-     * Load a saved game for a user
-     */
     public static GameSaveData loadGame(User user) {
         Map<String, GameSaveData> savedGames = loadAllSavedGames();
         return savedGames.get(user.getUsername());
     }
 
-    /**
-     * Check if a user has a saved game
-     */
+
     public static boolean hasSavedGame(User user) {
         if (user == null || user.isGuest()) {
             return false;
@@ -98,9 +90,7 @@ public class GameSaveSystem {
         return savedGames.containsKey(user.getUsername());
     }
 
-    /**
-     * Delete a saved game for a user
-     */
+
     public static boolean deleteSavedGame(User user) {
         try {
             Map<String, GameSaveData> savedGames = loadAllSavedGames();
@@ -117,9 +107,7 @@ public class GameSaveSystem {
         }
     }
 
-    /**
-     * Load all saved games from file
-     */
+
     private static Map<String, GameSaveData> loadAllSavedGames() {
         File file = new File(SAVE_GAMES_FILE);
         if (!file.exists()) {
@@ -137,11 +125,8 @@ public class GameSaveSystem {
         }
     }
 
-    /**
-     * Restore a game from save data
-     */
+
     public static Game restoreGameFromSave(GameSaveData saveData) {
-        // Find character
         Characters character = null;
         for (Characters c : Characters.values()) {
             if (c.getName().equals(saveData.characterName)) {
@@ -150,7 +135,7 @@ public class GameSaveSystem {
             }
         }
         if (character == null) {
-            character = Characters.Shana; // Default fallback
+            character = Characters.Shana;
         }
 
         // Find weapon
@@ -162,27 +147,23 @@ public class GameSaveSystem {
             }
         }
         if (weapon == null) {
-            weapon = Weapons.Revolver; // Default fallback
+            weapon = Weapons.Revolver;
         }
 
-        // Create player with restored stats
         Player player = new Player(character);
         player.setPlayerHealth(saveData.playerHealth);
         player.setMaxHealth(saveData.maxHealth);
         player.setPosX(saveData.playerPosX);
         player.setPosY(saveData.playerPosY);
 
-        // Restore XP and level (this will trigger level calculations)
         for (int i = 0; i < saveData.playerXP; i++) {
             player.addXP(1);
         }
 
-        // Restore ability bonuses
         if (saveData.hasRegeneration) {
             player.enableRegeneration();
         }
 
-        // Apply bonuses based on saved values
         int vitApps = (saveData.maxHealth - character.getHp());
         for (int i = 0; i < vitApps; i++) {
             player.applyVitality();
@@ -192,43 +173,35 @@ public class GameSaveSystem {
             player.applyProcrease();
         }
 
-        for (int i = 0; i < saveData.ammoBonus / 5; i++) { // AMOCREASE gives +5 each
+        for (int i = 0; i < saveData.ammoBonus / 5; i++) {
             player.applyAmocrease();
         }
 
-        // Restore ability states
         if (saveData.abilityStates != null) {
             for (Map.Entry<String, AbilitySaveData> entry : saveData.abilityStates.entrySet()) {
                 try {
                     Abilities ability = Abilities.valueOf(entry.getKey());
                     AbilitySaveData abilityData = entry.getValue();
 
-                    // Restore ability state (you might need to add methods to Abilities enum)
                     if (abilityData.isActive && ability.getType() == Abilities.AbilityType.ACTIVE) {
                         ability.activate();
-                        // Set remaining duration if possible
                     }
-                } catch (IllegalArgumentException e) {
-                    // Ability doesn't exist anymore, skip
+                } catch (IllegalArgumentException ignored) {
+
                 }
             }
         }
 
-        // Create game
         Game game = new Game(saveData.timeLimit);
         game.setPlayer(player);
         game.setSelectedWeapon(weapon);
         game.setScore(saveData.score);
 
-        // Set weapon ammo
         game.getSelectedWeapon().setAmmo(saveData.weaponAmmo);
 
         return game;
     }
 
-    /**
-     * Get formatted save info for display
-     */
     public static String getSaveInfo(GameSaveData saveData) {
         if (saveData == null) {
             return "No saved game";
@@ -266,23 +239,13 @@ public class GameSaveSystem {
     }
 
     private static boolean hasPlayerAcquiredAbility(Player player, Abilities ability) {
-        switch (ability) {
-            case VITALITY:
-                return player.getMaxHealth() > player.getCharacter().getHp();
-            case PROCREASE:
-                return player.getProjectileBonus() > 0;
-            case AMOCREASE:
-                return player.getAmmoBonus() > 0;
-            case REGENERATION:
-                return player.hasRegeneration();
-            case DAMAGER:
-            case SPEEDY:
-            case SHIELD:
-            case MULTISHOT:
-                return ability.getCooldownProgress() > 0 || ability.isActive();
-            default:
-                return false;
-        }
+        return switch (ability) {
+            case VITALITY -> player.getMaxHealth() > player.getCharacter().getHp();
+            case PROCREASE -> player.getProjectileBonus() > 0;
+            case AMOCREASE -> player.getAmmoBonus() > 0;
+            case REGENERATION -> player.hasRegeneration();
+            case DAMAGER, SPEEDY, SHIELD, MULTISHOT -> ability.getCooldownProgress() > 0 || ability.isActive();
+        };
     }
 
     public static class GameSaveData {
