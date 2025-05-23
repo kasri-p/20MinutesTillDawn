@@ -73,32 +73,23 @@ public class GameController {
             gameOver = true;
             App.getLoggedInUser().setDeaths(App.getLoggedInUser().getDeaths() + 1);
             Gdx.app.log("GameController", "Player died - Health: " + playerController.getPlayer().getPlayerHealth());
-
-            // Could transition to game over screen here
-            // For now, just log the event
+            
         }
 
         // Check if time limit is reached
         int timeLimitSeconds = timeLimit * 60;
         if (gameTime >= timeLimitSeconds) {
             gameOver = true;
-            Gdx.app.log("GameController", "Time limit reached - Game Over");
-
-            // Could transition to victory/results screen here
-            // For now, just log the event
+            Gdx.app.log("GameController", "Time limit reached - You Won");
         }
     }
 
-    /**
-     * Get the current game time in seconds
-     */
+
     public float getGameTime() {
         return gameTime;
     }
 
-    /**
-     * Get the time limit in minutes
-     */
+
     public int getTimeLimit() {
         return timeLimit;
     }

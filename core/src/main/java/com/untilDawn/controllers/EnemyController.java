@@ -27,24 +27,21 @@ public class EnemyController {
     private float minimumSpawnRate = 0.5f; // Max of 2 enemies per second
     private float spawnRateDecreasePerMinute = 0.2f; // Spawn rate decreases by 0.2 seconds every minute
     private float gameTime = 0;
-    private float timeSinceLastSpawn = 0;
     private float mapWidth;
     private float mapHeight;
     private boolean treesPlaced = false;
-    private int numberOfTrees = 30;
     private boolean autoAim = false;
     private float autoAimCooldown = 0;
 
-    // Helper variables for collision detection
     private Circle bulletCircle = new Circle();
     private Circle enemyCircle = new Circle();
     private Vector2 bulletVelocity = new Vector2();
     private Vector2 prevBulletPos = new Vector2();
     private Vector2 currentBulletPos = new Vector2();
 
-    // Spawn counters for different enemy types
-    private int tentacleSpawned = 0;
-    private int eyeBatSpawned = 0;
+    private float lastTentacleSpawnTime = 0;
+    private float lastEyeBatSpawnTime = 0;
+    private float totalGameTimeLimit;
 
     public EnemyController(PlayerController playerController, WeaponController weaponController, float mapWidth, float mapHeight) {
         this.playerController = playerController;
@@ -52,6 +49,8 @@ public class EnemyController {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.currentSpawnRate = initialSpawnRate;
+
+        this.totalGameTimeLimit = App.getGame() != null ? App.getGame().getTimeLimit() * 60 : 300;
     }
 
     public void update(float delta) {
@@ -64,7 +63,6 @@ public class EnemyController {
         }
 
         gameTime += delta;
-        timeSinceLastSpawn += delta;
 
         if (!treesPlaced) {
             placeTrees();
@@ -72,49 +70,77 @@ public class EnemyController {
 
         updateSpawnRate();
 
-        // Spawn tentacle monsters every 30 + 3*i seconds (i is the number spawned)
-        while (gameTime >= 30 + 3 * tentacleSpawned) {
-            spawnTentacleMonster();
-            tentacleSpawned++;
-        }
-
-        // Spawn EyeBats: after 30 + 4*i - t seconds have passed, spawn every 10 seconds
-        float eyebatStartTime = 30 + 4 * eyeBatSpawned;
-        if (gameTime >= eyebatStartTime) {
-            while (gameTime >= 30 + 10 * eyeBatSpawned) {
-                spawnEyeBat();
-                eyeBatSpawned++;
-            }
-        }
-
-//        if (timeSinceLastSpawn >= currentSpawnRate) {
-//            spawnRegularEnemy();
-//            timeSinceLastSpawn = 0;
-//        }
+        spawnTentacleMonsters();
+        spawnEyeBats();
 
         updateEnemies(delta);
 
         checkBulletCollisions(delta);
 
-        // Check for collisions with enemy bullets
         checkEnemyBulletCollisions(delta);
 
-        // Check for collisions with player
         checkPlayerCollisions();
 
-        // Draw all active enemies
         drawEnemies();
 
-        // Draw enemy bullets
         drawEnemyBullets();
 
-        // check auto aim
         checkAutoAim();
+    }
+
+    private void spawnTentacleMonsters() {
+        // Every 3 seconds
+        float tentacleSpawnInterval = 3.0f;
+        if (gameTime >= tentacleSpawnInterval && (gameTime - lastTentacleSpawnTime) >= tentacleSpawnInterval) {
+            int tentaclesToSpawn = (int) Math.floor(gameTime / 30.0f);
+
+            if (tentaclesToSpawn < 1) {
+                tentaclesToSpawn = 1;
+            }
+
+            for (int i = 0; i < tentaclesToSpawn; i++) {
+                Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
+                Enemy enemy = new Enemy(EnemyType.TENTACLE, spawnPos.x, spawnPos.y);
+                enemies.add(enemy);
+            }
+
+            lastTentacleSpawnTime = gameTime;
+
+            System.out.println("Spawned " + tentaclesToSpawn + " tentacle monsters at time " + gameTime);
+        }
+    }
+
+    private void spawnEyeBats() {
+        float eyeBatStartTime = totalGameTimeLimit / 4.0f;
+
+        // Every 10 seconds
+        float eyeBatSpawnInterval = 10.0f;
+        if (gameTime >= eyeBatStartTime && (gameTime - lastEyeBatSpawnTime) >= eyeBatSpawnInterval) {
+            float spawnRate = (4 * gameTime - totalGameTimeLimit + 30) / 30.0f;
+            int eyeBatsToSpawn = (int) Math.floor(spawnRate);
+
+            if (spawnRate > 0 && eyeBatsToSpawn < 1) {
+                eyeBatsToSpawn = 1;
+            }
+
+            if (eyeBatsToSpawn > 0) {
+                for (int i = 0; i < eyeBatsToSpawn; i++) {
+                    Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
+                    Enemy enemy = new Enemy(EnemyType.EYEBAT, spawnPos.x, spawnPos.y);
+                    enemies.add(enemy);
+                }
+
+                System.out.println("Spawned " + eyeBatsToSpawn + " eye bats at time " + gameTime + " (rate: " + spawnRate + ")");
+            }
+
+            lastEyeBatSpawnTime = gameTime;
+        }
     }
 
     private void placeTrees() {
         ArrayList<Circle> treePositions = new ArrayList<>();
 
+        int numberOfTrees = 30;
         for (int i = 0; i < numberOfTrees; i++) {
             float x = MathUtils.random(100, mapWidth - 100);
             float y = MathUtils.random(100, mapHeight - 100);
@@ -156,20 +182,6 @@ public class EnemyController {
         if (currentSpawnRate < minimumSpawnRate) {
             currentSpawnRate = minimumSpawnRate;
         }
-    }
-
-    private void spawnTentacleMonster() {
-        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
-
-        Enemy enemy = new Enemy(EnemyType.TENTACLE, spawnPos.x, spawnPos.y);
-        enemies.add(enemy);
-    }
-
-    private void spawnEyeBat() {
-        Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
-
-        Enemy enemy = new Enemy(EnemyType.EYEBAT, spawnPos.x, spawnPos.y);
-        enemies.add(enemy);
     }
 
     private void updateEnemies(float delta) {
