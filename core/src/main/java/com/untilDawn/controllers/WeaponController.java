@@ -38,7 +38,7 @@ public class WeaponController {
     // Reload bar progress
     private Texture reloadBarBg;
     private Texture reloadBarFill;
-    private float reloadBarWidth = 60f;
+    private float reloadBarWidth = 80f;
     private float reloadBarHeight = 8f;
     private float reloadBarOffsetY = 37f;
     private Animation<Texture> reloadAnimation;

@@ -31,7 +31,7 @@ public class GameHUD {
     private Animation<Texture> heartAnimation;
     private float animationTime = 0f;
 
-    //hey
+    // hey
     private BitmapFont ammoFont;
     private Texture ammoTexture;
     private BitmapFont zombieKillFont;
@@ -121,7 +121,7 @@ public class GameHUD {
         int currentHealth = player.getPlayerHealth();
         int maxHealth = player.getMaxHealth();
 
-        float heartSize = 32f;
+        float heartSize = 34f;
         float heartSpacing = heartSize + 5f;
         float startX = 20f;
         float startY = screenHeight - 60f;

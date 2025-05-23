@@ -1,6 +1,7 @@
 package com.untilDawn.models;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -352,30 +353,28 @@ public class ElderBoss extends Enemy {
 
 class ElectricBarrier {
     private float posX, posY;
-    private float initialWidth, initialHeight;
-    private float currentWidth, currentHeight;
-    private float shrinkRate = 20f; // Units per second
-    private float minSize = 30f;
+    private float barrierWidth, barrierHeight;
+    private float shrinkRate = 15f; // Slower shrink rate
+    private float minSize = 20f;
     private boolean active = true;
     private Rectangle boundingBox;
     private Animation<Texture> animation;
     private float animationTime = 0f;
     private Sprite sprite;
 
+    // Horizontal animation properties
+    private float electricOffset = 0f;
+    private float electricSpeed = 100f;
+
     public ElectricBarrier(float x, float y, float mapWidth, float mapHeight) {
         this.posX = x;
         this.posY = y;
 
-        float distanceFromCenter = Vector2.dst(x, y, mapWidth / 2, mapHeight / 2);
-        float maxDistance = Vector2.dst(0, 0, mapWidth / 2, mapHeight / 2);
-        float sizeMultiplier = 0.5f + (distanceFromCenter / maxDistance) * 1.5f;
+        // Create horizontal rectangular barriers
+        this.barrierWidth = MathUtils.random(150f, 300f);
+        this.barrierHeight = 40f; // Fixed height for horizontal barriers
 
-        this.initialWidth = 100f * sizeMultiplier;
-        this.initialHeight = 60f * sizeMultiplier;
-        this.currentWidth = initialWidth;
-        this.currentHeight = initialHeight;
-
-        this.boundingBox = new Rectangle(x - currentWidth / 2, y - currentHeight / 2, currentWidth, currentHeight);
+        this.boundingBox = new Rectangle(x - barrierWidth / 2, y - barrierHeight / 2, barrierWidth, barrierHeight);
 
         loadAnimation();
         createSprite();
@@ -392,7 +391,7 @@ class ElectricBarrier {
                     frames[i] = createFallbackTexture();
                 }
             }
-            animation = new Animation<>(0.15f, frames);
+            animation = new Animation<>(0.1f, frames); // Faster animation for electric effect
             animation.setPlayMode(Animation.PlayMode.LOOP);
         } catch (Exception e) {
             Gdx.app.error("ElectricBarrier", "Failed to load barrier animation: " + e.getMessage());
@@ -400,7 +399,24 @@ class ElectricBarrier {
     }
 
     private Texture createFallbackTexture() {
-        return new Texture(Gdx.files.internal("Images/bullet.png")); // Reuse existing texture
+        // Create a simple electric-looking texture
+        Pixmap pixmap = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
+
+        // Create electric blue pattern
+        for (int x = 0; x < 32; x++) {
+            for (int y = 0; y < 32; y++) {
+                if ((x + y) % 4 == 0) {
+                    pixmap.setColor(0.2f, 0.6f, 1.0f, 0.8f); // Electric blue
+                } else {
+                    pixmap.setColor(0.8f, 0.9f, 1.0f, 0.6f); // Light blue
+                }
+                pixmap.drawPixel(x, y);
+            }
+        }
+
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return texture;
     }
 
     private void createSprite() {
@@ -413,9 +429,12 @@ class ElectricBarrier {
 
     private void updateSpriteTransform() {
         if (sprite != null) {
-            sprite.setSize(currentWidth, currentHeight);
-            sprite.setPosition(posX - currentWidth / 2, posY - currentHeight / 2);
-            sprite.setColor(1f, 0.8f, 0.2f, 0.9f); // Electric blue-yellow color
+            sprite.setSize(barrierWidth, barrierHeight);
+            sprite.setPosition(posX - barrierWidth / 2, posY - barrierHeight / 2);
+
+            // Electric blue-white color with pulsing effect
+            float pulse = 0.6f + 0.4f * (float) Math.sin(animationTime * 6);
+            sprite.setColor(0.3f, 0.7f, 1.0f, pulse);
         }
     }
 
@@ -423,25 +442,31 @@ class ElectricBarrier {
         if (!active) return;
 
         animationTime += delta;
+        electricOffset += electricSpeed * delta;
 
-        currentWidth = Math.max(minSize, currentWidth - shrinkRate * delta);
-        currentHeight = Math.max(minSize, currentHeight - shrinkRate * delta);
+        // Slowly shrink the barrier over time
+        barrierWidth = Math.max(minSize, barrierWidth - shrinkRate * delta);
+        barrierHeight = Math.max(minSize / 2, barrierHeight - (shrinkRate * 0.5f) * delta);
 
-        boundingBox.set(posX - currentWidth / 2, posY - currentHeight / 2, currentWidth, currentHeight);
+        // Update bounding box
+        boundingBox.set(posX - barrierWidth / 2, posY - barrierHeight / 2, barrierWidth, barrierHeight);
 
         updateSpriteTransform();
 
+        // Update animation frame
         if (animation != null) {
             Texture currentFrame = animation.getKeyFrame(animationTime, true);
             sprite.setTexture(currentFrame);
         }
 
-        if (currentWidth <= minSize && currentHeight <= minSize) {
+        // Deactivate when too small
+        if (barrierWidth <= minSize && barrierHeight <= minSize / 2) {
             active = false;
         }
 
-        float pulse = 0.7f + 0.3f * (float) Math.sin(animationTime * 8);
-        sprite.setColor(1f, 0.8f, 0.2f, pulse);
+        // Enhanced electric pulsing effect
+        float electricPulse = 0.5f + 0.5f * (float) Math.sin(animationTime * 10);
+        sprite.setColor(0.2f + electricPulse * 0.5f, 0.6f + electricPulse * 0.3f, 1.0f, 0.7f + electricPulse * 0.3f);
     }
 
     public boolean checkCollision(Player player) {
@@ -453,8 +478,43 @@ class ElectricBarrier {
 
     public void draw() {
         if (active && sprite != null) {
+            // Draw the main barrier
             sprite.draw(Main.getBatch());
+
+            // Add horizontal electric effect overlay
+            drawElectricEffect();
         }
+    }
+
+    private void drawElectricEffect() {
+        if (sprite == null) return;
+
+        // Draw moving horizontal electric lines
+        float lineHeight = 2f;
+        int numLines = 3;
+
+        for (int i = 0; i < numLines; i++) {
+            float lineY = posY - barrierHeight / 2 + (i + 1) * (barrierHeight / (numLines + 1));
+            float offsetX = (electricOffset + i * 30) % (barrierWidth + 40) - 20;
+
+            // Create electric line effect
+            Main.getBatch().setColor(1.0f, 1.0f, 1.0f, 0.8f);
+
+            // Draw electric line segments
+            for (float x = offsetX; x < barrierWidth; x += 20) {
+                if (x >= 0 && x <= barrierWidth - 10) {
+                    float lineX = posX - barrierWidth / 2 + x;
+                    // Use a small white rectangle to simulate electric line
+                    sprite.setPosition(lineX, lineY - lineHeight / 2);
+                    sprite.setSize(10, lineHeight);
+                    sprite.setColor(1.0f, 1.0f, 1.0f, 0.9f);
+                    sprite.draw(Main.getBatch());
+                }
+            }
+        }
+
+        // Restore original sprite properties
+        updateSpriteTransform();
     }
 
     public boolean isActive() {
@@ -473,3 +533,4 @@ class ElectricBarrier {
         }
     }
 }
+

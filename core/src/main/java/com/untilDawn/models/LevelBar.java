@@ -40,9 +40,23 @@ public class LevelBar {
         backgroundTexture = new Texture(backgroundPixmap);
         backgroundPixmap.dispose();
 
-        Pixmap fillPixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        fillPixmap.setColor(Color.valueOf("113201"));
-        fillPixmap.fill();
+        int gradientWidth = 256;
+        Pixmap fillPixmap = new Pixmap(gradientWidth, 1, Pixmap.Format.RGBA8888);
+
+        for (int x = 0; x < gradientWidth; x++) {
+            float t = (float) x / (gradientWidth - 1);
+
+
+            int r = 0;
+            int g = (int) (30 + t * (150 - 30));
+            int b = 1;
+
+            float blueTint = 0.1f * (1 - t);
+
+            fillPixmap.setColor(r / 255f, g / 255f, b / 255f + blueTint, 1f);
+            fillPixmap.drawPixel(x, 0);
+        }
+
         fillTexture = new Texture(fillPixmap);
         fillPixmap.dispose();
     }

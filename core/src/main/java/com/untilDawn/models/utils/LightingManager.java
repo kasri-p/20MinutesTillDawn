@@ -8,13 +8,14 @@ import com.badlogic.gdx.utils.Disposable;
 public class LightingManager implements Disposable {
     private static LightingManager instance;
 
-    private Texture lightTexture;
-    private Texture shadowTexture;
+    private final Texture lightTexture;
+    private final Texture shadowTexture;
+    
     private float lightRadius;
     private float ambientIntensity; // 0 = completely dark, 1 = no shadow effect
 
     private LightingManager() {
-        this.lightTexture = createLightTexture(256);
+        this.lightTexture = createLightTexture();
         this.shadowTexture = createShadowTexture();
         this.lightRadius = 300f;
         this.ambientIntensity = 0.5f; // Increased from 0.4f to 0.5f for more brightness
@@ -27,22 +28,20 @@ public class LightingManager implements Disposable {
         return instance;
     }
 
-    private Texture createLightTexture(int size) {
-        Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+    private Texture createLightTexture() {
+        Pixmap pixmap = new Pixmap(256, 256, Pixmap.Format.RGBA8888);
 
-        int centerX = size / 2;
-        int centerY = size / 2;
-        float radius = size / 2f;
+        int centerX = 256 / 2;
+        int centerY = 256 / 2;
+        float radius = 256 / 2f;
 
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
+        for (int x = 0; x < 256; x++) {
+            for (int y = 0; y < 256; y++) {
                 float distanceFromCenter = (float) Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
                 float normalizedDistance = MathUtils.clamp(distanceFromCenter / radius, 0f, 1f);
 
-                // Even softer fall-off with lower maximum alpha
                 float alpha = 0.3f * (1f - normalizedDistance * normalizedDistance);
 
-                // Add this line to create a more gradual edge
                 if (normalizedDistance > 0.7f) {
                     alpha *= (1.0f - (normalizedDistance - 0.7f) / 0.3f);
                 }
@@ -112,7 +111,6 @@ public class LightingManager implements Disposable {
     }
 
     public void setAmbientIntensity(float intensity) {
-        // Clamp between 0 and 1
         this.ambientIntensity = MathUtils.clamp(intensity, 0f, 1f);
     }
 

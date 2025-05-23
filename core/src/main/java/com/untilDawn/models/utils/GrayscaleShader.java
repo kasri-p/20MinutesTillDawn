@@ -6,8 +6,12 @@ import com.badlogic.gdx.utils.Disposable;
 
 public class GrayscaleShader implements Disposable {
     private static GrayscaleShader instance;
-    private final String vertexShader =
-        "attribute vec4 " + ShaderProgram.POSITION_ATTRIBUTE + ";\n" +
+    private ShaderProgram grayscaleShader;
+    private ShaderProgram defaultShader;
+
+    private GrayscaleShader() {
+        ShaderProgram.pedantic = false; // Disable strict checking for better compatibility
+        String vertexShader = "attribute vec4 " + ShaderProgram.POSITION_ATTRIBUTE + ";\n" +
             "attribute vec4 " + ShaderProgram.COLOR_ATTRIBUTE + ";\n" +
             "attribute vec2 " + ShaderProgram.TEXCOORD_ATTRIBUTE + "0;\n" +
             "uniform mat4 u_projTrans;\n" +
@@ -19,8 +23,7 @@ public class GrayscaleShader implements Disposable {
             "   v_texCoords = " + ShaderProgram.TEXCOORD_ATTRIBUTE + "0;\n" +
             "   gl_Position = u_projTrans * " + ShaderProgram.POSITION_ATTRIBUTE + ";\n" +
             "}";
-    private final String fragmentShader =
-        "#ifdef GL_ES\n" +
+        String fragmentShader = "#ifdef GL_ES\n" +
             "    precision mediump float;\n" +
             "#endif\n" +
             "varying vec4 v_color;\n" +
@@ -33,11 +36,6 @@ public class GrayscaleShader implements Disposable {
             "    float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));\n" +
             "    gl_FragColor = vec4(gray, gray, gray, color.a);\n" +
             "}";
-    private ShaderProgram grayscaleShader;
-    private ShaderProgram defaultShader;
-
-    private GrayscaleShader() {
-        ShaderProgram.pedantic = false; // Disable strict checking for better compatibility
         grayscaleShader = new ShaderProgram(vertexShader, fragmentShader);
 
         if (!grayscaleShader.isCompiled()) {
@@ -58,7 +56,7 @@ public class GrayscaleShader implements Disposable {
         }
         batch.setShader(grayscaleShader);
     }
-    
+
     public void disable(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
         batch.setShader(defaultShader);
     }

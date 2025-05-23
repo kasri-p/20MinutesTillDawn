@@ -101,19 +101,17 @@ public class PlayerController {
 
 
     private void addDamageEffects() {
-        // Could implement weapon glow, player aura, or damage indicators
-        // Player sprite could have a red tint or glow effect
+
     }
 
 
     private void addShieldEffects() {
-        // Could implement a blue/white shield bubble around player
-        // Or make player sprite have a shield glow
+
     }
 
 
     private void addMultishotEffects() {
-        // Could add crosshair effects or weapon modifications
+        
     }
 
     private void drawLevelUpAnimation() {
@@ -249,7 +247,6 @@ public class PlayerController {
             return;
         }
 
-        // Handle ability activation keys (1-4 for quick activation)
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             activateAbility(Abilities.DAMAGER);
         }
