@@ -56,7 +56,7 @@ public class EnemyController {
 
     public void update(float delta) {
         Map<String, String> keyBindings = App.getKeybinds();
-        if (autoAimCooldown <= 0 && Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBindings.get("Auto Shoot")))) {
+        if (autoAimCooldown <= 0 && Gdx.input.isKeyPressed(Input.Keys.valueOf(keyBindings.get("Auto Aim")))) {
             autoAim = !autoAim;
             autoAimCooldown = 0.2f;
         } else {
@@ -445,7 +445,7 @@ public class EnemyController {
                     sprite.setColor(1.0f, 0.9f, 0.8f, 1.0f);
                     sprite.draw(Main.getBatch());
 
-                    
+
                 } else {
                     Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
                     if (animation != null) {
