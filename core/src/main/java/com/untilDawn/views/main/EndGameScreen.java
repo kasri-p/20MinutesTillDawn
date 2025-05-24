@@ -135,14 +135,12 @@ public class EndGameScreen implements Screen {
 
         stage.addActor(panelContainer);
 
-        // Ensure leaves are in background
         for (Image leaf : leavesDecorations) {
             leaf.toBack();
         }
     }
 
     private void createStatusSection() {
-        // Victory/Defeat label
         statusLabel = new Label(status.title, skin, "title");
         statusLabel.setAlignment(Align.center);
         statusLabel.setFontScale(3f);
