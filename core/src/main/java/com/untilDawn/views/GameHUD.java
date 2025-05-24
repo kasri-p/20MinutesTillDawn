@@ -7,8 +7,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
+import com.untilDawn.models.ElderBoss;
 import com.untilDawn.models.LevelBar;
 import com.untilDawn.models.Player;
 import com.untilDawn.models.enums.Abilities;
@@ -79,14 +81,88 @@ public class GameHUD {
         drawGameTimer(batch);
         drawAbilityStatus(batch);
 
-        if (!(gameController.getEnemyController().getElderBoss() == null)) {
-            gameController.getEnemyController().getElderBoss().drawBarrier();
-        }
+        drawBarrierLine();
 
         batch.end();
         renderHealthAndAmmoUI();
 
         batch.setProjectionMatrix(camera.combined);
+    }
+
+    private void drawBarrierLine() {
+        // Check if Elder Boss exists and barrier is active
+        if (gameController.getEnemyController().getElderBoss() != null &&
+            gameController.getEnemyController().getElderBoss().isBarrierActive()) {
+
+            ElderBoss elderBoss = gameController.getEnemyController().getElderBoss();
+            ElderBoss.ElectricBarrier barrier = elderBoss.getBarrier();
+
+            if (barrier != null) {
+                // Create ShapeRenderer for drawing lines
+                ShapeRenderer shapeRenderer = new ShapeRenderer();
+                shapeRenderer.setProjectionMatrix(camera.combined.cpy().setToOrtho2D(0, 0, screenWidth, screenHeight));
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+                // Set red color
+                shapeRenderer.setColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+                // Calculate barrier position in world coordinates
+                float mapWidth = gameController.getMapWidth();
+                float mapHeight = gameController.getMapHeight();
+                float playerX = gameController.getPlayerController().getPlayer().getPosX();
+                float playerY = gameController.getPlayerController().getPlayer().getPosY();
+
+                // Get current barrier dimensions
+                float currentWidth = barrier.getCurrentWidth();
+                float currentHeight = barrier.getCurrentHeight();
+
+                // Barrier center in world coordinates
+                float barrierCenterX = mapWidth / 2;
+                float barrierCenterY = mapHeight / 2;
+
+                // Barrier bounds in world coordinates
+                float barrierLeft = barrierCenterX - currentWidth / 2;
+                float barrierRight = barrierCenterX + currentWidth / 2;
+                float barrierBottom = barrierCenterY - currentHeight / 2;
+                float barrierTop = barrierCenterY + currentHeight / 2;
+
+                // Convert to screen coordinates relative to player
+                float screenCenterX = screenWidth / 2;
+                float screenCenterY = screenHeight / 2;
+
+                // Calculate screen positions
+                float screenLeft = screenCenterX + (barrierLeft - playerX);
+                float screenRight = screenCenterX + (barrierRight - playerX);
+                float screenBottom = screenCenterY + (barrierBottom - playerY);
+                float screenTop = screenCenterY + (barrierTop - playerY);
+
+                float thickness = 3f;
+
+                // Only draw lines that are visible on screen
+                if (screenLeft >= -thickness && screenLeft <= screenWidth + thickness) {
+                    // Left line
+                    shapeRenderer.rectLine(screenLeft, screenBottom, screenLeft, screenTop, thickness);
+                }
+
+                if (screenRight >= -thickness && screenRight <= screenWidth + thickness) {
+                    // Right line
+                    shapeRenderer.rectLine(screenRight, screenBottom, screenRight, screenTop, thickness);
+                }
+
+                if (screenBottom >= -thickness && screenBottom <= screenHeight + thickness) {
+                    // Bottom line
+                    shapeRenderer.rectLine(screenLeft, screenBottom, screenRight, screenBottom, thickness);
+                }
+
+                if (screenTop >= -thickness && screenTop <= screenHeight + thickness) {
+                    // Top line
+                    shapeRenderer.rectLine(screenLeft, screenTop, screenRight, screenTop, thickness);
+                }
+
+                shapeRenderer.end();
+                shapeRenderer.dispose();
+            }
+        }
     }
 
 

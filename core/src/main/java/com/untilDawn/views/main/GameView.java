@@ -106,7 +106,13 @@ public class GameView implements Screen, InputProcessor {
             controller.updateGame();
 
             lightingManager.render(Main.getBatch(), camera, playerX, playerY);
-            
+
+            // Removed barrier drawing call - now handled in GameHUD
+            /*
+            if (!(controller.getEnemyController().getElderBoss() == null)) {
+                controller.getEnemyController().getElderBoss().drawBarrier();
+            }
+            */
 
             Main.getBatch().end();
 
