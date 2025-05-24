@@ -106,6 +106,7 @@ public class GameView implements Screen, InputProcessor {
             controller.updateGame();
 
             lightingManager.render(Main.getBatch(), camera, playerX, playerY);
+            
 
             Main.getBatch().end();
 

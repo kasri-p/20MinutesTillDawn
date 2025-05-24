@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.untilDawn.models.App;
 import com.untilDawn.models.User;
+import com.untilDawn.models.enums.Language;
 
 public class ForgotPasswordWindow extends Window {
     private final TextField usernameField;
@@ -33,7 +34,7 @@ public class ForgotPasswordWindow extends Window {
 
 
     public ForgotPasswordWindow(Skin skin, final Stage parentStage) {
-        super("Forgot Password", skin);
+        super(Language.ForgotPassword.getText(), skin);
         this.parentStage = parentStage;
 
         // Set window properties
@@ -57,7 +58,7 @@ public class ForgotPasswordWindow extends Window {
         messageLabel.setAlignment(Align.center);
         messageLabel.setWrap(true);
 
-        securityQuestionLabel = new Label("Enter your username to see your security question", skin);
+        securityQuestionLabel = new Label(Language.EnterUsernameForSecurityQuestion.getText(), skin);
         securityQuestionLabel.setWrap(true);
         securityQuestionLabel.setAlignment(Align.center);
 
@@ -81,7 +82,7 @@ public class ForgotPasswordWindow extends Window {
             }
         }
 
-        resetButton = new TextButton("Reset", buttonStyle);
+        resetButton = new TextButton(Language.Reset.getText(), buttonStyle);
         backButton = new TextButton("Back", buttonStyle);
         TextButton findUserButton = new TextButton("Find User", buttonStyle);
 
@@ -90,12 +91,12 @@ public class ForgotPasswordWindow extends Window {
         contentTable.defaults().space(15);
 
         // Add header
-        Label titleLabel = new Label("Reset Password", skin, "title");
+        Label titleLabel = new Label(Language.ResetPassword.getText(), skin, "title");
         titleLabel.setAlignment(Align.center);
         contentTable.add(titleLabel).colspan(2).padBottom(10).fillX().row();
 
         // Username section
-        contentTable.add(new Label("Username:", skin)).right().padRight(10);
+        contentTable.add(new Label(Language.Username.getText(), skin)).right().padRight(10);
         contentTable.add(usernameField).width(250).left().row();
         contentTable.add(findUserButton).colspan(2).padBottom(10).padTop(10).row();
 
@@ -104,9 +105,9 @@ public class ForgotPasswordWindow extends Window {
         contentTable.add(securityAnswerField).colspan(2).width(250).padBottom(10).row();
 
         // New password section
-        contentTable.add(new Label("New Password:", skin)).right().padRight(15);
+        contentTable.add(new Label(Language.NewPassword.getText(), skin)).right().padRight(15);
         contentTable.add(newPasswordField).width(250).left().row();
-        contentTable.add(new Label("Confirm Password:", skin)).right().padRight(15);
+        contentTable.add(new Label(Language.ConfirmPassword.getText(), skin)).right().padRight(15);
         contentTable.add(confirmPasswordField).width(250).left().row();
 
         // Message and buttons
@@ -150,13 +151,13 @@ public class ForgotPasswordWindow extends Window {
     private void findUser() {
         String username = usernameField.getText().trim();
         if (username.isEmpty()) {
-            messageLabel.setText("Please enter a username");
+            messageLabel.setText(Language.PleaseEnterUsername.getText());
             return;
         }
 
         user = App.getUser(username);
         if (user == null) {
-            messageLabel.setText("User not found");
+            messageLabel.setText(Language.UserNotFound.getText());
             securityQuestionLabel.setVisible(false);
             securityAnswerField.setVisible(false);
             newPasswordField.setVisible(false);
@@ -169,7 +170,7 @@ public class ForgotPasswordWindow extends Window {
         if (questionIndex >= 0 && questionIndex < securityQuestions.length) {
             securityQuestionLabel.setText(securityQuestions[questionIndex]);
         } else {
-            securityQuestionLabel.setText("Security question not available");
+            securityQuestionLabel.setText(Language.SecurityQuestionNotAvailable.getText());
         }
 
         securityQuestionLabel.setVisible(true);
@@ -183,18 +184,18 @@ public class ForgotPasswordWindow extends Window {
 
     private void resetPassword() {
         if (user == null) {
-            messageLabel.setText("Please find a user first");
+            messageLabel.setText(Language.FindUserFirst.getText());
             return;
         }
 
         String securityAnswer = securityAnswerField.getText().trim();
         if (securityAnswer.isEmpty()) {
-            messageLabel.setText("Please answer the security question");
+            messageLabel.setText(Language.AnswerSecurityQuestion.getText());
             return;
         }
 
         if (!securityAnswer.equalsIgnoreCase(user.getSecurityAnswer())) {
-            messageLabel.setText("Incorrect security answer");
+            messageLabel.setText(Language.IncorrectSecurityAnswer.getText());
             return;
         }
 
@@ -202,23 +203,23 @@ public class ForgotPasswordWindow extends Window {
         String confirmPassword = confirmPasswordField.getText();
 
         if (newPassword.isEmpty()) {
-            messageLabel.setText("Please enter a new password");
+            messageLabel.setText(Language.EnterNewPassword.getText());
             return;
         }
 
         if (newPassword.length() < 6) {
-            messageLabel.setText("Password must be at least 6 characters");
+            messageLabel.setText(Language.PasswordTooShort.getText());
             return;
         }
 
         if (!newPassword.equals(confirmPassword)) {
-            messageLabel.setText("Passwords do not match");
+            messageLabel.setText(Language.PasswordsDoNotMatch.getText());
             return;
         }
         String hashedPassword = App.hashPassword(newPassword);
         user.setPassword(hashedPassword);
         messageLabel.setColor(Color.GREEN);
-        messageLabel.setText("Password reset successful! You can now log in.");
+        messageLabel.setText(Language.PasswordResetSuccess.getText());
 
         // Reset fields
         securityAnswerField.setText("");

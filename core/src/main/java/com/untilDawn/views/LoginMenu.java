@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.LoginMenuController;
+import com.untilDawn.models.enums.Language;
 import com.untilDawn.models.utils.UIHelper;
 
 public class LoginMenu implements Screen {
@@ -41,18 +42,18 @@ public class LoginMenu implements Screen {
         textOnlyStyle.overFontColor = Color.LIGHT_GRAY;
         textOnlyStyle.downFontColor = Color.GRAY;
 
-        loginButton = new TextButton("Login", textOnlyStyle);
-        registerButton = new TextButton("Register", textOnlyStyle);
-        forgotPasswordButton = new TextButton("Forgot Password?", textOnlyStyle);
+        loginButton = new TextButton(Language.Login.getText(), textOnlyStyle);
+        registerButton = new TextButton(Language.Register.getText(), textOnlyStyle);
+        forgotPasswordButton = new TextButton(Language.ForgotPassword.getText(), textOnlyStyle);
 
         table = new Table();
         table.setFillParent(true);
         table.center();
 
-        table.add(new Label("Login", skin, "title")).colspan(2).pad(20).row();
-        table.add(new Label("Username:", skin)).pad(10);
+        table.add(new Label(Language.Login.getText(), skin, "title")).colspan(2).pad(20).row();
+        table.add(new Label(Language.Username.getText(), skin)).pad(10);
         table.add(usernameField).width(200).pad(10).row();
-        table.add(new Label("Password:", skin)).pad(10);
+        table.add(new Label(Language.Password.getText(), skin)).pad(10);
         table.add(passwordField).width(200).pad(10).row();
         table.add(errorLabel).colspan(2).pad(10).row();
         table.add(loginButton).width(100).pad(10);

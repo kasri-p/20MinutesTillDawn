@@ -79,6 +79,10 @@ public class GameHUD {
         drawGameTimer(batch);
         drawAbilityStatus(batch);
 
+        if (!(gameController.getEnemyController().getElderBoss() == null)) {
+            gameController.getEnemyController().getElderBoss().drawBarrier();
+        }
+
         batch.end();
         renderHealthAndAmmoUI();
 

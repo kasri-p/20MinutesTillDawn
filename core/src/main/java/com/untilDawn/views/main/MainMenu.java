@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.MainMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.User;
+import com.untilDawn.models.enums.Language;
 import com.untilDawn.models.utils.UIHelper;
 
 public class MainMenu implements Screen {
@@ -51,13 +52,13 @@ public class MainMenu implements Screen {
         buttonStyle.overFontColor = Color.LIGHT_GRAY;
         buttonStyle.downFontColor = Color.GRAY;
 
-        playButton = new TextButton("Play New Game", buttonStyle);
-        continueGameButton = new TextButton("Continue Game", buttonStyle);
-        settingsButton = new TextButton("Settings", buttonStyle);
-        profileButton = new TextButton("Profile", buttonStyle);
-        scoreboardButton = new TextButton("Scoreboard", buttonStyle);
+        playButton = new TextButton(Language.PlayNewGame.getText(), buttonStyle);
+        continueGameButton = new TextButton(Language.ContinueGame.getText(), buttonStyle);
+        settingsButton = new TextButton(Language.Settings.getText(), buttonStyle);
+        profileButton = new TextButton(Language.Profile.getText(), buttonStyle);
+        scoreboardButton = new TextButton(Language.Leaderboard.getText(), buttonStyle);
         talentsButton = new TextButton("Hints", buttonStyle);
-        logoutButton = new TextButton("Logout", buttonStyle);
+        logoutButton = new TextButton(Language.Logout.getText(), buttonStyle);
 
         String avatarPath = "images/avatars/avatar1.png"; // Default avatar
         if (currentUser != null && currentUser.getAvatarPath() != null && !currentUser.getAvatarPath().isEmpty()) {

@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.ProfileMenuController;
+import com.untilDawn.models.enums.Language;
 import com.untilDawn.models.utils.UIHelper;
 
 public class ProfileMenu implements Screen {
@@ -23,17 +24,17 @@ public class ProfileMenu implements Screen {
     private Label title;
 
     public ProfileMenu(Skin skin) {
-        title = new Label("Profile Menu", skin, "title");
+        title = new Label(Language.Profile.getText(), skin, "title");
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
         textOnlyStyle.font = skin.getFont("font");
         textOnlyStyle.fontColor = new Color(Color.SALMON);
         textOnlyStyle.overFontColor = new Color(Color.SALMON).mul(0.7f);
         textOnlyStyle.downFontColor = new Color(Color.SALMON).mul(0.5f);
 
-        this.changeUsernameButton = new TextButton("Change Username", textOnlyStyle);
-        this.changePasswordButton = new TextButton("Change Password", textOnlyStyle);
-        this.deleteAccountButton = new TextButton("Delete Account", textOnlyStyle);
-        this.changeAvatarButton = new TextButton("Change Avatar", textOnlyStyle);
+        this.changeUsernameButton = new TextButton(Language.ChangeUsername.getText(), textOnlyStyle);
+        this.changePasswordButton = new TextButton(Language.ChangePassword.getText(), textOnlyStyle);
+        this.deleteAccountButton = new TextButton(Language.DeleteAccount.getText(), textOnlyStyle);
+        this.changeAvatarButton = new TextButton(Language.ChangeAvatar.getText(), textOnlyStyle);
 
         this.controller = new ProfileMenuController(this);
         this.table = new Table();

@@ -2,13 +2,11 @@ package com.untilDawn.models;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.untilDawn.Main;
 import com.untilDawn.models.enums.EnemyType;
 
 public class ElderBoss extends Enemy {
@@ -273,101 +271,36 @@ public class ElderBoss extends Enemy {
     }
 }
 
+
 class ElectricBarrier {
-    private float mapWidth, mapHeight;
-    private float thickness = 30f; // Thickness of the barrier
+    private float outerWidth, outerHeight;
+    private float currentWidth, currentHeight;
+    private float thickness = 30f;
     private boolean active = true;
-    private Rectangle[] boundingBoxes; // One for each side of the map
-    private Animation<Texture> animation;
+    private Rectangle boundingBox;
     private float animationTime = 0f;
-    private Sprite[] sprites; // One for each side of the map
-    private float electricPulseSpeed = 8f;
+    private float electricPulseSpeed = 4f;  // pulse speed
     private float electricIntensity = 0f;
+    private float shrinkSpeed = 20f;
+    private float minSize = 200f;
+    private boolean isShrinking = true;
+
+    private ShapeRenderer shapeRenderer;
 
     public ElectricBarrier(float mapWidth, float mapHeight) {
-        this.mapWidth = mapWidth;
-        this.mapHeight = mapHeight;
+        this.outerWidth = mapWidth;
+        this.outerHeight = mapHeight;
+        this.currentWidth = mapWidth;
+        this.currentHeight = mapHeight;
 
-        initializeBarrier();
-        loadAnimation();
-        createSprites();
-    }
+        boundingBox = new Rectangle(
+            (outerWidth - currentWidth) / 2,
+            (outerHeight - currentHeight) / 2,
+            currentWidth,
+            currentHeight
+        );
 
-    private void initializeBarrier() {
-        boundingBoxes = new Rectangle[4];
-        // Top barrier
-        boundingBoxes[0] = new Rectangle(0, mapHeight - thickness, mapWidth, thickness);
-        // Right barrier
-        boundingBoxes[1] = new Rectangle(mapWidth - thickness, 0, thickness, mapHeight);
-        // Bottom barrier
-        boundingBoxes[2] = new Rectangle(0, 0, mapWidth, thickness);
-        // Left barrier
-        boundingBoxes[3] = new Rectangle(0, 0, thickness, mapHeight);
-    }
-
-    private void loadAnimation() {
-        try {
-            Texture[] frames = new Texture[6];
-            for (int i = 1; i < 7; i++) {
-                frames[i - 1] = new Texture(Gdx.files.internal("Images/ElectricWall/T_ElectricWall" + i + ".png"));
-            }
-            animation = new Animation<>(0.1f, frames);
-            animation.setPlayMode(Animation.PlayMode.LOOP);
-        } catch (Exception e) {
-            Gdx.app.error("ElectricBarrier", "Failed to load electric barrier animation: " + e.getMessage());
-        }
-    }
-
-    private void createSprites() {
-        sprites = new Sprite[4];
-        Texture firstFrame = animation != null ? animation.getKeyFrame(0) : createSolidElectricTexture();
-
-        // Create sprites for each side
-        for (int i = 0; i < 4; i++) {
-            sprites[i] = new Sprite(firstFrame);
-            updateSprite(i);
-        }
-    }
-
-    private Texture createSolidElectricTexture() {
-        Pixmap pixmap = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
-        // Create electric blue texture
-        pixmap.setColor(0.2f, 0.5f, 1f, 0.8f);
-        pixmap.fill();
-        // Add some electric pattern
-        pixmap.setColor(0.8f, 0.9f, 1f, 1f);
-        for (int i = 0; i < 32; i += 4) {
-            pixmap.drawLine(i, 0, i, 32);
-        }
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return texture;
-    }
-
-    private void updateSprite(int index) {
-        if (sprites[index] == null) return;
-
-        switch (index) {
-            case 0: // Top
-                sprites[index].setSize(mapWidth, thickness);
-                sprites[index].setPosition(0, mapHeight - thickness);
-                break;
-            case 1: // Right
-                sprites[index].setSize(thickness, mapHeight);
-                sprites[index].setPosition(mapWidth - thickness, 0);
-                break;
-            case 2: // Bottom
-                sprites[index].setSize(mapWidth, thickness);
-                sprites[index].setPosition(0, 0);
-                break;
-            case 3: // Left
-                sprites[index].setSize(thickness, mapHeight);
-                sprites[index].setPosition(0, 0);
-                break;
-        }
-
-        // Electric blue color with pulsing effect
-        sprites[index].setColor(0.3f, 0.6f, 1f, 0.7f + electricIntensity * 0.3f);
+        shapeRenderer = new ShapeRenderer();
     }
 
     public void update(float delta) {
@@ -376,93 +309,58 @@ class ElectricBarrier {
         animationTime += delta;
         electricIntensity = (float) Math.sin(animationTime * electricPulseSpeed) * 0.5f + 0.5f;
 
-        // Update animation frame
-        if (animation != null) {
-            Texture currentFrame = animation.getKeyFrame(animationTime, true);
-            for (Sprite sprite : sprites) {
-                if (sprite != null) {
-                    sprite.setTexture(currentFrame);
-                }
-            }
-        }
+        if (isShrinking) {
+            float newWidth = currentWidth - shrinkSpeed * delta * 2;
+            float newHeight = currentHeight - shrinkSpeed * delta * 2;
 
-        // Update sprite colors
-        for (int i = 0; i < 4; i++) {
-            updateSprite(i);
+            if (newWidth <= minSize || newHeight <= minSize) {
+                newWidth = Math.max(minSize, newWidth);
+                newHeight = Math.max(minSize, newHeight);
+                isShrinking = false;
+            }
+
+            currentWidth = newWidth;
+            currentHeight = newHeight;
+
+            boundingBox.set(
+                (outerWidth - currentWidth) / 2,
+                (outerHeight - currentHeight) / 2,
+                currentWidth,
+                currentHeight
+            );
         }
     }
 
     public boolean checkCollision(Player player) {
         if (!active || player == null) return false;
-
-        for (Rectangle boundingBox : boundingBoxes) {
-            if (boundingBox.overlaps(player.getBoundingBox())) {
-                return true;
-            }
-        }
-        return false;
+        Rectangle playerBox = player.getBoundingBox();
+        return !boundingBox.contains(playerBox);
     }
 
     public void draw() {
         if (!active) return;
+        
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        for (Sprite sprite : sprites) {
-            if (sprite != null) {
-                // Draw main barrier
-                sprite.draw(Main.getBatch());
+        // Pulsing electric blue color with alpha
+        Color baseColor = new Color(0.2f, 0.5f, 1f, 0.6f + electricIntensity * 0.4f);
+        shapeRenderer.setColor(baseColor);
 
-                // Draw brighter edges
-                drawElectricEdges(sprite);
-            }
-        }
-    }
+        // Draw top border
+        shapeRenderer.rect(boundingBox.x, boundingBox.y + boundingBox.height - thickness, boundingBox.width, thickness);
 
-    private void drawElectricEdges(Sprite sprite) {
-        if (sprite == null) return;
+        // Draw bottom border
+        shapeRenderer.rect(boundingBox.x, boundingBox.y, boundingBox.width, thickness);
 
-        // Save original sprite properties
-        Texture originalTexture = sprite.getTexture();
-        float originalWidth = sprite.getWidth();
-        float originalHeight = sprite.getHeight();
-        float originalX = sprite.getX();
-        float originalY = sprite.getY();
-        Color originalColor = sprite.getColor();
+        // Draw left border
+        shapeRenderer.rect(boundingBox.x, boundingBox.y, thickness, boundingBox.height);
 
-        // Draw brighter electric edges
-        float edgeWidth = 3f + electricIntensity * 2f;
-        float edgeAlpha = 0.8f + electricIntensity * 0.2f;
-        Color edgeColor = new Color(0.8f, 0.9f, 1f, edgeAlpha);
+        // Draw right border
+        shapeRenderer.rect(boundingBox.x + boundingBox.width - thickness, boundingBox.y, thickness, boundingBox.height);
 
-        // Draw edges based on barrier orientation
-        if (originalWidth > originalHeight) {
-            // Horizontal barrier (top or bottom)
-            // Top edge
-            sprite.setSize(originalWidth, edgeWidth);
-            sprite.setPosition(originalX, originalY + originalHeight - edgeWidth);
-            sprite.setColor(edgeColor);
-            sprite.draw(Main.getBatch());
+        shapeRenderer.end();
 
-            // Bottom edge
-            sprite.setPosition(originalX, originalY);
-            sprite.draw(Main.getBatch());
-        } else {
-            // Vertical barrier (left or right)
-            // Left edge
-            sprite.setSize(edgeWidth, originalHeight);
-            sprite.setPosition(originalX, originalY);
-            sprite.setColor(edgeColor);
-            sprite.draw(Main.getBatch());
-
-            // Right edge
-            sprite.setPosition(originalX + originalWidth - edgeWidth, originalY);
-            sprite.draw(Main.getBatch());
-        }
-
-        // Restore original sprite properties
-        sprite.setTexture(originalTexture);
-        sprite.setSize(originalWidth, originalHeight);
-        sprite.setPosition(originalX, originalY);
-        sprite.setColor(originalColor);
+        // Optional: draw glowing edges with a lighter color and smaller thickness or add more layers for glow effect
     }
 
     public boolean isActive() {
@@ -474,17 +372,8 @@ class ElectricBarrier {
     }
 
     public void dispose() {
-        if (animation != null) {
-            for (Texture frame : animation.getKeyFrames()) {
-                if (frame != null) frame.dispose();
-            }
-        }
-        if (sprites != null) {
-            for (Sprite sprite : sprites) {
-                if (sprite != null && sprite.getTexture() != null) {
-                    sprite.getTexture().dispose();
-                }
-            }
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
         }
     }
 }

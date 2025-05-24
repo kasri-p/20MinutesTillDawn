@@ -74,6 +74,7 @@ public class EnemyController {
         // Check for Elder Boss spawn
         checkElderBossSpawn();
 
+
         spawnTentacleMonsters();
         spawnEyeBats();
 

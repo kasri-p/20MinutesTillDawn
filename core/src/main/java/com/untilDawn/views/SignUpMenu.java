@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.SignUpMenuController;
+import com.untilDawn.models.enums.Language;
 import com.untilDawn.models.utils.UIHelper;
 
 public class SignUpMenu implements Screen {
@@ -46,19 +47,19 @@ public class SignUpMenu implements Screen {
         textOnlyStyle.overFontColor = Color.LIGHT_GRAY;
         textOnlyStyle.downFontColor = Color.GRAY;
 
-        signUpButton = new TextButton("Sign Up", textOnlyStyle);
-        skipButton = new TextButton("Login as a Guest", textOnlyStyle);
-        backButton = new TextButton("Login", textOnlyStyle);
+        signUpButton = new TextButton(Language.SignUp.getText(), textOnlyStyle);
+        skipButton = new TextButton(Language.GuestLogin.getText(), textOnlyStyle);
+        backButton = new TextButton(Language.Login.getText(), textOnlyStyle);
 
         table = new Table();
         table.setFillParent(true);
         table.center();
 
-        table.add(new Label("Sign Up", skin, "title")).colspan(2).pad(20).row();
-        table.add(new Label("Username:", skin)).pad(10);
+        table.add(new Label(Language.SignUp.getText(), skin, "title")).colspan(2).pad(20).row();
+        table.add(new Label(Language.Username.getText(), skin)).pad(10);
         table.add(usernameField).prefWidth(300).pad(10);
         table.row();
-        table.add(new Label("Password:", skin)).pad(10);
+        table.add(new Label(Language.Password.getText(), skin)).pad(10);
         table.add(passwordField).prefWidth(300).pad(10);
         table.row();
         table.add(errorLabel).colspan(2).pad(10);

@@ -56,8 +56,8 @@ public class StartMenu implements Screen {
         boldButtonStyle.downFontColor = new Color(Color.LIGHT_GRAY);
 
         this.startButton = new TextButton(Language.Start.getText(), boldButtonStyle);
-        this.quitButton = new TextButton("Quit", boldButtonStyle);
-        this.languageButton = new TextButton("Language: English", boldButtonStyle);
+        this.quitButton = new TextButton(Language.Quit.getText(), boldButtonStyle);
+        this.languageButton = new TextButton(Language.Language.getText(), boldButtonStyle);
 
         this.logoTexture = new Texture(Gdx.files.internal("Images/logo.png"));
         this.logoImage = new Image(logoTexture);
