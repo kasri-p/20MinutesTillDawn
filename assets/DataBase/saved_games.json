@@ -68,5 +68,75 @@
         "hasBeenUnlocked": false
       }
     }
+  },
+  "KK": {
+    "username": "KK",
+    "characterName": "Shana",
+    "weaponName": "Revolver",
+    "playerLevel": 1,
+    "playerXP": 6,
+    "playerHealth": 4,
+    "maxHealth": 4,
+    "playerPosX": 548.0,
+    "playerPosY": 836.0,
+    "gameTime": 17.716698,
+    "timeLimit": 5,
+    "score": 0,
+    "hasRegeneration": false,
+    "damageBonus": 0,
+    "projectileBonus": 0,
+    "ammoBonus": 0,
+    "weaponAmmo": 6,
+    "saveTimestamp": 1748094277772,
+    "abilityStates": {
+      "SHIELD": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "REGENERATION": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      },
+      "MULTISHOT": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "VITALITY": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      },
+      "SPEEDY": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "DAMAGER": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "PROCREASE": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      },
+      "AMOCREASE": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      }
+    }
   }
 }

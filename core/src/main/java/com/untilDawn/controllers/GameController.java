@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
 import com.untilDawn.models.User;
+import com.untilDawn.models.utils.GameAssetManager;
+import com.untilDawn.views.main.EndGameScreen;
 import com.untilDawn.views.main.GameView;
 
 public class GameController {
@@ -78,7 +80,7 @@ public class GameController {
                 user.setSurvivalTime(user.getSurvivalTime() + gameTime);
             }
             Gdx.app.log("GameController", "Player died - Health: " + playerController.getPlayer().getPlayerHealth());
-
+            Main.getMain().setScreen(new EndGameScreen(GameAssetManager.getGameAssetManager().getSkin(), user, gameTime, App.getGame().getPlayer().getKills(), EndGameScreen.EndGameStatus.DEFEAT));
         }
 
         int timeLimitSeconds = timeLimit * 60;
@@ -88,7 +90,7 @@ public class GameController {
                 user.setKills(user.getKills() + App.getGame().getPlayer().getKills());
                 user.setSurvivalTime(user.getSurvivalTime() + gameTime);
             }
-            Gdx.app.log("GameController", "Time limit reached - You Won");
+            Main.getMain().setScreen(new EndGameScreen(GameAssetManager.getGameAssetManager().getSkin(), user, gameTime, App.getGame().getPlayer().getKills(), EndGameScreen.EndGameStatus.VICTORY));
         }
     }
 

@@ -35,6 +35,8 @@ public class GameAssetManager {
     private final Sound batDeathSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/batDeath.wav"));
     private final Sound levelUpSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/LevelUp.wav"));
     private final Sound elderSpawn = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/ElderSpawn.wav"));
+    private final Sound loseSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/Lose.wav"));
+    private final Sound winSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/Win.wav"));
 
     private final Texture heartAnimation0 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_0.png"));
     private final Texture heartAnimation1 = new Texture(Gdx.files.internal("Images/HeartAnimation/HeartAnimation_1.png"));
@@ -220,6 +222,18 @@ public class GameAssetManager {
     public void playElderSpawn() {
         if (App.isSFX()) {
             elderSpawn.play();
+        }
+    }
+
+    public void playLose() {
+        if (App.isSFX()) {
+            loseSound.play();
+        }
+    }
+
+    public void playWin() {
+        if (App.isSFX()) {
+            winSound.play();
         }
     }
 

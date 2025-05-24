@@ -146,6 +146,43 @@ public class MainMenuController {
             }
         });
 
+        if (view.getScoreboardButton() != null) {
+            view.getScoreboardButton().addListener(new ClickListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    view.getScoreboardButton().setOrigin(Align.center);
+                    view.getScoreboardButton().clearActions();
+                    view.getScoreboardButton().addAction(
+                        Actions.scaleTo(HOVER_SCALE, HOVER_SCALE, ANIMATION_DURATION)
+                    );
+                }
+
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                    view.getScoreboardButton().clearActions();
+                    view.getScoreboardButton().addAction(
+                        Actions.scaleTo(1.0f, 1.0f, ANIMATION_DURATION)
+                    );
+                }
+
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    playClick();
+                    disableAllButtons();
+
+                    view.getStage().getRoot().addAction(
+                        Actions.sequence(
+                            Actions.fadeOut(TRANSITION_DURATION),
+                            Actions.run(() -> {
+                                ScoreBoardMenu scoreboardMenu = new ScoreBoardMenu(GameAssetManager.getGameAssetManager().getSkin());
+                                Main.getMain().setScreen(scoreboardMenu);
+                            })
+                        )
+                    );
+                }
+            });
+        }
+
         // Settings Button
         view.getSettingsButton().addListener(new ClickListener() {
             @Override

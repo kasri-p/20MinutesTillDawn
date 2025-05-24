@@ -66,10 +66,10 @@ public enum Language {
 
     // Leaderboard
     Leaderboard("Leaderboard", "Classement"),
-    SortByScore("Sort by Score", "Trier par score"),
-    SortByKills("Sort by Kills", "Trier par éliminations"),
-    SortByUsername("Sort by Username", "Trier par nom d'utilisateur"),
-    SortBySurvivalTime("Sort by Survival Time", "Trier par temps de survie"),
+    SortByScore("Score", "Score"),
+    SortByKills("Kills", "éliminations"),
+    SortByUsername("Username", "nom d'utilisateur"),
+    SortBySurvivalTime("Surviva", "temps de survie"),
 
     // Audio & visuals
     MusicVolume("Music Volume", "Volume de la musique"),

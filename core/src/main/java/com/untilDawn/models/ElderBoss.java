@@ -43,6 +43,7 @@ public class ElderBoss extends Enemy {
 
         currentState = ElderState.WALKING;
         dashTimer = dashCooldown;
+        getSprite().setScale(0.75f);
 
         Gdx.app.log("ElderBoss", "Elder Boss spawned at (" + posX + ", " + posY + ") with " + getHealth() + " HP");
     }
@@ -57,7 +58,7 @@ public class ElderBoss extends Enemy {
             walkAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
             Texture[] chargeFrames = new Texture[5];
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i <= 4; i++) {
                 chargeFrames[i] = new Texture(Gdx.files.internal("Images/Enemies/elder/elder" + (i + 3) + ".png"));
             }
             chargeAnimation = new Animation<>(0.2f, chargeFrames);
@@ -203,15 +204,6 @@ public class ElderBoss extends Enemy {
         }
     }
 
-    // Remove the drawBarrier method - no longer needed
-    /*
-    public void drawBarrier() {
-        if (barrierActive && perimeterBarrier != null) {
-            perimeterBarrier.draw();
-        }
-    }
-    */
-
     @Override
     public boolean hit(int damage) {
         boolean killed = super.hit(damage);
@@ -302,9 +294,6 @@ public class ElderBoss extends Enemy {
                 currentWidth,
                 currentHeight
             );
-
-            // Remove ShapeRenderer initialization
-            // shapeRenderer = new ShapeRenderer();
         }
 
         public void update(float delta) {
@@ -341,36 +330,6 @@ public class ElderBoss extends Enemy {
             return !boundingBox.contains(playerBox);
         }
 
-        // Remove the draw method since we're drawing in HUD now
-    /*
-    public void draw() {
-        if (!active) return;
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // Pulsing electric blue color with alpha
-        Color baseColor = new Color(0.2f, 0.5f, 1f, 0.6f + electricIntensity * 0.4f);
-        shapeRenderer.setColor(baseColor);
-
-        // Draw top border
-        shapeRenderer.rect(boundingBox.x, boundingBox.y + boundingBox.height - thickness, boundingBox.width, thickness);
-
-        // Draw bottom border
-        shapeRenderer.rect(boundingBox.x, boundingBox.y, boundingBox.width, thickness);
-
-        // Draw left border
-        shapeRenderer.rect(boundingBox.x, boundingBox.y, thickness, boundingBox.height);
-
-        // Draw right border
-        shapeRenderer.rect(boundingBox.x + boundingBox.width - thickness, boundingBox.y, thickness, boundingBox.height);
-
-        shapeRenderer.end();
-
-        // Optional: draw glowing edges with a lighter color and smaller thickness or add more layers for glow effect
-    }
-    */
-
-        // Add getter methods
         public Rectangle getBoundingBox() {
             return boundingBox;
         }
@@ -400,12 +359,7 @@ public class ElderBoss extends Enemy {
         }
 
         public void dispose() {
-            // Remove ShapeRenderer disposal
-            // if (shapeRenderer != null) {
-            //     shapeRenderer.dispose();
-            // }
         }
     }
-
 }
 

@@ -19,7 +19,6 @@ import com.untilDawn.models.utils.GameSaveSystem;
 import com.untilDawn.models.utils.GrayscaleShader;
 import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.views.GameHUD;
-import com.untilDawn.views.StartMenu;
 import com.untilDawn.views.window.LevelUpWindow;
 import com.untilDawn.views.window.PauseMenuWindow;
 
@@ -209,8 +208,14 @@ public class GameView implements Screen, InputProcessor {
             App.save();
         }
 
-        StartMenu startMenu = new StartMenu(GameAssetManager.getGameAssetManager().getSkin());
-        Main.getMain().setScreen(startMenu);
+        EndGameScreen endGameScreen = new EndGameScreen(
+            GameAssetManager.getGameAssetManager().getSkin(),
+            App.getLoggedInUser(),
+            controller.getGameTime(),
+            controller.getPlayerController().getPlayer().getKills(),
+            EndGameScreen.EndGameStatus.GIVE_UP
+        );
+        Main.getMain().setScreen(endGameScreen);
     }
 
     private void saveAndExitGame() {
