@@ -12,8 +12,8 @@ public enum Language {
     Username("Username:", "Nom d'utilisateur:"),
     Password("Password:", "Mot de passe:"),
     NewPassword("New Password:", "Nouveau mot de passe :"),
-    ConfirmPassword("Confirm Password:", "Confirmer le mot de passe :"),
-    ForgotPassword("Forgot Password?", "Mot de passe oublié ?"),
+    ConfirmPassword("Confirm Password:", "Confirmer le mot de passe:"),
+    ForgotPassword("Forgot Password?", "Mot de passe oublié?"),
     ResetPassword("Reset Password", "Réinitialiser le mot de passe"),
     GuestLogin("Play as Guest", "Jouer en tant qu'invité"),
     EnterUsernameForSecurityQuestion("Enter your username to see your security question", "Entrez votre nom d'utilisateur pour voir votre question de sécurité"),
@@ -148,7 +148,7 @@ public enum Language {
     EnterNewPassword("Please enter a new password", "Veuillez entrer un nouveau mot de passe"),
     PasswordTooShort("Password must be at least 6 characters", "Le mot de passe doit contenir au moins 6 caractères"),
     PasswordsDoNotMatch("Passwords do not match", "Les mots de passe ne correspondent pas"),
-    PasswordResetSuccess("Password reset successful! You can now log in.", "Réinitialisation réussie ! Vous pouvez maintenant vous connecter."),
+    PasswordResetSuccess("Password reset successful! You can now log in.", "Réinitialisation réussie! Vous pouvez maintenant vous connecter."),
     ;
 
     private final String english;

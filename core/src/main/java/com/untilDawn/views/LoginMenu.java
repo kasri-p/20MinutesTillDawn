@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.LoginMenuController;
 import com.untilDawn.models.enums.Language;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
 
 public class LoginMenu implements Screen {
@@ -37,7 +38,7 @@ public class LoginMenu implements Screen {
         errorLabel.setColor(Color.RED);
 
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
-        textOnlyStyle.font = skin.getFont("font");
+        textOnlyStyle.font = GameAssetManager.getGameAssetManager().getChevyRayFont();
         textOnlyStyle.fontColor = Color.WHITE;
         textOnlyStyle.overFontColor = Color.LIGHT_GRAY;
         textOnlyStyle.downFontColor = Color.GRAY;
@@ -50,10 +51,10 @@ public class LoginMenu implements Screen {
         table.setFillParent(true);
         table.center();
 
-        table.add(new Label(Language.Login.getText(), skin, "title")).colspan(2).pad(20).row();
-        table.add(new Label(Language.Username.getText(), skin)).pad(10);
+        table.add(new Label(Language.Login.getText(), skin)).colspan(2).pad(20).row();
+        table.add(new Label(Language.Username.getText(), new Label.LabelStyle(GameAssetManager.getGameAssetManager().getChevyRayFont(), Color.WHITE))).pad(10);
         table.add(usernameField).width(200).pad(10).row();
-        table.add(new Label(Language.Password.getText(), skin)).pad(10);
+        table.add(new Label(Language.Password.getText(), new Label.LabelStyle(GameAssetManager.getGameAssetManager().getChevyRayFont(), Color.WHITE))).pad(10);
         table.add(passwordField).width(200).pad(10).row();
         table.add(errorLabel).colspan(2).pad(10).row();
         table.add(loginButton).width(100).pad(10);

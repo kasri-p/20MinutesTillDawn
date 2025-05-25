@@ -2,8 +2,12 @@ package com.untilDawn.models.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -53,16 +57,21 @@ public class GameAssetManager {
 
     private final Texture zombieSkull = new Texture(Gdx.files.internal("Images/zombieSkull.png"));
     private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
-
+    private final BitmapFont chevyRayFont;
     private int footstepsCounter = 1;
     private Texture muzzleFlash = new Texture(Gdx.files.internal("Images/muzzleFlash.png"));
     private Animation<Texture> heartAnimation = new Animation<>(0.5f, heartAnimation0, heartAnimation1, heartAnimation2);
     private Texture panel = new Texture(Gdx.files.internal("Images/panel.png"));
 
     GameAssetManager() {
-//        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep1.wav")));
-//        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep2.wav")));
-//        footSteps.add(Gdx.audio.newSound(Gdx.files.internal("sounds/effects/footstep3.wav")));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("skin/ChevyRay.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 28;
+        parameter.color = Color.WHITE;
+        parameter.borderWidth = 1;
+        parameter.borderColor = Color.BLACK;
+        BitmapFont chevyRayFont = generator.generateFont(parameter);
+        this.chevyRayFont = chevyRayFont;
     }
 
     public static GameAssetManager getGameAssetManager() {
@@ -118,6 +127,14 @@ public class GameAssetManager {
         Animation<Texture> animation = new Animation<>(FRAME_DURATION, frames);
         playerRunAnimationCache.put(cacheKey, animation);
         return animation;
+    }
+
+    public BitmapFont getChevyRayFont() {
+        return chevyRayFont;
+    }
+
+    public Label.LabelStyle getChevyRayLabelStyle() {
+        return new Label.LabelStyle(GameAssetManager.getGameAssetManager().getChevyRayFont(), Color.WHITE);
     }
 
     public Animation<Texture> getPlayerIdleAnimation() {

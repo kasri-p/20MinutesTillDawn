@@ -91,7 +91,7 @@ public class LevelBar {
 
         batch.draw(fillTexture, x, y, screenWidth * progress, height);
 
-        String levelText = "Level         " + level;
+        String levelText = "Level       " + level;
         glyphLayout.setText(font, levelText);
         float textX = (screenWidth - glyphLayout.width) / 2;
         float textY = y + (height + glyphLayout.height) / 2;

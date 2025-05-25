@@ -49,7 +49,7 @@ public class StartMenu implements Screen {
 
     public StartMenu(Skin skin) {
         TextButton.TextButtonStyle boldButtonStyle = new TextButton.TextButtonStyle();
-        boldButtonStyle.font = skin.getFont("font");
+        boldButtonStyle.font = GameAssetManager.getGameAssetManager().getChevyRayFont();
         boldButtonStyle.font.getData().setScale(1.1f);
         boldButtonStyle.fontColor = new Color(Color.SALMON);
         boldButtonStyle.overFontColor = Color.valueOf("#f1cedb");
@@ -59,6 +59,7 @@ public class StartMenu implements Screen {
         this.quitButton = new TextButton(Language.Quit.getText(), boldButtonStyle);
         this.languageButton = new TextButton(Language.Language.getText(), boldButtonStyle);
 
+        // Rest of your constructor code...
         this.logoTexture = new Texture(Gdx.files.internal("Images/logo.png"));
         this.logoImage = new Image(logoTexture);
 

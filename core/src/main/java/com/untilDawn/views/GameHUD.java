@@ -61,7 +61,8 @@ public class GameHUD {
         zombieKillFont = new BitmapFont();
         zombieKillFont.getData().setScale(1.5f);
 
-        levelBar = new LevelBar(font, screenWidth, LEVEL_BAR_HEIGHT);
+        BitmapFont levelBarFont = GameAssetManager.getGameAssetManager().getChevyRayFont();
+        levelBar = new LevelBar(levelBarFont, screenWidth, LEVEL_BAR_HEIGHT);
         heartAnimation = GameAssetManager.getGameAssetManager().getHeartAnimation();
     }
 
@@ -179,21 +180,19 @@ public class GameHUD {
 
         float x = screenWidth - 100;
         float y = screenHeight - 30;
-
+        BitmapFont chevyFont = GameAssetManager.getGameAssetManager().getChevyRayFont();
         float bigScale = 2.5f;
-        font.setColor(Color.WHITE);
-        font.getData().setScale(bigScale);
-        font.draw(batch, timeText, x, y);
+        chevyFont.setColor(Color.WHITE);
+        chevyFont.draw(batch, timeText, x, y);
 
         float surviveY = y - 40;
-        font.getData().setScale(1.0f);
-        font.draw(batch, "Survive!", x, surviveY);
+//        chevyFont.getData().setScale(bigScale);
 
         if (remainingTime <= 10 && remainingTime > 0) {
             float pulse = 1.0f + 0.3f * (float) Math.sin(animationTime * 8);
-            font.getData().setScale(bigScale * pulse);
-            font.draw(batch, timeText, x, y);
-            font.getData().setScale(bigScale);
+//            chevyFont.getData().setScale(bigScale * pulse);
+            chevyFont.draw(batch, timeText, x, y);
+//            chevyFont.getData().setScale(bigScale);
         }
     }
 

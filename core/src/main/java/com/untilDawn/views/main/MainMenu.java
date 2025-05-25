@@ -11,6 +11,7 @@ import com.untilDawn.controllers.MainMenuController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.User;
 import com.untilDawn.models.enums.Language;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
 
 public class MainMenu implements Screen {
@@ -47,7 +48,7 @@ public class MainMenu implements Screen {
         userInfoTable = new Table();
 
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.font = skin.getFont("font");
+        buttonStyle.font = GameAssetManager.getGameAssetManager().getChevyRayFont();
         buttonStyle.fontColor = Color.WHITE;
         buttonStyle.overFontColor = Color.LIGHT_GRAY;
         buttonStyle.downFontColor = Color.GRAY;

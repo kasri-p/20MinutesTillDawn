@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.SignUpMenuController;
 import com.untilDawn.models.enums.Language;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
 
 public class SignUpMenu implements Screen {
@@ -33,17 +34,28 @@ public class SignUpMenu implements Screen {
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
-        usernameField = new TextField("", skin);
-        passwordField = new TextField("", skin);
+        // Create minimal text field style with just an underline
+        TextField.TextFieldStyle underlineStyle = new TextField.TextFieldStyle();
+        underlineStyle.font = GameAssetManager.getGameAssetManager().getChevyRayFont();
+        underlineStyle.fontColor = Color.WHITE;
+        underlineStyle.cursor = skin.newDrawable("white", Color.SALMON);
+
+        underlineStyle.background = null;
+        underlineStyle.focusedBackground = null;
+        underlineStyle.disabledBackground = null;
+
+        usernameField = new TextField("", underlineStyle);
+        passwordField = new TextField("", underlineStyle);
         passwordField.setPasswordMode(true);
         passwordField.setPasswordCharacter('*');
-        securityAnswerField = new TextField("", skin);
+        securityAnswerField = new TextField("", underlineStyle);
+
         errorLabel = new Label("", skin);
         errorLabel.setColor(Color.RED);
 
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
-        textOnlyStyle.font = skin.getFont("font");
-        textOnlyStyle.fontColor = Color.WHITE;
+        textOnlyStyle.font = GameAssetManager.getGameAssetManager().getChevyRayFont();
+        textOnlyStyle.fontColor = Color.SALMON;
         textOnlyStyle.overFontColor = Color.LIGHT_GRAY;
         textOnlyStyle.downFontColor = Color.GRAY;
 
@@ -55,11 +67,12 @@ public class SignUpMenu implements Screen {
         table.setFillParent(true);
         table.center();
 
+        Label.LabelStyle labelStyle = GameAssetManager.getGameAssetManager().getChevyRayLabelStyle();
         table.add(new Label(Language.SignUp.getText(), skin, "title")).colspan(2).pad(20).row();
-        table.add(new Label(Language.Username.getText(), skin)).pad(10);
+        table.add(new Label(Language.Username.getText(), labelStyle)).pad(10);
         table.add(usernameField).prefWidth(300).pad(10);
         table.row();
-        table.add(new Label(Language.Password.getText(), skin)).pad(10);
+        table.add(new Label(Language.Password.getText(), labelStyle)).pad(10);
         table.add(passwordField).prefWidth(300).pad(10);
         table.row();
         table.add(errorLabel).colspan(2).pad(10);

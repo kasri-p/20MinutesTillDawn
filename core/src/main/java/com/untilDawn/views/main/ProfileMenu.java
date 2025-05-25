@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.untilDawn.controllers.ProfileMenuController;
 import com.untilDawn.models.enums.Language;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
 
 public class ProfileMenu implements Screen {
@@ -15,7 +16,6 @@ public class ProfileMenu implements Screen {
     private final TextButton changePasswordButton;
     private final TextButton deleteAccountButton;
     private final TextButton changeAvatarButton;
-    private final ProfileMenuController controller;
 
     public Table table;
     private Stage stage;
@@ -26,7 +26,7 @@ public class ProfileMenu implements Screen {
     public ProfileMenu(Skin skin) {
         title = new Label(Language.Profile.getText(), skin, "title");
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
-        textOnlyStyle.font = skin.getFont("font");
+        textOnlyStyle.font = GameAssetManager.getGameAssetManager().getChevyRayFont();
         textOnlyStyle.fontColor = new Color(Color.SALMON);
         textOnlyStyle.overFontColor = new Color(Color.SALMON).mul(0.7f);
         textOnlyStyle.downFontColor = new Color(Color.SALMON).mul(0.5f);
@@ -36,7 +36,7 @@ public class ProfileMenu implements Screen {
         this.deleteAccountButton = new TextButton(Language.DeleteAccount.getText(), textOnlyStyle);
         this.changeAvatarButton = new TextButton(Language.ChangeAvatar.getText(), textOnlyStyle);
 
-        this.controller = new ProfileMenuController(this);
+        ProfileMenuController controller = new ProfileMenuController(this);
         this.table = new Table();
     }
 
