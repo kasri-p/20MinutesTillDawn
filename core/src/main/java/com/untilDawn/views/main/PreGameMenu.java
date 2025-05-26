@@ -18,15 +18,32 @@ import com.untilDawn.Main;
 import com.untilDawn.controllers.PreGameMeuController;
 import com.untilDawn.models.enums.Characters;
 import com.untilDawn.models.enums.Weapons;
+import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.UIHelper;
 
 public class PreGameMenu implements Screen {
     private final Stage stage;
     private final Skin skin;
     private final PreGameMeuController controller;
+    
+    private final Weapons[] availableWeapons = {
+        Weapons.Revolver,
+        Weapons.Shotgun,
+        Weapons.Dual_Smg
+    };
+
+    private final Characters[] availableCharacters = {
+        Characters.Shana,
+        Characters.Diamond,
+//        Characters.Scarlett,
+        Characters.Lilith,
+        Characters.Dasher,
+        Characters.Raven,
+        Characters.Hastur
+    };
+
     private int NUM_CHARACTER_SELECTORS = 5;
     private int NUM_WEAPON_SELECTORS = 3;
-
     private Table mainTable;
     private Image[] characterBubbles;
     private Image[] characterHighlights;
@@ -35,37 +52,19 @@ public class PreGameMenu implements Screen {
     private Image characterPortrait;
     private Label characterInfoLabel;
     private TextButton playButton;
-
     // Time limit selection
     private ButtonGroup<TextButton> timeLimitGroup;
     private TextButton time2Button, time5Button, time10Button, time20Button;
-
     private Texture selectorTexture;
     private Texture selectorHighlightTexture;
     private Texture panelTexture;
-
     private Animation<TextureRegion>[] characterAnimations;
     private float animationTime = 0f;
-
     private float widthFactor;
     private float heightFactor;
-
     private int selectedCharacter = -1;
     private int selectedWeapon = -1;
     private int selectedTimeLimit = 5; // Default 5 minutes
-    private Characters[] availableCharacters = {
-        Characters.Shana,
-        Characters.Diamond,
-        Characters.Scarlett,
-        Characters.Lilith,
-        Characters.Dasher,
-        Characters.Raven
-    };
-    private Weapons[] availableWeapons = {
-        Weapons.Revolver,
-        Weapons.Shotgun,
-        Weapons.Dual_Smg
-    };
 
     public PreGameMenu(Skin skin) {
         this.skin = skin;
@@ -401,14 +400,13 @@ public class PreGameMenu implements Screen {
         // Bigger character portrait with natural scaling
         characterPortrait = new Image();
         characterPortrait.setVisible(false);
-
-        characterInfoLabel = new Label("", skin);
+        characterInfoLabel = new Label("", GameAssetManager.getGameAssetManager().getChevyRayLabelStyle());
+        characterInfoLabel.setColor(Color.SALMON);
         characterInfoLabel.setWrap(true);
         characterInfoLabel.setAlignment(Align.center);
         characterInfoLabel.setFontScale(0.9f * Math.min(widthFactor, heightFactor));
         characterInfoLabel.setVisible(false);
 
-        // Only character portrait section, no labels
         infoTable.add(characterPortrait).padBottom(15 * heightFactor).row();
         infoTable.add(characterInfoLabel).width(220 * widthFactor).row();
     }
@@ -452,10 +450,9 @@ public class PreGameMenu implements Screen {
             Texture portraitTexture = new Texture(Gdx.files.internal(portraitPath));
             characterPortrait.setDrawable(new TextureRegionDrawable(new TextureRegion(portraitTexture)));
 
-            // Use natural scaling - keep the original aspect ratio and make it bigger
             float originalWidth = portraitTexture.getWidth();
             float originalHeight = portraitTexture.getHeight();
-            float scaleFactor = 1.8f; // Make it bigger while keeping natural proportions
+            float scaleFactor = 3f;
 
             characterPortrait.setSize(originalWidth * scaleFactor, originalHeight * scaleFactor);
         } else {

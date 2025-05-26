@@ -166,7 +166,7 @@ public class Enemy {
     private void updateShooting(float delta, Player player) {
         shootTimer += delta;
 
-        float shootInterval = 3f;
+        float shootInterval = 6f;
         if (shootTimer >= shootInterval) {
             shootAtPlayer(player);
             shootTimer = 0f;
@@ -182,8 +182,6 @@ public class Enemy {
 
         EnemyBullet bullet = new EnemyBullet(posX, posY, shootDirection);
         bullets.add(bullet);
-
-        // GameAssetManager.getGameAssetManager().playEnemyShoot();
     }
 
     private void updateBullets(float delta) {
@@ -202,7 +200,6 @@ public class Enemy {
         if (isFlashing) {
             flashTimer += delta;
             if (flashTimer >= flashDuration) {
-                // Flash ended, return to normal color
                 isFlashing = false;
                 flashTimer = 0;
                 sprite.setColor(originalColor);
