@@ -6,8 +6,7 @@ dependencies {
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   implementation "com.google.code.gson:gson:2.10.1"
   implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-  implementation 'com.h2database:h2:2.1.214'
-  implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
+  implementation 'org.xerial:sqlite-jdbc:3.44.1.0'
 
   if (enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"

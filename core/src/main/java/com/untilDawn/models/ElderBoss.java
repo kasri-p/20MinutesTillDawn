@@ -268,7 +268,7 @@ public class ElderBoss extends Enemy {
         ATTACKING
     }
 
-    public class ElectricBarrier {
+    public static class ElectricBarrier {
         private float outerWidth, outerHeight;
         private float currentWidth, currentHeight;
         private float thickness = 30f;

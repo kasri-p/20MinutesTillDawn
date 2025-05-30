@@ -74,6 +74,7 @@ public class WeaponController {
             if (Gdx.files.internal(stillPath).exists()) {
                 stillTexture = new Texture(Gdx.files.internal(stillPath));
                 weapon.getSprite().setTexture(stillTexture);
+                weapon.getSprite().setScale(0.7f);
             }
         }
     }
@@ -150,7 +151,7 @@ public class WeaponController {
 
             float angle = (float) Math.toDegrees(Math.atan2(dirY, dirX));
 
-            float weaponOffsetDistance = 23.0f;
+            float weaponOffsetDistance = 19.0f;
             float weaponPosX = playerX + dirX * weaponOffsetDistance;
             float weaponPosY = playerY + dirY * weaponOffsetDistance;
 

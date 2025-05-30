@@ -22,17 +22,5 @@
     "deaths": 0,
     "kills": 0,
     "survivalTime": 0.0
-  },
-  "KK": {
-    "username": "KK",
-    "password": "T4WMExMW+pvbojNUqc1JrRvmoPCzliwEIJ9/3aTK8Dg\u003d",
-    "SecurityQuestionIndex": 0,
-    "SecurityAnswer": "samin\u0027s voice",
-    "isGuest": false,
-    "score": 0,
-    "avatarPath": "avatar6.png",
-    "deaths": 0,
-    "kills": 0,
-    "survivalTime": 0.0
   }
 }
