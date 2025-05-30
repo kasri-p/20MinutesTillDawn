@@ -7,7 +7,8 @@ dependencies {
   implementation "com.google.code.gson:gson:2.10.1"
   implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   implementation 'org.xerial:sqlite-jdbc:3.44.1.0'
-  implementation 'ch.qos.logback:logback-classic:1.2.12'
+  implementation 'ch.qos.logback:logback-classic:1.5.13'
+  implementation 'com.kotcrab.vis:vis-ui:1.5.0'
 
   if (enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"

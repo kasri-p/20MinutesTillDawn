@@ -91,7 +91,6 @@ public class GameHUD {
     }
 
     private void drawBarrierLine() {
-        // Check if Elder Boss exists and barrier is active
         if (gameController.getEnemyController().getElderBoss() != null &&
             gameController.getEnemyController().getElderBoss().isBarrierActive()) {
 
@@ -99,65 +98,90 @@ public class GameHUD {
             ElderBoss.ElectricBarrier barrier = elderBoss.getBarrier();
 
             if (barrier != null) {
-                // Create ShapeRenderer for drawing lines
                 ShapeRenderer shapeRenderer = new ShapeRenderer();
-                shapeRenderer.setProjectionMatrix(camera.combined.cpy().setToOrtho2D(0, 0, screenWidth, screenHeight));
+
+                shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
-                // Set red color
-                shapeRenderer.setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                shapeRenderer.setColor(1.0f, 0.2f, 0.2f, 0.8f);
 
-                // Calculate barrier position in world coordinates
                 float mapWidth = gameController.getMapWidth();
                 float mapHeight = gameController.getMapHeight();
-                float playerX = gameController.getPlayerController().getPlayer().getPosX();
-                float playerY = gameController.getPlayerController().getPlayer().getPosY();
 
-                // Get current barrier dimensions
                 float currentWidth = barrier.getCurrentWidth();
                 float currentHeight = barrier.getCurrentHeight();
 
-                // Barrier center in world coordinates
                 float barrierCenterX = mapWidth / 2;
                 float barrierCenterY = mapHeight / 2;
 
-                // Barrier bounds in world coordinates
                 float barrierLeft = barrierCenterX - currentWidth / 2;
                 float barrierRight = barrierCenterX + currentWidth / 2;
                 float barrierBottom = barrierCenterY - currentHeight / 2;
                 float barrierTop = barrierCenterY + currentHeight / 2;
 
-                // Convert to screen coordinates relative to player
-                float screenCenterX = screenWidth / 2;
-                float screenCenterY = screenHeight / 2;
+                float camLeft = camera.position.x - camera.viewportWidth / 2;
+                float camRight = camera.position.x + camera.viewportWidth / 2;
+                float camBottom = camera.position.y - camera.viewportHeight / 2;
+                float camTop = camera.position.y + camera.viewportHeight / 2;
 
-                // Calculate screen positions
-                float screenLeft = screenCenterX + (barrierLeft - playerX);
-                float screenRight = screenCenterX + (barrierRight - playerX);
-                float screenBottom = screenCenterY + (barrierBottom - playerY);
-                float screenTop = screenCenterY + (barrierTop - playerY);
+                float thickness = 4f;
 
-                float thickness = 3f;
-
-                // Only draw lines that are visible on screen
-                if (screenLeft >= -thickness && screenLeft <= screenWidth + thickness) {
-                    // Left line
-                    shapeRenderer.rectLine(screenLeft, screenBottom, screenLeft, screenTop, thickness);
+                if (barrierLeft >= camLeft - thickness && barrierLeft <= camRight + thickness) {
+                    float visibleTop = Math.min(barrierTop, camTop);
+                    float visibleBottom = Math.max(barrierBottom, camBottom);
+                    if (visibleTop > visibleBottom) {
+                        shapeRenderer.rectLine(barrierLeft, visibleBottom, barrierLeft, visibleTop, thickness);
+                    }
                 }
 
-                if (screenRight >= -thickness && screenRight <= screenWidth + thickness) {
-                    // Right line
-                    shapeRenderer.rectLine(screenRight, screenBottom, screenRight, screenTop, thickness);
+                if (barrierRight >= camLeft - thickness && barrierRight <= camRight + thickness) {
+                    float visibleTop = Math.min(barrierTop, camTop);
+                    float visibleBottom = Math.max(barrierBottom, camBottom);
+                    if (visibleTop > visibleBottom) {
+                        shapeRenderer.rectLine(barrierRight, visibleBottom, barrierRight, visibleTop, thickness);
+                    }
                 }
 
-                if (screenBottom >= -thickness && screenBottom <= screenHeight + thickness) {
-                    // Bottom line
-                    shapeRenderer.rectLine(screenLeft, screenBottom, screenRight, screenBottom, thickness);
+                if (barrierBottom >= camBottom - thickness && barrierBottom <= camTop + thickness) {
+                    float visibleLeft = Math.max(barrierLeft, camLeft);
+                    float visibleRight = Math.min(barrierRight, camRight);
+                    if (visibleRight > visibleLeft) {
+                        shapeRenderer.rectLine(visibleLeft, barrierBottom, visibleRight, barrierBottom, thickness);
+                    }
                 }
 
-                if (screenTop >= -thickness && screenTop <= screenHeight + thickness) {
-                    // Top line
-                    shapeRenderer.rectLine(screenLeft, screenTop, screenRight, screenTop, thickness);
+                if (barrierTop >= camBottom - thickness && barrierTop <= camTop + thickness) {
+                    float visibleLeft = Math.max(barrierLeft, camLeft);
+                    float visibleRight = Math.min(barrierRight, camRight);
+                    if (visibleRight > visibleLeft) {
+                        shapeRenderer.rectLine(visibleLeft, barrierTop, visibleRight, barrierTop, thickness);
+                    }
+                }
+
+                float cornerSize = 20f;
+
+                if (barrierLeft >= camLeft - cornerSize && barrierLeft <= camRight + cornerSize &&
+                    barrierTop >= camBottom - cornerSize && barrierTop <= camTop + cornerSize) {
+                    shapeRenderer.rectLine(barrierLeft - cornerSize, barrierTop, barrierLeft + cornerSize, barrierTop, thickness);
+                    shapeRenderer.rectLine(barrierLeft, barrierTop - cornerSize, barrierLeft, barrierTop + cornerSize, thickness);
+                }
+
+                if (barrierRight >= camLeft - cornerSize && barrierRight <= camRight + cornerSize &&
+                    barrierTop >= camBottom - cornerSize && barrierTop <= camTop + cornerSize) {
+                    shapeRenderer.rectLine(barrierRight - cornerSize, barrierTop, barrierRight + cornerSize, barrierTop, thickness);
+                    shapeRenderer.rectLine(barrierRight, barrierTop - cornerSize, barrierRight, barrierTop + cornerSize, thickness);
+                }
+
+                if (barrierLeft >= camLeft - cornerSize && barrierLeft <= camRight + cornerSize &&
+                    barrierBottom >= camBottom - cornerSize && barrierBottom <= camTop + cornerSize) {
+                    shapeRenderer.rectLine(barrierLeft - cornerSize, barrierBottom, barrierLeft + cornerSize, barrierBottom, thickness);
+                    shapeRenderer.rectLine(barrierLeft, barrierBottom - cornerSize, barrierLeft, barrierBottom + cornerSize, thickness);
+                }
+
+                if (barrierRight >= camLeft - cornerSize && barrierRight <= camRight + cornerSize &&
+                    barrierBottom >= camBottom - cornerSize && barrierBottom <= camTop + cornerSize) {
+                    shapeRenderer.rectLine(barrierRight - cornerSize, barrierBottom, barrierRight + cornerSize, barrierBottom, thickness);
+                    shapeRenderer.rectLine(barrierRight, barrierBottom - cornerSize, barrierRight, barrierBottom + cornerSize, thickness);
                 }
 
                 shapeRenderer.end();
@@ -186,13 +210,10 @@ public class GameHUD {
         chevyFont.draw(batch, timeText, x, y);
 
         float surviveY = y - 40;
-//        chevyFont.getData().setScale(bigScale);
 
         if (remainingTime <= 10 && remainingTime > 0) {
             float pulse = 1.0f + 0.3f * (float) Math.sin(animationTime * 8);
-//            chevyFont.getData().setScale(bigScale * pulse);
             chevyFont.draw(batch, timeText, x, y);
-//            chevyFont.getData().setScale(bigScale);
         }
     }
 
@@ -221,11 +242,6 @@ public class GameHUD {
         }
 
         batch.setColor(Color.WHITE);
-
-        if (player.hasRegeneration()) {
-            smallFont.setColor(Color.GREEN);
-            smallFont.draw(batch, "REGEN", startX, startY - 20);
-        }
     }
 
     private void drawAbilityStatus(SpriteBatch batch) {
@@ -242,9 +258,6 @@ public class GameHUD {
             drawAbilityIcon(batch, ability, iconX, startY);
             iconIndex++;
         }
-
-        // Show passive ability bonuses
-        drawPassiveAbilityBonuses(batch, startX, startY - 60f);
     }
 
 
@@ -299,42 +312,6 @@ public class GameHUD {
         batch.setColor(Color.WHITE);
     }
 
-
-    private void drawPassiveAbilityBonuses(SpriteBatch batch, float x, float y) {
-        Player player = gameController.getPlayerController().getPlayer();
-        float lineHeight = 15f;
-        int line = 0;
-
-        smallFont.setColor(Color.CYAN);
-
-        if (player.getProjectileBonus() > 0) {
-            smallFont.draw(batch, "Projectiles: +" + player.getProjectileBonus(), x, y - line * lineHeight);
-            line++;
-        }
-
-        if (player.getAmmoBonus() > 0) {
-            smallFont.draw(batch, "Max Ammo: +" + player.getAmmoBonus(), x, y - line * lineHeight);
-            line++;
-        }
-
-        if (player.getDamageBonus() > 0) {
-            smallFont.draw(batch, "Damage: +" + player.getDamageBonus() + "%", x, y - line * lineHeight);
-            line++;
-        }
-
-        if (player.hasRegeneration()) {
-            smallFont.draw(batch, "Health Regen: Active", x, y - line * lineHeight);
-            line++;
-        }
-
-        if (player.getSpeed() > player.getBaseSpeed()) {
-            smallFont.setColor(Color.YELLOW);
-            smallFont.draw(batch, "Speed Boost: Active", x, y - line * lineHeight);
-            line++;
-        }
-
-        batch.setColor(Color.WHITE);
-    }
 
     private void renderHealthAndAmmoUI() {
         Main.getBatch().begin();

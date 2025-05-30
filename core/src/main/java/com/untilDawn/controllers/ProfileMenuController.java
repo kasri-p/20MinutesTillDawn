@@ -24,7 +24,10 @@ public class ProfileMenuController {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 playClick();
-                ChangeUsernameWindow changeUsernameWindow = new ChangeUsernameWindow(GameAssetManager.getGameAssetManager().getSkin(), view.getStage());
+                ChangeUsernameWindow changeUsernameWindow = new ChangeUsernameWindow(
+                    GameAssetManager.getGameAssetManager().getSkin(),
+                    view.getStage()
+                );
                 changeUsernameWindow.setOnComplete(() -> {
                     navigateToProfileMenu();
                 });
@@ -64,11 +67,14 @@ public class ProfileMenuController {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 playClick();
-                view.getStage().addActor(new ChangeAvatarWindow(
+                ChangeAvatarWindow changeAvatarWindow = new ChangeAvatarWindow(
                     GameAssetManager.getGameAssetManager().getSkin(),
-                    view.getStage(),
-                    "Change Avatar feature is coming soon!"
-                ));
+                    view.getStage()
+                );
+                changeAvatarWindow.setOnComplete(() -> {
+                    navigateToProfileMenu();
+                });
+                view.getStage().addActor(changeAvatarWindow);
             }
         });
     }

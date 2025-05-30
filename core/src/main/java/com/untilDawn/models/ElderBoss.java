@@ -256,7 +256,6 @@ public class ElderBoss extends Enemy {
         return barrierActive;
     }
 
-    // Add getter for barrier
     public ElectricBarrier getBarrier() {
         return perimeterBarrier;
     }

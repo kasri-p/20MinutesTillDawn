@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.kotcrab.vis.ui.VisUI;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.models.utils.GrayscaleShader;
@@ -31,6 +32,7 @@ public class Main extends Game {
 
     @Override
     public void create() {
+        VisUI.load();
         main = this;
         batch = new SpriteBatch();
         App.load();

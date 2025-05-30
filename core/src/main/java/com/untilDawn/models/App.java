@@ -46,36 +46,34 @@ public class App {
         users = FileStorage.loadUsers();
 
         Map<String, Object> settings = FileStorage.loadSettings();
-        if (settings != null) {
-            if (settings.containsKey("musicVolume")) {
-                musicVolume = ((Number) settings.get("musicVolume")).floatValue();
-            }
+        if (settings.containsKey("musicVolume")) {
+            musicVolume = ((Number) settings.get("musicVolume")).floatValue();
+        }
 
-            if (settings.containsKey("isSFX")) {
-                isSFX = (Boolean) settings.get("isSFX");
-            }
+        if (settings.containsKey("isSFX")) {
+            isSFX = (Boolean) settings.get("isSFX");
+        }
 
-            if (settings.containsKey("currentMusicTrack")) {
-                currentMusicTrack = (String) settings.get("currentMusicTrack");
-            }
+        if (settings.containsKey("currentMusicTrack")) {
+            currentMusicTrack = (String) settings.get("currentMusicTrack");
+        }
 
-            if (settings.containsKey("language")) {
-                language = (String) settings.get("language");
-            }
+        if (settings.containsKey("language")) {
+            language = (String) settings.get("language");
+        }
 
-            if (settings.containsKey("keybinds")) {
-                @SuppressWarnings("unchecked")
-                Map<String, String> loadedKeybinds = (Map<String, String>) settings.get("keybinds");
-                keybinds = loadedKeybinds;
-            }
+        if (settings.containsKey("keybinds")) {
+            @SuppressWarnings("unchecked")
+            Map<String, String> loadedKeybinds = (Map<String, String>) settings.get("keybinds");
+            keybinds = loadedKeybinds;
+        }
 
-            if (settings.containsKey("autoReloadEnabled")) {
-                autoReloadEnabled = (Boolean) settings.get("autoReloadEnabled");
-            }
+        if (settings.containsKey("autoReloadEnabled")) {
+            autoReloadEnabled = (Boolean) settings.get("autoReloadEnabled");
+        }
 
-            if (settings.containsKey("blackAndWhiteEnabled")) {
-                blackAndWhiteEnabled = (Boolean) settings.get("blackAndWhiteEnabled");
-            }
+        if (settings.containsKey("blackAndWhiteEnabled")) {
+            blackAndWhiteEnabled = (Boolean) settings.get("blackAndWhiteEnabled");
         }
     }
 
