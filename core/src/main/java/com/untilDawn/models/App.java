@@ -25,12 +25,11 @@ public class App {
     private static boolean blackAndWhiteEnabled = false;
 
     static {
-        // Initialize default keybinds
         keybinds.put("Move Up", "W");
         keybinds.put("Move Down", "S");
         keybinds.put("Move Left", "A");
         keybinds.put("Move Right", "D");
-        keybinds.put("Shoot", "SPACE");
+        keybinds.put("Auto Aim", "SPACE");
         keybinds.put("Reload", "R");
         keybinds.put("Pause", "ESC");
     }
@@ -65,7 +64,9 @@ public class App {
             }
 
             if (settings.containsKey("keybinds")) {
-                keybinds = (Map<String, String>) settings.get("keybinds");
+                @SuppressWarnings("unchecked")
+                Map<String, String> loadedKeybinds = (Map<String, String>) settings.get("keybinds");
+                keybinds = loadedKeybinds;
             }
 
             if (settings.containsKey("autoReloadEnabled")) {
@@ -81,7 +82,6 @@ public class App {
     public static void save() {
         FileStorage.saveUsers(users);
 
-        // Save settings
         Map<String, Object> settings = new HashMap<>();
         settings.put("musicVolume", musicVolume);
         settings.put("isSFX", isSFX);
@@ -216,9 +216,5 @@ public class App {
 
     public static void setGame(Game game) {
         currentGame = game;
-    }
-
-    public void toggleSFX() {
-        isSFX = !isSFX;
     }
 }

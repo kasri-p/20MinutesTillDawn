@@ -104,7 +104,6 @@ public class ChangeUsernameWindow extends Window {
 
         User currentUser = App.getLoggedInUser();
         if (currentUser != null) {
-            App.addUser(null);
 
             App.getUser(username).setUsername(newUserTextField.getText());
             App.save();

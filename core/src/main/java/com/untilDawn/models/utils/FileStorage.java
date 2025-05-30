@@ -1,5 +1,6 @@
 package com.untilDawn.models.utils;
 
+import com.badlogic.gdx.Gdx;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -129,7 +130,7 @@ public class FileStorage {
             }
 
         } catch (SQLException e) {
-            System.err.println("Failed to load users from database: " + e.getMessage());
+            Gdx.app.error("FileStorage", "Failed to load users from database: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -145,7 +146,7 @@ public class FileStorage {
                 return true;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Gdx.app.error("FileStorage", "Failed to save settings to JSON: " + e.getMessage());
             return false;
         }
     }
@@ -162,7 +163,7 @@ public class FileStorage {
             Map<String, Object> settings = gson.fromJson(reader, settingsMapType);
             return settings != null ? settings : new HashMap<>();
         } catch (IOException e) {
-            e.printStackTrace();
+            Gdx.app.error("FileStorage", "Failed to load settings from database: " + e.getMessage());
             return new HashMap<>();
         }
     }
