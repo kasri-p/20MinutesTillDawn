@@ -3,6 +3,7 @@ package com.untilDawn.models;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
@@ -47,12 +48,17 @@ public class Enemy {
     private Vector2 knockbackDirection = new Vector2();
     private float knockbackForce = 100f;
 
+    private Animation<Texture> deathAnimation;
+    private float deathAnimTimer = 0f;
+    private boolean isDeadAnimationPlaying = false;
+
     public Enemy(EnemyType type, float posX, float posY) {
         this.type = type;
         this.health = type.getHealth();
         this.posX = posX;
         this.posY = posY;
         this.spawnTime = 0;
+        this.deathAnimation = GameAssetManager.getGameAssetManager().getDeathFxAnimation();
 
         loadTexture();
         createSprite();
@@ -250,6 +256,11 @@ public class Enemy {
 
         if (health <= 0 && isActive) {
             isActive = false;
+
+            // Start death animation
+            deathAnimTimer = 0f;
+            isDeadAnimationPlaying = true;
+
             dropItem();
             if (type == EnemyType.EYEBAT) {
                 GameAssetManager.getGameAssetManager().playBatDeath();
