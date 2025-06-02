@@ -48,9 +48,12 @@ public class Enemy {
     private Vector2 knockbackDirection = new Vector2();
     private float knockbackForce = 100f;
 
+    // Death animation fields
     private Animation<Texture> deathAnimation;
     private float deathAnimTimer = 0f;
     private boolean isDeadAnimationPlaying = false;
+    private boolean deathAnimationComplete = false;
+    private float deathPosX, deathPosY; // Store death position
 
     public Enemy(EnemyType type, float posX, float posY) {
         this.type = type;
@@ -125,6 +128,18 @@ public class Enemy {
     }
 
     public void update(float delta, Player player) {
+        // Handle death animation
+        if (isDeadAnimationPlaying) {
+            deathAnimTimer += delta;
+
+            // Check if death animation is complete
+            if (deathAnimation != null && deathAnimTimer >= deathAnimation.getAnimationDuration()) {
+                isDeadAnimationPlaying = false;
+                deathAnimationComplete = true;
+            }
+            return; // Don't update other logic while death animation is playing
+        }
+
         if (!isActive) return;
 
         spawnTime += delta;
@@ -249,7 +264,6 @@ public class Enemy {
 
         startFlashEffect();
 
-        // Apply knockback when hit (except for trees)
         if (type != EnemyType.TREE) {
             applyKnockback();
         }
@@ -257,9 +271,11 @@ public class Enemy {
         if (health <= 0 && isActive) {
             isActive = false;
 
-            // Start death animation
+            deathPosX = posX;
+            deathPosY = posY;
             deathAnimTimer = 0f;
             isDeadAnimationPlaying = true;
+            deathAnimationComplete = false;
 
             dropItem();
             if (type == EnemyType.EYEBAT) {
@@ -371,6 +387,38 @@ public class Enemy {
                 Gdx.app.log("Drop", "Player collected unknown drop type: " + dropType);
                 break;
         }
+    }
+
+    // Death animation getter methods
+    public boolean isDeathAnimationPlaying() {
+        return isDeadAnimationPlaying;
+    }
+
+    public boolean isDeathAnimationComplete() {
+        return deathAnimationComplete;
+    }
+
+    public Texture getDeathAnimationFrame() {
+        if (isDeadAnimationPlaying && deathAnimation != null) {
+            return deathAnimation.getKeyFrame(deathAnimTimer, false);
+        }
+        return null;
+    }
+
+    public float getDeathPosX() {
+        return deathPosX;
+    }
+
+    public float getDeathPosY() {
+        return deathPosY;
+    }
+
+    public Animation<Texture> getDeathAnimation() {
+        return deathAnimation;
+    }
+
+    public float getDeathAnimTimer() {
+        return deathAnimTimer;
     }
 
     public Sprite getDropSprite() {
@@ -535,7 +583,5 @@ public class Enemy {
                 texture.dispose();
             }
         }
-
-
     }
 }

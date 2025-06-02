@@ -93,7 +93,7 @@ public class PauseMenuWindow extends Window {
 
         Table root = new Table();
         root.setFillParent(true);
-        root.center();
+//        root.center();
         root.add(contentArea).center().expand();
 
         stage.addActor(root);

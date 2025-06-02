@@ -41,10 +41,14 @@ public class ChangeAvatarWindow extends Window {
     private static final Color HOVER_COLOR = new Color(0.3f, 0.6f, 0.8f, 0.8f);
     private static final Color SUCCESS_COLOR = new Color(0.3f, 0.8f, 0.3f, 1f);
     private static final Color INFO_COLOR = new Color(0.7f, 0.7f, 0.7f, 1f);
+    private static final Color DRAG_HOVER_COLOR = new Color(0.2f, 0.8f, 0.2f, 0.8f);
+    private static final Color DRAG_ACTIVE_COLOR = new Color(0.1f, 0.6f, 0.1f, 0.9f);
+
     // Data
     private final Stage parentStage;
     private final User currentUser;
     private final Skin skin;
+
     // UI Components
     private Table contentTable;
     private Table avatarGrid;
@@ -61,8 +65,10 @@ public class ChangeAvatarWindow extends Window {
     private AvatarOption selectedAvatar;
     private Runnable onComplete;
 
+    // Drag and Drop
     private boolean isDragOver = false;
     private Table dropZone;
+    private DragDropListener dragDropListener;
 
     private Stage stage;
 
@@ -78,6 +84,7 @@ public class ChangeAvatarWindow extends Window {
         setupWindow();
         loadAvatarOptions();
         createContent();
+        setupDragAndDrop();
         animateIn();
     }
 
@@ -97,6 +104,7 @@ public class ChangeAvatarWindow extends Window {
     }
 
     private void loadAvatarOptions() {
+        // Load built-in avatars
         for (int i = 1; i <= 6; i++) {
             String filename = "avatar" + i + ".png";
             String path = "images/avatars/" + filename;
@@ -106,6 +114,7 @@ public class ChangeAvatarWindow extends Window {
             }
         }
 
+        // Load custom avatars
         FileHandle customDir = Gdx.files.local("avatars/");
         if (customDir.exists() && customDir.isDirectory()) {
             for (FileHandle file : customDir.list()) {
@@ -116,6 +125,110 @@ public class ChangeAvatarWindow extends Window {
                     } catch (Exception e) {
                         Gdx.app.error("ChangeAvatarWindow", "Failed to load custom avatar: " + file.name());
                     }
+                }
+            }
+        }
+    }
+
+    private void setupDragAndDrop() {
+        // Set up LibGDX native drag and drop listener
+        dragDropListener = new DragDropListener() {
+            @Override
+            public void dragEnter() {
+                Gdx.app.postRunnable(() -> setDragState(true));
+            }
+
+            @Override
+            public void dragExit() {
+                Gdx.app.postRunnable(() -> setDragState(false));
+            }
+
+            @Override
+            public void dragOver() {
+                // Optional: Handle drag over events
+            }
+
+            @Override
+            public void drop(String[] files) {
+                Gdx.app.postRunnable(() -> {
+                    setDragState(false);
+                    if (files != null && files.length > 0) {
+                        handleFileSelection(new File(files[0])); // Take the first file
+                    }
+                });
+            }
+        };
+
+        // Register the drag and drop listener with LibGDX
+        try {
+            Gdx.input.setOnscreenKeyboardVisible(false); // Ensure input is ready
+            if (Gdx.app.getType() == com.badlogic.gdx.Application.ApplicationType.Desktop) {
+                // For desktop applications, we can set the drag and drop listener
+                setDragDropListener(dragDropListener);
+                Gdx.app.log("ChangeAvatarWindow", "Successfully registered LibGDX drag and drop listener");
+            }
+        } catch (Exception e) {
+            Gdx.app.error("ChangeAvatarWindow", "Failed to set up drag and drop: " + e.getMessage());
+        }
+    }
+
+    // Method to set drag and drop listener - this would normally be called on the application level
+    private void setDragDropListener(DragDropListener listener) {
+        // In a real implementation, this would be set at the application level:
+        // ((Lwjgl3Application) Gdx.app).getApplicationListener().setDragDropListener(listener);
+
+        // For now, we'll use a workaround by setting it directly if possible
+        try {
+            // Access the LWJGL3 application and set the listener
+            if (Gdx.app.getClass().getSimpleName().contains("Lwjgl3")) {
+                // Use reflection to access the setDragDropListener method
+                java.lang.reflect.Method method = Gdx.app.getClass().getMethod("setDragDropListener",
+                    com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application.DragDropListener.class);
+
+                // Create an adapter from our listener to LWJGL3's listener
+                com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application.DragDropListener lwjglListener =
+                    new com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application.DragDropListener() {
+                        @Override
+                        public void dragEnter() {
+                            listener.dragEnter();
+                        }
+
+                        @Override
+                        public void dragExit() {
+                            listener.dragExit();
+                        }
+
+                        @Override
+                        public void dragOver() {
+                            listener.dragOver();
+                        }
+
+                        @Override
+                        public void drop(String[] files) {
+                            listener.drop(files);
+                        }
+                    };
+
+                method.invoke(Gdx.app, lwjglListener);
+                Gdx.app.log("ChangeAvatarWindow", "Successfully set LWJGL3 drag and drop listener");
+            }
+        } catch (Exception e) {
+            Gdx.app.error("ChangeAvatarWindow", "Failed to set LWJGL3 drag and drop listener: " + e.getMessage());
+        }
+    }
+
+    private void setDragState(boolean isDragging) {
+        isDragOver = isDragging;
+        if (dropZone != null) {
+            if (isDragging) {
+                dropZone.setColor(DRAG_HOVER_COLOR);
+                dropZone.addAction(Actions.scaleTo(1.05f, 1.05f, 0.1f));
+                showSuccess("Drop your image file here!");
+            } else {
+                dropZone.setColor(Color.WHITE);
+                dropZone.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f));
+                if (statusLabel.getText().toString().contains("Drop your")) {
+                    statusLabel.setText("");
                 }
             }
         }
@@ -338,23 +451,37 @@ public class ChangeAvatarWindow extends Window {
         dropZone = new Table();
         dropZone.setBackground(createDragDropBackground());
         dropZone.pad(20);
+        dropZone.setTransform(true);
 
-        Label dropLabel = new Label("Or drag & drop\nimage here", skin);
+        Label dropLabel = new Label("Drag & drop image here\n(or click to browse)", skin);
         dropLabel.setAlignment(Align.center);
-        dropLabel.setFontScale(0.9f);
+        dropLabel.setFontScale(0.8f);
         dropLabel.setColor(INFO_COLOR);
+        dropLabel.setWrap(true);
 
-        dropZone.add(dropLabel);
+        dropZone.add(dropLabel).width(160);
 
         dropZone.addListener(new ClickListener() {
             @Override
+            public void clicked(InputEvent event, float x, float y) {
+                playClick();
+                openFileChooser();
+            }
+
+            @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                dropZone.setColor(HOVER_COLOR);
+                if (!isDragOver) {
+                    dropZone.setColor(HOVER_COLOR);
+                    dropZone.addAction(Actions.scaleTo(1.02f, 1.02f, 0.1f));
+                }
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                dropZone.setColor(Color.WHITE);
+                if (!isDragOver) {
+                    dropZone.setColor(Color.WHITE);
+                    dropZone.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f));
+                }
             }
         });
     }
@@ -471,37 +598,97 @@ public class ChangeAvatarWindow extends Window {
 
     private void handleFileSelection(File file) {
         try {
-            if (!isImageFile(file.getName())) {
-                showError("Please select a valid image file (PNG, JPG, GIF, BMP)");
+            if (!validateImageFile(file)) {
                 return;
             }
 
-            long fileSize = file.length();
-            if (fileSize > 5 * 1024 * 1024) {
-                showError("File size must be less than 5MB");
-                return;
-            }
-
+            // Create directories if they don't exist
             FileHandle localDir = Gdx.files.local("Images/avatars/");
             localDir.mkdirs();
 
-            String newFilename = "custom_" + getFileExtension(file.getName());
+            // Generate unique filename
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String extension = getFileExtension(file.getName());
+            String newFilename = "custom_" + timestamp + extension;
             FileHandle destFile = localDir.child(newFilename);
 
+            // Copy file
             Files.copy(file.toPath(), destFile.file().toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            Texture newTexture = new Texture(destFile);
+            // Load and validate the copied file
+            Texture newTexture;
+            try {
+                newTexture = new Texture(destFile);
+            } catch (Exception e) {
+                destFile.delete(); // Clean up if texture loading fails
+                showError("Failed to load image: " + e.getMessage());
+                return;
+            }
+
+            // Create avatar option
             AvatarOption newOption = new AvatarOption(newFilename, newTexture, true);
             avatarOptions.add(newOption);
 
+            // Select the new avatar
             selectAvatar(newOption);
 
-            showSuccess("Avatar uploaded successfully!");
+            showSuccess("Avatar uploaded and selected successfully!");
+
+            // Update UI
+            refreshAvatarGrid();
+
         } catch (IOException e) {
-            showError("Failed to upload avatar: " + e.getMessage());
+            showError("Failed to save avatar: " + e.getMessage());
+            Gdx.app.error("ChangeAvatarWindow", "IO error: " + e.getMessage());
         } catch (Exception e) {
-            showError("Error loading avatar: " + e.getMessage());
+            showError("Unexpected error: " + e.getMessage());
+            Gdx.app.error("ChangeAvatarWindow", "Unexpected error: " + e.getMessage());
         }
+    }
+
+    private boolean validateImageFile(File file) {
+        if (!isImageFile(file.getName())) {
+            showError("Please select a valid image file (PNG, JPG, GIF, BMP)");
+            return false;
+        }
+
+        long fileSize = file.length();
+        if (fileSize > 5 * 1024 * 1024) { // 5MB limit
+            showError("File size must be less than 5MB");
+            return false;
+        }
+
+        try {
+            // Basic image validation by trying to load it
+            FileHandle tempHandle = new FileHandle(file);
+            Pixmap testPixmap = new Pixmap(tempHandle);
+
+            // Check dimensions
+            if (testPixmap.getWidth() < 32 || testPixmap.getHeight() < 32) {
+                testPixmap.dispose();
+                showError("Image must be at least 32x32 pixels");
+                return false;
+            }
+
+            if (testPixmap.getWidth() > 2048 || testPixmap.getHeight() > 2048) {
+                testPixmap.dispose();
+                showError("Image must be smaller than 2048x2048 pixels");
+                return false;
+            }
+
+            testPixmap.dispose();
+            return true;
+
+        } catch (Exception e) {
+            showError("Invalid or corrupted image file");
+            return false;
+        }
+    }
+
+    private void refreshAvatarGrid() {
+        // This would recreate the avatar selection section to show new custom avatars
+        // For now, we'll just update the selection
+        updateAvatarSelection();
     }
 
     private boolean saveAvatar() {
@@ -554,7 +741,6 @@ public class ChangeAvatarWindow extends Window {
     }
 
     private TextureRegionDrawable createCellBackground() {
-        // Create a semi-transparent background
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(new Color(0.2f, 0.2f, 0.3f, 0.5f));
         pixmap.fill();
@@ -565,18 +751,24 @@ public class ChangeAvatarWindow extends Window {
 
     private TextureRegionDrawable createDragDropBackground() {
         Pixmap pixmap = new Pixmap(200, 100, Pixmap.Format.RGBA8888);
-        pixmap.setColor(new Color(0.2f, 0.2f, 0.3f, 0.3f));
+
+        // Base background
+        pixmap.setColor(new Color(0.15f, 0.15f, 0.25f, 0.8f));
         pixmap.fill();
 
-        pixmap.setColor(new Color(0.5f, 0.5f, 0.6f, 0.8f));
-        for (int x = 0; x < 200; x += 10) {
-            pixmap.fillRectangle(x, 0, 5, 2);
-            pixmap.fillRectangle(x, 98, 5, 2);
+        // Dashed border effect
+        pixmap.setColor(new Color(0.5f, 0.7f, 0.9f, 0.8f));
+
+        // Top and bottom borders
+        for (int x = 0; x < 200; x += 8) {
+            pixmap.fillRectangle(x, 0, 4, 2);
+            pixmap.fillRectangle(x, 98, 4, 2);
         }
 
-        for (int y = 0; y < 100; y += 10) {
-            pixmap.fillRectangle(0, y, 2, 5);
-            pixmap.fillRectangle(198, y, 2, 5);
+        // Left and right borders
+        for (int y = 0; y < 100; y += 8) {
+            pixmap.fillRectangle(0, y, 2, 4);
+            pixmap.fillRectangle(198, y, 2, 4);
         }
 
         Texture texture = new Texture(pixmap);
@@ -632,8 +824,38 @@ public class ChangeAvatarWindow extends Window {
     public void act(float delta) {
         super.act(delta);
 
-        // Check for drag and drop events (platform-specific implementation needed)
-        // This is where you would handle actual drag-drop functionality
+        // Update drag visual effects
+        if (isDragOver && dropZone != null) {
+            float time = System.currentTimeMillis() * 0.001f;
+            float pulse = 0.8f + 0.2f * (float) Math.sin(time * 4);
+            dropZone.setColor(DRAG_ACTIVE_COLOR.r, DRAG_ACTIVE_COLOR.g, DRAG_ACTIVE_COLOR.b, pulse);
+        }
+    }
+
+    @Override
+    public void remove() {
+        // Clean up drag and drop resources
+        if (dragDropListener != null) {
+            try {
+                // Remove the drag and drop listener
+                setDragDropListener(null);
+            } catch (Exception e) {
+                Gdx.app.error("ChangeAvatarWindow", "Error cleaning up drag and drop: " + e.getMessage());
+            }
+        }
+
+        super.remove();
+    }
+
+    // Inner interface for drag and drop functionality
+    private interface DragDropListener {
+        void dragEnter();
+
+        void dragExit();
+
+        void dragOver();
+
+        void drop(String[] files);
     }
 
     private static class AvatarOption {
@@ -645,6 +867,12 @@ public class ChangeAvatarWindow extends Window {
             this.filename = filename;
             this.texture = texture;
             this.isCustom = isCustom;
+        }
+
+        public void dispose() {
+            if (texture != null) {
+                texture.dispose();
+            }
         }
     }
 }

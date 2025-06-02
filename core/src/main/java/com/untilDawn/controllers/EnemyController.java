@@ -74,7 +74,6 @@ public class EnemyController {
         // Check for Elder Boss spawn
         checkElderBossSpawn();
 
-
         spawnTentacleMonsters();
         spawnEyeBats();
 
@@ -249,9 +248,12 @@ public class EnemyController {
 
             enemy.update(delta, playerController.getPlayer());
 
-            if (!enemy.isActive() && !enemy.isDropActive()) {
-                enemy.dispose();
-                iterator.remove();
+            // Remove enemy only after death animation is complete
+            if (!enemy.isActive() && !enemy.isDropActive() && !enemy.isDeathAnimationPlaying()) {
+                if (enemy.isDeathAnimationComplete()) {
+                    enemy.dispose();
+                    iterator.remove();
+                }
             }
         }
     }
@@ -424,6 +426,29 @@ public class EnemyController {
         GameAssetManager assetManager = GameAssetManager.getGameAssetManager();
 
         for (Enemy enemy : enemies) {
+            // Draw death animation if playing
+            if (enemy.isDeathAnimationPlaying()) {
+                Texture deathFrame = enemy.getDeathAnimationFrame();
+                if (deathFrame != null) {
+                    float deathScale = 2.0f; // Make death effect visible
+                    float deathX = enemy.getDeathPosX() - (deathFrame.getWidth() * deathScale) / 2;
+                    float deathY = enemy.getDeathPosY() - (deathFrame.getHeight() * deathScale) / 2;
+
+                    // Draw with slight transparency and scaling effect
+                    float alpha = 1.0f - (enemy.getDeathAnimTimer() / enemy.getDeathAnimation().getAnimationDuration()) * 0.3f;
+                    Main.getBatch().setColor(1f, 1f, 1f, alpha);
+
+                    Main.getBatch().draw(deathFrame,
+                        deathX, deathY,
+                        deathFrame.getWidth() * deathScale,
+                        deathFrame.getHeight() * deathScale);
+
+                    Main.getBatch().setColor(1f, 1f, 1f, 1f); // Reset color
+                }
+                continue; // Skip drawing the enemy sprite
+            }
+
+            // Draw living enemies
             if (enemy.isActive()) {
                 if (enemy instanceof ElderBoss boss) {
                     Sprite sprite = boss.getSprite();
@@ -445,7 +470,6 @@ public class EnemyController {
 
                     sprite.setColor(1.0f, 0.9f, 0.8f, 1.0f);
                     sprite.draw(Main.getBatch());
-
 
                 } else {
                     Animation<Texture> animation = assetManager.getEnemyAnimation(enemy.getType().getName());
@@ -482,6 +506,7 @@ public class EnemyController {
                     }
                 }
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {
+                // Draw drops for dead enemies
                 enemy.getDropSprite().draw(Main.getBatch());
             }
         }

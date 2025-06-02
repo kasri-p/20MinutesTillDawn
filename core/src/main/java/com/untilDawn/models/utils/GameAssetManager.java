@@ -55,13 +55,19 @@ public class GameAssetManager {
     private final Texture levelUpAnimation7 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp7.png"));
     private final Texture levelUpAnimation8 = new Texture(Gdx.files.internal("Images/LevelUpAnimation/LevelUp8.png"));
 
+    private final Texture deathFx0 = new Texture(Gdx.files.internal("Images/DeathFx/DeathFx0.png"));
     private final Texture deathFx1 = new Texture(Gdx.files.internal("Images/DeathFx/DeathFx1.png"));
     private final Texture deathFx2 = new Texture(Gdx.files.internal("Images/DeathFx/DeathFx2.png"));
     private final Texture deathFx3 = new Texture(Gdx.files.internal("Images/DeathFx/DeathFx3.png"));
 
+    private final Texture curse1 = new Texture(Gdx.files.internal("Images/Curse/T_CurseFX_0.png"));
+    private final Texture curse2 = new Texture(Gdx.files.internal("Images/Curse/T_CurseFX_1.png"));
+    private final Texture curse3 = new Texture(Gdx.files.internal("Images/Curse/T_CurseFX_2.png"));
+
     private final Animation<Texture> levelUpAnimation = new Animation<>(0.25f, levelUpAnimation1, levelUpAnimation2, levelUpAnimation3, levelUpAnimation4, levelUpAnimation5, levelUpAnimation6, levelUpAnimation7, levelUpAnimation8);
     private final Animation<Texture> heartAnimation = new Animation<>(0.5f, heartAnimation0, heartAnimation1, heartAnimation2);
-    private final Animation<Texture> deathFxAnimation = new Animation<>(0.1f, deathFx1, deathFx2, deathFx3);
+    private final Animation<Texture> deathFxAnimation = new Animation<>(0.1f, deathFx0, deathFx1, deathFx2, deathFx3);
+    private final Animation<Texture> curseAnimation = new Animation<>(0.1f, curse1, curse2, curse3);
 
     private final BitmapFont chevyRayFont;
     private final Texture zombieSkull = new Texture(Gdx.files.internal("Images/zombieSkull.png"));
@@ -101,6 +107,10 @@ public class GameAssetManager {
 
     public Animation<Texture> getLevelUpAnimation() {
         return levelUpAnimation;
+    }
+
+    public Animation<Texture> getCurseAnimation() {
+        return curseAnimation;
     }
 
     public Skin getSkin() {
