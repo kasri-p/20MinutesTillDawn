@@ -55,6 +55,10 @@ public class PlayerController {
             drawLevelUpAnimation();
         }
 
+        if (player.isCurseAnimationPlaying()) {
+            drawCurseAnimation();
+        }
+
         handlePlayerInput();
         handleAbilityInput();
 
@@ -111,7 +115,50 @@ public class PlayerController {
 
 
     private void addMultishotEffects() {
-        
+
+    }
+
+    private void drawCurseAnimation() {
+        Texture curseFrame = player.getCurseAnimationFrame();
+        if (curseFrame != null) {
+            float animationProgress = player.getCurseAnimationProgress();
+
+            // Scale and position the curse animation above player's head
+            float scale = 2.0f + (animationProgress * 0.5f); // Grows slightly during animation
+            float curseWidth = curseFrame.getWidth() * scale;
+            float curseHeight = curseFrame.getHeight() * scale;
+
+            // Position above player's head
+            float centerX = player.getPosX();
+            float centerY = player.getPosY() + 60f; // Position above player
+            float curseX = centerX - curseWidth / 2;
+            float curseY = centerY - curseHeight / 2;
+
+            // Add some floating effect
+            float floatOffset = 10f * (float) Math.sin(animationProgress * 8f);
+            curseY += floatOffset;
+
+            // Alpha fade effect - starts strong, fades out
+            float alpha = 1.0f - (animationProgress * 0.3f);
+            if (animationProgress > 0.7f) {
+                alpha = 1.0f - ((animationProgress - 0.7f) / 0.3f) * 0.7f;
+            }
+
+            // Apply color and alpha
+            float originalAlpha = Main.getBatch().getColor().a;
+            Main.getBatch().setColor(1f, 0.8f, 0.8f, alpha); // Slightly red tint
+
+            Main.getBatch().draw(
+                curseFrame,
+                curseX,
+                curseY,
+                curseWidth,
+                curseHeight
+            );
+
+            // Reset color
+            Main.getBatch().setColor(1f, 1f, 1f, originalAlpha);
+        }
     }
 
     private void drawLevelUpAnimation() {

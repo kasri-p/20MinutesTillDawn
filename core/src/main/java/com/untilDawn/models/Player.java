@@ -39,6 +39,13 @@ public class Player {
     private boolean isFlashing = false;
     private boolean shouldShowLevelUpWindow = false;
     private boolean levelUpWindowShown = false;
+
+    // Curse animation fields
+    private boolean isCurseAnimationPlaying = false;
+    private float curseAnimationTime = 0f;
+    private Animation<Texture> curseAnimation;
+    private float curseAnimationDuration = 0.6f; // Duration for curse animation
+
     // Ability-related fields
     private List<Abilities> activeAbilities = new ArrayList<>();
     private float regenerationTimer = 0f;
@@ -59,12 +66,14 @@ public class Player {
         this.playerHealth = maxHealth;
 
         this.levelUpAnimation = GameAssetManager.getGameAssetManager().getLevelUpAnimation();
+        this.curseAnimation = GameAssetManager.getGameAssetManager().getCurseAnimation();
         this.kills = 0;
     }
 
     public void update(float delta) {
         updateInvincibility(delta);
         updateLevelUpAnimation(delta);
+        updateCurseAnimation(delta);
         updateBoundingBox();
         updateAbilities(delta);
         updateRegeneration(delta);
@@ -132,6 +141,17 @@ public class Player {
         }
     }
 
+    private void updateCurseAnimation(float delta) {
+        if (isCurseAnimationPlaying) {
+            curseAnimationTime += delta;
+
+            if (curseAnimationTime >= curseAnimationDuration) {
+                isCurseAnimationPlaying = false;
+                curseAnimationTime = 0f;
+            }
+        }
+    }
+
     public void setInvincible(boolean invincible, float duration) {
         this.isInvincible = invincible;
         this.invincibilityDuration = duration;
@@ -151,6 +171,12 @@ public class Player {
                 playerHealth = 0;
             }
         }
+    }
+
+    public void startCurseAnimation() {
+        isCurseAnimationPlaying = true;
+        curseAnimationTime = 0f;
+        Gdx.app.log("Player", "Curse animation started!");
     }
 
     public void applyVitality() {
@@ -321,6 +347,24 @@ public class Player {
 
     public boolean isInvincible() {
         return isInvincible;
+    }
+
+    public boolean isCurseAnimationPlaying() {
+        return isCurseAnimationPlaying;
+    }
+
+    public Texture getCurseAnimationFrame() {
+        if (isCurseAnimationPlaying && curseAnimation != null) {
+            return curseAnimation.getKeyFrame(curseAnimationTime, false);
+        }
+        return null;
+    }
+
+    public float getCurseAnimationProgress() {
+        if (isCurseAnimationPlaying && curseAnimationDuration > 0) {
+            return curseAnimationTime / curseAnimationDuration;
+        }
+        return 0f;
     }
 
     public void dispose() {

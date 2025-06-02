@@ -351,6 +351,11 @@ public class EnemyController {
                     if (!player.isInvincible()) {
                         player.takeDamage(1);
                         player.setInvincible(true, 1.0f);
+
+                        // Trigger curse animation when player is hit by enemy bullet
+                        player.startCurseAnimation();
+
+                        Gdx.app.log("EnemyController", "Player hit by enemy bullet - curse animation triggered!");
                     }
 
                     bullet.setActive(false);
@@ -411,7 +416,10 @@ public class EnemyController {
                     player.setPlayerHealth(player.getPlayerHealth() - 1);
                     player.setInvincible(true, 1.0f); // 1 second of invincibility
 
-                    Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName());
+                    // Trigger curse animation when player collides with enemy
+                    player.startCurseAnimation();
+
+                    Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName() + " - curse animation triggered!");
                 }
                 return;
             } else if (!enemy.isActive() && enemy.isDropActive()) {
