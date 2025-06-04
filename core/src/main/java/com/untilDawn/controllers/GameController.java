@@ -24,7 +24,7 @@ public class GameController {
 
     private float gameTime = 0;
     private boolean gameOver = false;
-    private int timeLimit; // Store time limit for HUD display
+    private int timeLimit;
 
     public GameController(GameView view) {
         this.view = view;
@@ -40,35 +40,46 @@ public class GameController {
         this.playerController = new PlayerController(App.getGame().getPlayer());
         this.weaponController = new WeaponController(App.getGame().getSelectedWeapon());
         this.weaponController.setPlayerController(playerController);
-
         this.weaponController.setCamera(view.getCamera());
 
         this.worldController = new WorldController(playerController);
         playerController.setWeaponController(weaponController);
+
+        // Initialize enemy controller AFTER all other controllers are set up
         this.enemyController = new EnemyController(playerController, weaponController, mapWidth, mapHeight);
 
-        // Check if this is a loaded game
-        if (App.getGame().getGameTime() > 0) {
-            // This is a loaded game, restore the saved state
-            this.gameTime = App.getGame().getGameTime();
+        // Set up initial game state
+        initializeGameState();
+    }
 
-            // Player position is already set in the loaded player object
-            // Just make sure we don't override it
+    private void initializeGameState() {
+        Game currentGame = App.getGame();
+
+        if (currentGame != null && currentGame.getGameTime() > 0) {
+            // This is a loaded game, restore the saved state
+            this.gameTime = currentGame.getGameTime();
+
+            // Player position should already be set from the loaded player object
             Gdx.app.log("GameController", "Restoring saved game - Time: " + gameTime +
                 ", Player pos: (" + playerController.getPlayer().getPosX() +
                 ", " + playerController.getPlayer().getPosY() + ")");
         } else {
-            
+            // New game - set player to center
             this.playerController.getPlayer().setPosX(mapWidth / 2);
             this.playerController.getPlayer().setPosY(mapHeight / 2);
+            Gdx.app.log("GameController", "Starting new game");
         }
     }
 
     public void updateGame() {
         if (view != null && !gameOver) {
-
             float deltaTime = Gdx.graphics.getDeltaTime();
             gameTime += deltaTime;
+
+            // Update game time in the current game object for saving
+            if (App.getGame() != null) {
+                App.getGame().setGameTime(gameTime);
+            }
 
             OrthographicCamera camera = view.getCamera();
             Main.getBatch().setProjectionMatrix(camera.combined);
@@ -106,7 +117,6 @@ public class GameController {
         }
     }
 
-
     public float getGameTime() {
         return gameTime;
     }
@@ -114,7 +124,6 @@ public class GameController {
     public void setGameTime(float newGameTime) {
         this.gameTime = newGameTime;
     }
-
 
     public int getTimeLimit() {
         return timeLimit;
@@ -193,40 +202,81 @@ public class GameController {
             return; // Don't save if game is over
         }
 
-        // Update the game object with current state
-        if (App.getGame() != null) {
-            // Save game time
-            App.getGame().setGameTime(gameTime);
+        Game currentGame = App.getGame();
+        if (currentGame != null) {
+            // Update game time
+            currentGame.setGameTime(gameTime);
 
-            // Save player position
+            // Save player state
             if (playerController != null && playerController.getPlayer() != null) {
-                App.getGame().getPlayer().setPosX(playerController.getPlayer().getPosX());
-                App.getGame().getPlayer().setPosY(playerController.getPlayer().getPosY());
+                currentGame.getPlayer().setPosX(playerController.getPlayer().getPosX());
+                currentGame.getPlayer().setPosY(playerController.getPlayer().getPosY());
+                currentGame.getPlayer().setPlayerHealth(playerController.getPlayer().getPlayerHealth());
+                currentGame.getPlayer().setMaxHealth(playerController.getPlayer().getMaxHealth());
+                // Copy other player attributes that might have changed
+                currentGame.getPlayer().addXP(0); // This will update level if needed
             }
 
-            // Save enemies
-            App.getGame().getEnemies().clear();
+            // Save weapon state
+            if (weaponController != null && weaponController.getWeapon() != null) {
+                currentGame.getSelectedWeapon().setAmmo(weaponController.getWeapon().getAmmo());
+            }
+
+            // Clear and save current enemies
+            currentGame.getEnemies().clear();
             if (enemyController != null && enemyController.getEnemies() != null) {
                 for (Enemy enemy : enemyController.getEnemies()) {
                     if (enemy.isActive()) {
-                        App.getGame().addEnemy(enemy);
+                        // Create a copy of the enemy for saving
+                        currentGame.addEnemy(createEnemyCopy(enemy));
                     }
                 }
             }
 
-            // Save the game state using GameSaveSystem
+            // Save using GameSaveSystem
             boolean success = com.untilDawn.models.utils.GameSaveSystem.saveGame(
                 App.getLoggedInUser(),
-                App.getGame(),
-                App.getGame().getPlayer(),
+                currentGame,
+                currentGame.getPlayer(),
                 gameTime
             );
 
             if (success) {
-                Gdx.app.log("GameController", "Game saved successfully");
+                Gdx.app.log("GameController", "Game saved successfully - Enemies: " +
+                    currentGame.getEnemies().size() + ", Time: " + gameTime);
             } else {
                 Gdx.app.error("GameController", "Failed to save game");
             }
+        }
+    }
+
+    private Enemy createEnemyCopy(Enemy original) {
+        try {
+            Enemy copy;
+
+            // Create appropriate enemy type
+            if (original instanceof com.untilDawn.models.ElderBoss) {
+                copy = new com.untilDawn.models.ElderBoss(
+                    original.getPosX(),
+                    original.getPosY(),
+                    mapWidth,
+                    mapHeight
+                );
+            } else {
+                copy = new Enemy(original.getType(), original.getPosX(), original.getPosY());
+            }
+
+            // Apply damage to match current health
+            int healthDiff = original.getType().getHealth() - original.getHealth();
+            for (int i = 0; i < healthDiff && copy.isActive(); i++) {
+                copy.hit(1);
+            }
+
+            return copy;
+
+        } catch (Exception e) {
+            Gdx.app.error("GameController", "Failed to create enemy copy: " + e.getMessage());
+            return null;
         }
     }
 
@@ -250,28 +300,18 @@ public class GameController {
         // Set the loaded game as the current game
         App.setGame(loadedGame);
 
-        // Update game time
+        // Update controllers with loaded state
         this.gameTime = loadedGame.getGameTime();
 
-        // Update player position
+        // Update player
         if (playerController != null && loadedGame.getPlayer() != null) {
             playerController.getPlayer().setPosX(loadedGame.getPlayer().getPosX());
             playerController.getPlayer().setPosY(loadedGame.getPlayer().getPosY());
-
-            // Update player health and other attributes
             playerController.getPlayer().setPlayerHealth(loadedGame.getPlayer().getPlayerHealth());
             playerController.getPlayer().setMaxHealth(loadedGame.getPlayer().getMaxHealth());
         }
 
-        // Update enemies
-        if (enemyController != null && loadedGame.getEnemies() != null) {
-            enemyController.getEnemies().clear();
-            for (Enemy enemy : loadedGame.getEnemies()) {
-                if (enemy.isActive()) {
-                    enemyController.getEnemies().add(enemy);
-                }
-            }
-        }
+        // Note: Enemy restoration is handled in EnemyController constructor
 
         Gdx.app.log("GameController", "Game loaded successfully");
         return true;

@@ -19,10 +19,10 @@ public class EnemyController {
     private ArrayList<Enemy> enemies = new ArrayList<>();
     private PlayerController playerController;
     private WeaponController weaponController;
-    private float initialSpawnRate = 3.0f; // One enemy every 3 seconds initially
-    private float currentSpawnRate; // This will decrease over time
-    private float minimumSpawnRate = 0.5f; // Max of 2 enemies per second
-    private float spawnRateDecreasePerMinute = 0.2f; // Spawn rate decreases by 0.2 seconds every minute
+    private float initialSpawnRate = 3.0f;
+    private float currentSpawnRate;
+    private float minimumSpawnRate = 0.5f;
+    private float spawnRateDecreasePerMinute = 0.2f;
     private float gameTime = 0;
     private float mapWidth;
     private float mapHeight;
@@ -51,36 +51,107 @@ public class EnemyController {
         this.mapHeight = mapHeight;
         this.currentSpawnRate = initialSpawnRate;
 
-        // Check if we have saved enemies to restore
-        if (App.getGame() != null && App.getGame().getEnemies() != null && !App.getGame().getEnemies().isEmpty()) {
-            // Restore saved enemies
-            this.enemies = new ArrayList<>(App.getGame().getEnemies());
-
-            // Check if we have an Elder Boss in the saved enemies
-            for (Enemy enemy : enemies) {
-                if (enemy instanceof ElderBoss) {
-                    elderBoss = (ElderBoss) enemy;
-                    elderBossSpawned = true;
-                    break;
-                }
-            }
-
-            Gdx.app.log("EnemyController", "Restored " + enemies.size() + " enemies from save");
-        } else {
-            // New game - create empty list
-            this.enemies = new ArrayList<>();
-        }
-
         this.totalGameTimeLimit = App.getGame() != null ? App.getGame().getTimeLimit() * 60 : 300;
 
-        // If this is a loaded game, restore the game time
+        // Initialize with proper game state restoration
+        initializeEnemyState();
+    }
+
+    private void initializeEnemyState() {
         if (App.getGame() != null && App.getGame().getGameTime() > 0) {
+            // This is a loaded game - restore saved state
             this.gameTime = App.getGame().getGameTime();
             this.treesPlaced = true; // Don't place trees again in a loaded game
 
             // Update spawn timers based on loaded game time
             this.lastTentacleSpawnTime = (float) (Math.floor(gameTime / 3.0f) * 3.0f);
             this.lastEyeBatSpawnTime = (float) (Math.floor(gameTime / 10.0f) * 10.0f);
+
+            // Restore saved enemies with proper state
+            restoreSavedEnemies();
+
+            Gdx.app.log("EnemyController", "Restored game state - Time: " + gameTime +
+                ", Enemies: " + enemies.size() + ", Elder Boss: " + elderBossSpawned);
+        } else {
+            // New game - start fresh
+            this.enemies = new ArrayList<>();
+            this.gameTime = 0;
+            this.elderBossSpawned = false;
+
+            Gdx.app.log("EnemyController", "Starting new game");
+        }
+    }
+
+    private void restoreSavedEnemies() {
+        if (App.getGame() == null || App.getGame().getEnemies() == null) {
+            this.enemies = new ArrayList<>();
+            return;
+        }
+
+        this.enemies = new ArrayList<>();
+
+        for (Enemy savedEnemy : App.getGame().getEnemies()) {
+            if (savedEnemy != null && savedEnemy.isActive()) {
+                // Create new enemy instance with proper state restoration
+                Enemy restoredEnemy = restoreEnemyState(savedEnemy);
+                if (restoredEnemy != null) {
+                    this.enemies.add(restoredEnemy);
+
+                    // Check if this is an Elder Boss
+                    if (restoredEnemy instanceof ElderBoss) {
+                        this.elderBoss = (ElderBoss) restoredEnemy;
+                        this.elderBossSpawned = true;
+                        Gdx.app.log("EnemyController", "Restored Elder Boss");
+                    }
+                }
+            }
+        }
+
+        Gdx.app.log("EnemyController", "Restored " + enemies.size() + " enemies from save");
+    }
+
+    private Enemy restoreEnemyState(Enemy savedEnemy) {
+        try {
+            Enemy restoredEnemy;
+
+            // Create the appropriate enemy type
+            if (savedEnemy instanceof ElderBoss) {
+                restoredEnemy = new ElderBoss(savedEnemy.getPosX(), savedEnemy.getPosY(), mapWidth, mapHeight);
+                // Restore Elder Boss specific state if needed
+                ElderBoss elderBoss = (ElderBoss) restoredEnemy;
+                // Additional Elder Boss state restoration can be added here
+            } else {
+                restoredEnemy = new Enemy(savedEnemy.getType(), savedEnemy.getPosX(), savedEnemy.getPosY());
+            }
+
+            // Restore common enemy state
+            restoreCommonEnemyState(restoredEnemy, savedEnemy);
+
+            return restoredEnemy;
+
+        } catch (Exception e) {
+            Gdx.app.error("EnemyController", "Failed to restore enemy: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void restoreCommonEnemyState(Enemy newEnemy, Enemy savedEnemy) {
+        // Apply damage to match saved health
+        int healthDiff = savedEnemy.getType().getHealth() - savedEnemy.getHealth();
+        for (int i = 0; i < healthDiff && newEnemy.isActive(); i++) {
+            newEnemy.hit(1); // Apply damage without killing
+        }
+
+        // Restore position (should already be set, but ensure it's exact)
+        newEnemy.setPosX(savedEnemy.getPosX());
+        newEnemy.setPosY(savedEnemy.getPosY());
+
+        // Update sprite position to match
+        if (newEnemy.getSprite() != null) {
+            newEnemy.getSprite().setPosition(
+                newEnemy.getPosX() - newEnemy.getSprite().getWidth() / 2,
+                newEnemy.getPosY() - newEnemy.getSprite().getHeight() / 2
+            );
         }
     }
 
@@ -95,30 +166,31 @@ public class EnemyController {
 
         gameTime += delta;
 
-        if (!treesPlaced) {
+        // Update game time in the App for saving
+        if (App.getGame() != null) {
+            App.getGame().setGameTime(gameTime);
+        }
+
+        // Only place trees in new games
+        if (!treesPlaced && App.getGame() != null && App.getGame().getGameTime() <= 0) {
             placeTrees();
         }
 
         updateSpawnRate();
-
-        // Check for Elder Boss spawn
         checkElderBossSpawn();
 
-        spawnTentacleMonsters();
-        spawnEyeBats();
+        // Only spawn new enemies if not in a loaded game's initial state
+        if (gameTime > 0.1f) { // Small buffer to ensure proper initialization
+            spawnTentacleMonsters();
+            spawnEyeBats();
+        }
 
         updateEnemies(delta);
-
         checkBulletCollisions(delta);
-
         checkEnemyBulletCollisions(delta);
-
         checkPlayerCollisions();
-
         drawEnemies();
-
         drawEnemyBullets();
-
         checkAutoAim();
     }
 
@@ -177,14 +249,9 @@ public class EnemyController {
     }
 
     private void spawnTentacleMonsters() {
-        // Every 3 seconds
         float tentacleSpawnInterval = 3.0f;
         if (gameTime >= tentacleSpawnInterval && (gameTime - lastTentacleSpawnTime) >= tentacleSpawnInterval) {
-            int tentaclesToSpawn = (int) Math.floor(gameTime / 30.0f);
-
-            if (tentaclesToSpawn < 1) {
-                tentaclesToSpawn = 1;
-            }
+            int tentaclesToSpawn = Math.max(1, (int) Math.floor(gameTime / 30.0f));
 
             for (int i = 0; i < tentaclesToSpawn; i++) {
                 Vector2 spawnPos = Enemy.getRandomSpawnPosition(mapWidth, mapHeight, 50);
@@ -193,19 +260,17 @@ public class EnemyController {
             }
 
             lastTentacleSpawnTime = gameTime;
-
-            System.out.println("Spawned " + tentaclesToSpawn + " tentacle monsters at time " + gameTime);
+            Gdx.app.log("EnemyController", "Spawned " + tentaclesToSpawn + " tentacle monsters at time " + gameTime);
         }
     }
 
     private void spawnEyeBats() {
         float eyeBatStartTime = totalGameTimeLimit / 4.0f;
-
-        // Every 10 seconds
         float eyeBatSpawnInterval = 10.0f;
+
         if (gameTime >= eyeBatStartTime && (gameTime - lastEyeBatSpawnTime) >= eyeBatSpawnInterval) {
             float spawnRate = (4 * gameTime - totalGameTimeLimit + 30) / 30.0f;
-            int eyeBatsToSpawn = (int) Math.floor(spawnRate);
+            int eyeBatsToSpawn = Math.max(0, (int) Math.floor(spawnRate));
 
             if (spawnRate > 0 && eyeBatsToSpawn < 1) {
                 eyeBatsToSpawn = 1;
@@ -218,7 +283,7 @@ public class EnemyController {
                     enemies.add(enemy);
                 }
 
-                System.out.println("Spawned " + eyeBatsToSpawn + " eye bats at time " + gameTime + " (rate: " + spawnRate + ")");
+                Gdx.app.log("EnemyController", "Spawned " + eyeBatsToSpawn + " eye bats at time " + gameTime);
             }
 
             lastEyeBatSpawnTime = gameTime;
@@ -235,7 +300,6 @@ public class EnemyController {
 
             float playerX = playerController.getPlayer().getPosX();
             float playerY = playerController.getPlayer().getPosY();
-
             float distanceToPlayer = Vector2.dst(x, y, playerX, playerY);
 
             float treeRadius = 75f;
@@ -252,7 +316,6 @@ public class EnemyController {
             if (distanceToPlayer > 300 && !tooCloseToOtherTree) {
                 Enemy tree = new Enemy(EnemyType.TREE, x, y);
                 enemies.add(tree);
-
                 treePositions.add(new Circle(x, y, treeRadius));
             } else {
                 i--;
@@ -260,12 +323,12 @@ public class EnemyController {
         }
 
         treesPlaced = true;
+        Gdx.app.log("EnemyController", "Placed " + numberOfTrees + " trees");
     }
 
     private void updateSpawnRate() {
         float minutesElapsed = gameTime / 60f;
         currentSpawnRate = initialSpawnRate - (minutesElapsed * spawnRateDecreasePerMinute);
-
         if (currentSpawnRate < minimumSpawnRate) {
             currentSpawnRate = minimumSpawnRate;
         }
@@ -288,6 +351,9 @@ public class EnemyController {
         }
     }
 
+    // ... Rest of the methods remain the same as in the original code ...
+    // (checkBulletCollisions, checkEnemyBulletCollisions, drawEnemyBullets, etc.)
+
     private void checkBulletCollisions(float delta) {
         ArrayList<Bullet> bullets = weaponController.getBullets();
         if (bullets == null) return;
@@ -296,10 +362,8 @@ public class EnemyController {
             if (bullet == null || !bullet.isActive()) continue;
 
             Sprite bulletSprite = bullet.getSprite();
-
             float bulletX = bulletSprite.getX() + bulletSprite.getWidth() / 2;
             float bulletY = bulletSprite.getY() + bulletSprite.getHeight() / 2;
-
             float bulletRadius = Math.min(bulletSprite.getWidth(), bulletSprite.getHeight()) / 3.0f;
 
             prevBulletPos.set(currentBulletPos);
@@ -310,7 +374,6 @@ public class EnemyController {
             }
 
             bulletVelocity.set(bullet.getDirection()).scl(15f);
-
             bulletCircle.set(bulletX, bulletY, bulletRadius);
 
             for (Enemy enemy : enemies) {
@@ -321,11 +384,9 @@ public class EnemyController {
                 Rectangle boundingBox = enemy.getBoundingBox();
 
                 float enemyRadius;
-
                 if (enemy.getType() == EnemyType.TREE) {
                     enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 3.0f;
                 } else if (enemy.getType() == EnemyType.ELDER) {
-                    // Elder boss has larger collision radius
                     enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.0f;
                 } else {
                     enemyRadius = Math.max(boundingBox.width, boundingBox.height) / 2.5f;
@@ -334,7 +395,6 @@ public class EnemyController {
                 enemyCircle.set(enemyX, enemyY, enemyRadius);
 
                 boolean collision = false;
-
                 if (Intersector.overlaps(bulletCircle, enemyCircle)) {
                     collision = true;
                 } else if (Intersector.intersectSegmentCircle(prevBulletPos, currentBulletPos,
@@ -344,9 +404,7 @@ public class EnemyController {
 
                 if (collision) {
                     boolean killed = enemy.hit(bullet.getDamage());
-                    System.out.println("enemy hit by damage " + bullet.getDamage());
                     bullet.setActive(false);
-
                     break;
                 }
             }
@@ -381,11 +439,7 @@ public class EnemyController {
                     if (!player.isInvincible()) {
                         player.takeDamage(1);
                         player.setInvincible(true, 1.0f);
-
-                        // Trigger curse animation when player is hit by enemy bullet
                         player.startCurseAnimation();
-
-                        Gdx.app.log("EnemyController", "Player hit by enemy bullet - curse animation triggered!");
                     }
 
                     bullet.setActive(false);
@@ -417,9 +471,7 @@ public class EnemyController {
 
         float playerX = player.getPosX();
         float playerY = player.getPosY();
-
         float playerRadius = Math.min(playerRect.width, playerRect.height) / 3.0f;
-
         Circle playerCircle = new Circle(playerX, playerY, playerRadius);
 
         for (Enemy enemy : enemies) {
@@ -428,7 +480,6 @@ public class EnemyController {
             float enemyY = enemy.getPosY();
 
             float enemyRadius;
-
             if (enemy.getType() == EnemyType.TREE) {
                 enemyRadius = Math.max(enemyRect.width, enemyRect.height) / 3.0f;
             } else if (enemy.getType() == EnemyType.ELDER) {
@@ -441,15 +492,9 @@ public class EnemyController {
 
             if (enemy.isActive() && Intersector.overlaps(playerCircle, enemyCircle)) {
                 if (!player.isInvincible()) {
-                    Gdx.app.log("Player Health", "Player health: " + player.getPlayerHealth());
-
                     player.setPlayerHealth(player.getPlayerHealth() - 1);
-                    player.setInvincible(true, 1.0f); // 1 second of invincibility
-
-                    // Trigger curse animation when player collides with enemy
+                    player.setInvincible(true, 1.0f);
                     player.startCurseAnimation();
-
-                    Gdx.app.log("Collision", "Player collided with enemy: " + enemy.getType().getName() + " - curse animation triggered!");
                 }
                 return;
             } else if (!enemy.isActive() && enemy.isDropActive()) {
@@ -468,44 +513,33 @@ public class EnemyController {
             if (enemy.isDeathAnimationPlaying()) {
                 Texture deathFrame = enemy.getDeathAnimationFrame();
                 if (deathFrame != null) {
-                    float deathScale = 2.0f; // Make death effect visible
+                    float deathScale = 2.0f;
                     float deathX = enemy.getDeathPosX() - (deathFrame.getWidth() * deathScale) / 2;
                     float deathY = enemy.getDeathPosY() - (deathFrame.getHeight() * deathScale) / 2;
 
-                    // Draw with slight transparency and scaling effect
                     float alpha = 1.0f - (enemy.getDeathAnimTimer() / enemy.getDeathAnimation().getAnimationDuration()) * 0.3f;
                     Main.getBatch().setColor(1f, 1f, 1f, alpha);
 
-                    Main.getBatch().draw(deathFrame,
-                        deathX, deathY,
-                        deathFrame.getWidth() * deathScale,
-                        deathFrame.getHeight() * deathScale);
+                    Main.getBatch().draw(deathFrame, deathX, deathY,
+                        deathFrame.getWidth() * deathScale, deathFrame.getHeight() * deathScale);
 
-                    Main.getBatch().setColor(1f, 1f, 1f, 1f); // Reset color
+                    Main.getBatch().setColor(1f, 1f, 1f, 1f);
                 }
-                continue; // Skip drawing the enemy sprite
+                continue;
             }
 
             // Draw living enemies
             if (enemy.isActive()) {
                 if (enemy instanceof ElderBoss boss) {
                     Sprite sprite = boss.getSprite();
-
                     float scale = 3.0f;
-                    sprite.setSize(sprite.getTexture().getWidth() * scale,
-                        sprite.getTexture().getHeight() * scale);
-                    sprite.setPosition(boss.getPosX() - sprite.getWidth() / 2,
-                        boss.getPosY() - sprite.getHeight() / 2);
+                    sprite.setSize(sprite.getTexture().getWidth() * scale, sprite.getTexture().getHeight() * scale);
+                    sprite.setPosition(boss.getPosX() - sprite.getWidth() / 2, boss.getPosY() - sprite.getHeight() / 2);
 
                     float playerX = playerController.getPlayer().getPosX();
                     float bossX = boss.getPosX();
 
-                    if (bossX < playerX) {
-                        sprite.setFlip(false, false);
-                    } else {
-                        sprite.setFlip(true, false);
-                    }
-
+                    sprite.setFlip(bossX > playerX, false);
                     sprite.setColor(1.0f, 0.9f, 0.8f, 1.0f);
                     sprite.draw(Main.getBatch());
 
@@ -519,7 +553,6 @@ public class EnemyController {
                         sprite.setTexture(currentFrame);
 
                         float scale = 1.0f;
-
                         if (enemy.getType() == EnemyType.TREE) {
                             scale = 2.2f;
                         } else if (enemy.getType() == EnemyType.TENTACLE) {
@@ -532,38 +565,16 @@ public class EnemyController {
                         if (enemy.getType() != EnemyType.TREE) {
                             float playerX = playerController.getPlayer().getPosX();
                             float enemyX = enemy.getPosX();
-
-                            if (enemyX < playerX) {
-                                sprite.setFlip(false, false);
-                            } else {
-                                sprite.setFlip(true, false);
-                            }
+                            sprite.setFlip(enemyX > playerX, false);
                         }
 
                         sprite.draw(Main.getBatch());
                     }
                 }
             } else if (enemy.isDropActive() && enemy.getDropSprite() != null) {
-                // Draw drops for dead enemies
                 enemy.getDropSprite().draw(Main.getBatch());
             }
         }
-    }
-
-    public void dispose() {
-        for (Enemy enemy : enemies) {
-            enemy.dispose();
-        }
-        enemies.clear();
-
-        if (elderBoss != null) {
-            elderBoss.dispose();
-            elderBoss = null;
-        }
-    }
-
-    public ArrayList<Enemy> getEnemies() {
-        return enemies;
     }
 
     private void checkAutoAim() {
@@ -597,6 +608,23 @@ public class EnemyController {
                 Gdx.input.setCursorPosition(cursorX, cursorY);
             }
         }
+    }
+
+    public void dispose() {
+        for (Enemy enemy : enemies) {
+            enemy.dispose();
+        }
+        enemies.clear();
+
+        if (elderBoss != null) {
+            elderBoss.dispose();
+            elderBoss = null;
+        }
+    }
+
+    // Getters
+    public ArrayList<Enemy> getEnemies() {
+        return enemies;
     }
 
     public boolean isElderBossSpawned() {

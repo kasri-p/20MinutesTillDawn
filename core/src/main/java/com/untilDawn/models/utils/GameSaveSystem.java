@@ -22,7 +22,6 @@ public class GameSaveSystem {
     private static final String SAVE_GAMES_FILE = "DataBase/saved_games.json";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-
     public static boolean saveGame(User user, Game game, Player player, float gameTime) {
         try {
             Map<String, GameSaveData> savedGames = loadAllSavedGames();
@@ -48,31 +47,21 @@ public class GameSaveSystem {
             saveData.saveTimestamp = System.currentTimeMillis();
             saveData.kills = player.getKills();
 
-            // Save enemies
+            // Save enemies with better serialization
+            saveData.enemies.clear();
             if (game.getEnemies() != null) {
                 int enemyId = 0;
-                for (com.untilDawn.models.Enemy enemy : game.getEnemies()) {
-                    if (enemy.isActive()) {
-                        EnemySaveData enemyData = new EnemySaveData(
-                            enemy.getType().name(),
-                            enemy.getPosX(),
-                            enemy.getPosY(),
-                            enemy.getHealth(),
-                            enemy.isActive()
-                        );
-
-                        // Save additional data for special enemy types
-                        if (enemy instanceof ElderBoss) {
-                            enemyData.isElderBoss = true;
-                            ElderBoss elder = (ElderBoss) enemy;
-                            enemyData.elderBossState = String.valueOf(elder.getCurrentState());
+                for (Enemy enemy : game.getEnemies()) {
+                    if (enemy != null && enemy.isActive()) {
+                        EnemySaveData enemyData = createEnemySaveData(enemy);
+                        if (enemyData != null) {
+                            saveData.enemies.put(enemyId++, enemyData);
                         }
-
-                        saveData.enemies.put(enemyId++, enemyData);
                     }
                 }
             }
 
+            // Save ability states
             for (Abilities ability : Abilities.values()) {
                 AbilitySaveData abilityData = new AbilitySaveData(
                     ability.isActive(),
@@ -92,20 +81,58 @@ public class GameSaveSystem {
 
             try (FileWriter writer = new FileWriter(file)) {
                 gson.toJson(savedGames, writer);
+
+                Gdx.app.log("GameSaveSystem", "Game saved successfully - Enemies: " +
+                    saveData.enemies.size() + ", Time: " + gameTime);
                 return true;
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            Gdx.app.error("GameSaveSystem", "Failed to save game: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    public static GameSaveData loadGame(User user) {
-        Map<String, GameSaveData> savedGames = loadAllSavedGames();
-        return savedGames.get(user.getUsername());
+    private static EnemySaveData createEnemySaveData(Enemy enemy) {
+        try {
+            EnemySaveData enemyData = new EnemySaveData(
+                enemy.getType().name(),
+                enemy.getPosX(),
+                enemy.getPosY(),
+                enemy.getHealth(),
+                enemy.isActive()
+            );
+
+            // Save additional data for special enemy types
+            if (enemy instanceof ElderBoss) {
+                enemyData.isElderBoss = true;
+                ElderBoss elder = (ElderBoss) enemy;
+                enemyData.elderBossState = String.valueOf(elder.getCurrentState());
+                enemyData.isBarrierActive = elder.isBarrierActive();
+
+                Gdx.app.log("GameSaveSystem", "Saving Elder Boss with state: " + enemyData.elderBossState);
+            }
+
+            return enemyData;
+
+        } catch (Exception e) {
+            Gdx.app.error("GameSaveSystem", "Failed to create enemy save data: " + e.getMessage());
+            return null;
+        }
     }
 
+    public static GameSaveData loadGame(User user) {
+        Map<String, GameSaveData> savedGames = loadAllSavedGames();
+        GameSaveData saveData = savedGames.get(user.getUsername());
+
+        if (saveData != null) {
+            Gdx.app.log("GameSaveSystem", "Loaded save data for " + user.getUsername() +
+                " - Enemies: " + saveData.enemies.size() + ", Time: " + saveData.gameTime);
+        }
+
+        return saveData;
+    }
 
     public static boolean hasSavedGame(User user) {
         if (user == null || user.isGuest()) {
@@ -115,7 +142,6 @@ public class GameSaveSystem {
         Map<String, GameSaveData> savedGames = loadAllSavedGames();
         return savedGames.containsKey(user.getUsername());
     }
-
 
     public static boolean deleteSavedGame(User user) {
         try {
@@ -132,7 +158,6 @@ public class GameSaveSystem {
             return false;
         }
     }
-
 
     private static Map<String, GameSaveData> loadAllSavedGames() {
         File file = new File(SAVE_GAMES_FILE);
@@ -151,118 +176,179 @@ public class GameSaveSystem {
         }
     }
 
-
     public static Game restoreGameFromSave(GameSaveData saveData) {
-        Characters character = null;
-        for (Characters c : Characters.values()) {
-            if (c.getName().equals(saveData.characterName)) {
-                character = c;
-                break;
+        try {
+            // Find character
+            Characters character = null;
+            for (Characters c : Characters.values()) {
+                if (c.getName().equals(saveData.characterName)) {
+                    character = c;
+                    break;
+                }
             }
-        }
-        if (character == null) {
-            character = Characters.Shana;
-        }
-
-        Weapons weapon = null;
-        for (Weapons w : Weapons.values()) {
-            if (w.getName().equals(saveData.weaponName)) {
-                weapon = w;
-                break;
+            if (character == null) {
+                character = Characters.Shana;
             }
-        }
-        if (weapon == null) {
-            weapon = Weapons.Revolver;
-        }
 
-        Player player = new Player(character);
-        player.setPlayerHealth(saveData.playerHealth);
-        player.setMaxHealth(saveData.maxHealth);
-        player.setPosX(saveData.playerPosX);
-        player.setPosY(saveData.playerPosY);
-
-        if (saveData.playerXP > 0) {
-            player.addXP(saveData.playerXP);
-        }
-
-        if (saveData.kills > 0) {
-            for (int i = 0; i < saveData.kills; i++) {
-                player.addKill();
+            // Find weapon
+            Weapons weapon = null;
+            for (Weapons w : Weapons.values()) {
+                if (w.getName().equals(saveData.weaponName)) {
+                    weapon = w;
+                    break;
+                }
             }
-        }
+            if (weapon == null) {
+                weapon = Weapons.Revolver;
+            }
 
+            // Create player with restored state
+            Player player = new Player(character);
+            player.setPlayerHealth(saveData.playerHealth);
+            player.setMaxHealth(saveData.maxHealth);
+            player.setPosX(saveData.playerPosX);
+            player.setPosY(saveData.playerPosY);
+
+            // Restore XP and level
+            if (saveData.playerXP > 0) {
+                player.addXP(saveData.playerXP);
+            }
+
+            // Restore kills
+            if (saveData.kills > 0) {
+                for (int i = 0; i < saveData.kills; i++) {
+                    player.addKill();
+                }
+            }
+
+            // Restore player abilities
+            restorePlayerAbilities(player, saveData, character);
+
+            // Create game with restored state
+            Game game = new Game(saveData.timeLimit);
+            game.setPlayer(player);
+            game.setSelectedWeapon(weapon);
+            game.setScore(saveData.score);
+            game.setGameTime(saveData.gameTime);
+
+            // Restore weapon ammo
+            game.getSelectedWeapon().setAmmo(saveData.weaponAmmo);
+
+            // Restore enemies
+            restoreEnemies(game, saveData);
+
+            // Restore ability states
+            restoreAbilityStates(saveData);
+
+            Gdx.app.log("GameSaveSystem", "Game restored successfully - Enemies: " +
+                game.getEnemies().size() + ", Time: " + saveData.gameTime);
+
+            return game;
+
+        } catch (Exception e) {
+            Gdx.app.error("GameSaveSystem", "Failed to restore game: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static void restorePlayerAbilities(Player player, GameSaveData saveData, Characters character) {
+        // Restore regeneration
         if (saveData.hasRegeneration) {
             player.enableRegeneration();
         }
 
+        // Restore vitality (max health increases)
         int vitApps = (saveData.maxHealth - character.getHp());
         for (int i = 0; i < vitApps; i++) {
             player.applyVitality();
         }
 
+        // Restore projectile bonuses
         for (int i = 0; i < saveData.projectileBonus; i++) {
             player.applyProcrease();
         }
 
+        // Restore ammo bonuses
         for (int i = 0; i < saveData.ammoBonus / 5; i++) {
             player.applyAmocrease();
         }
+    }
 
+    private static void restoreEnemies(Game game, GameSaveData saveData) {
+        game.getEnemies().clear();
+
+        if (saveData.enemies != null && !saveData.enemies.isEmpty()) {
+            for (EnemySaveData enemyData : saveData.enemies.values()) {
+                try {
+                    Enemy enemy = createEnemyFromSaveData(enemyData);
+                    if (enemy != null && enemy.isActive()) {
+                        game.addEnemy(enemy);
+                    }
+                } catch (Exception e) {
+                    Gdx.app.error("GameSaveSystem", "Failed to restore enemy: " + e.getMessage());
+                }
+            }
+
+            Gdx.app.log("GameSaveSystem", "Restored " + game.getEnemies().size() + " enemies");
+        }
+    }
+
+    private static Enemy createEnemyFromSaveData(EnemySaveData enemyData) {
+        try {
+            EnemyType enemyType = EnemyType.valueOf(enemyData.type);
+            Enemy enemy;
+
+            // Create appropriate enemy type
+            if (enemyData.isElderBoss && enemyType == EnemyType.ELDER) {
+                // Use default map size for Elder Boss (this will be overridden by EnemyController)
+                float mapWidth = 4096f;
+                float mapHeight = 4096f;
+                enemy = new ElderBoss(enemyData.posX, enemyData.posY, mapWidth, mapHeight);
+
+                Gdx.app.log("GameSaveSystem", "Restored Elder Boss at (" +
+                    enemyData.posX + ", " + enemyData.posY + ")");
+            } else {
+                enemy = new Enemy(enemyType, enemyData.posX, enemyData.posY);
+            }
+
+            // Restore health by dealing damage
+            int healthDiff = enemyType.getHealth() - enemyData.health;
+            for (int i = 0; i < healthDiff && enemy.isActive(); i++) {
+                enemy.hit(1);
+            }
+
+            return enemy;
+
+        } catch (IllegalArgumentException e) {
+            Gdx.app.error("GameSaveSystem", "Unknown enemy type: " + enemyData.type);
+            return null;
+        } catch (Exception e) {
+            Gdx.app.error("GameSaveSystem", "Failed to create enemy from save data: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static void restoreAbilityStates(GameSaveData saveData) {
         if (saveData.abilityStates != null) {
             for (Map.Entry<String, AbilitySaveData> entry : saveData.abilityStates.entrySet()) {
                 try {
                     Abilities ability = Abilities.valueOf(entry.getKey());
                     AbilitySaveData abilityData = entry.getValue();
 
+                    // Reset the ability first
+                    ability.reset();
+
+                    // Restore active state if it was active
                     if (abilityData.isActive && ability.getType() == Abilities.AbilityType.ACTIVE) {
                         ability.activate();
-                    }
-                } catch (IllegalArgumentException ignored) {
-
-                }
-            }
-        }
-
-        Game game = new Game(saveData.timeLimit);
-        game.setPlayer(player);
-        game.setSelectedWeapon(weapon);
-        game.setScore(saveData.score);
-        game.setGameTime(saveData.gameTime);
-
-        game.getSelectedWeapon().setAmmo(saveData.weaponAmmo);
-
-        if (saveData.enemies != null) {
-            for (EnemySaveData enemyData : saveData.enemies.values()) {
-                try {
-                    EnemyType enemyType = com.untilDawn.models.enums.EnemyType.valueOf(enemyData.type);
-
-                    Enemy enemy;
-
-                    // Check if this is an Elder Boss
-                    if (enemyData.isElderBoss && enemyType == com.untilDawn.models.enums.EnemyType.ELDER) {
-                        float mapWidth = 4096f; // Default map width
-                        float mapHeight = 4096f; // Default map height
-                        enemy = new com.untilDawn.models.ElderBoss(enemyData.posX, enemyData.posY, mapWidth, mapHeight);
-                    } else {
-                        enemy = new com.untilDawn.models.Enemy(enemyType, enemyData.posX, enemyData.posY);
-                    }
-
-                    // Restore enemy health by dealing damage
-                    int healthDiff = enemyType.getHealth() - enemyData.health;
-                    for (int i = 0; i < healthDiff; i++) {
-                        enemy.hit(1);
-                    }
-
-                    if (enemyData.isActive && enemy.isActive()) {
-                        game.addEnemy(enemy);
+                        // Note: The exact remaining duration/cooldown will be handled by the ability system
                     }
                 } catch (IllegalArgumentException e) {
-                    Gdx.app.error("GameSaveSystem", "Failed to restore enemy of type: " + enemyData.type);
+                    Gdx.app.error("GameSaveSystem", "Unknown ability: " + entry.getKey());
                 }
             }
         }
-
-        return game;
     }
 
     public static String getSaveInfo(GameSaveData saveData) {
@@ -276,11 +362,12 @@ public class GameSaveSystem {
         int minutes = (int) (saveData.gameTime / 60);
         int seconds = (int) (saveData.gameTime % 60);
 
-        return String.format("Level %d %s\nTime: %02d:%02d\nSaved %s ago",
+        return String.format("Level %d %s\nTime: %02d:%02d\nEnemies: %d\nSaved %s ago",
             saveData.playerLevel,
             saveData.characterName,
             minutes,
             seconds,
+            saveData.enemies.size(),
             timeAgo);
     }
 
@@ -352,6 +439,7 @@ public class GameSaveSystem {
         public boolean isActive;
         public boolean isElderBoss;
         public String elderBossState;
+        public boolean isBarrierActive;
 
         public EnemySaveData() {
         }
@@ -364,6 +452,7 @@ public class GameSaveSystem {
             this.isActive = isActive;
             this.isElderBoss = false;
             this.elderBossState = null;
+            this.isBarrierActive = false;
         }
     }
 

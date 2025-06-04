@@ -151,9 +151,9 @@
     "playerXP": 0,
     "playerHealth": 6,
     "maxHealth": 6,
-    "playerPosX": 2340.0,
-    "playerPosY": 868.0,
-    "gameTime": 31.148102,
+    "playerPosX": 2036.0,
+    "playerPosY": 1424.0,
+    "gameTime": 30.275782,
     "timeLimit": 5,
     "score": 0,
     "hasRegeneration": false,
@@ -161,7 +161,7 @@
     "projectileBonus": 0,
     "ammoBonus": 0,
     "weaponAmmo": 6,
-    "saveTimestamp": 1749055028003,
+    "saveTimestamp": 1749055672576,
     "kills": 0,
     "abilityStates": {
       "SHIELD": {
