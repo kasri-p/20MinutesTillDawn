@@ -129,11 +129,8 @@ public class GameView implements Screen, InputProcessor {
             this::resumeGame
         );
 
+        levelUpWindow.setFillParent(true);
         stage.addActor(levelUpWindow);
-        levelUpWindow.setPosition(
-            (stage.getWidth() - levelUpWindow.getWidth()) / 2f,
-            (stage.getHeight() - levelUpWindow.getHeight()) / 2f
-        );
         levelUpWindow.toFront();
 
         controller.getPlayerController().getPlayer().setLevelUpWindowShown();
