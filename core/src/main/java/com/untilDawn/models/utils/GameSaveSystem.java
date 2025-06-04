@@ -114,6 +114,18 @@ public class GameSaveSystem {
                 Gdx.app.log("GameSaveSystem", "Saving Elder Boss with state: " + enemyData.elderBossState);
             }
 
+            // Special handling for trees
+            if (enemy.getType() == EnemyType.TREE) {
+                Gdx.app.log("GameSaveSystem", "Saving tree at position: (" +
+                    enemy.getPosX() + ", " + enemy.getPosY() + ")");
+            }
+
+            // Save drop state
+            if (!enemy.isActive() && enemy.isDropActive()) {
+                enemyData.isDropActive = true;
+                enemyData.dropType = "experience"; // Default drop type
+            }
+
             return enemyData;
 
         } catch (Exception e) {
@@ -312,10 +324,27 @@ public class GameSaveSystem {
                 enemy = new Enemy(enemyType, enemyData.posX, enemyData.posY);
             }
 
-            // Restore health by dealing damage
-            int healthDiff = enemyType.getHealth() - enemyData.health;
-            for (int i = 0; i < healthDiff && enemy.isActive(); i++) {
-                enemy.hit(1);
+            // Special handling for trees
+            if (enemyType == EnemyType.TREE) {
+                Gdx.app.log("GameSaveSystem", "Restored tree at position: (" +
+                    enemyData.posX + ", " + enemyData.posY + ")");
+            }
+
+            // Restore health by dealing damage if needed
+            if (enemyData.health < enemyType.getHealth()) {
+                int healthDiff = enemyType.getHealth() - enemyData.health;
+                for (int i = 0; i < healthDiff && enemy.isActive(); i++) {
+                    enemy.hit(1);
+                }
+            }
+
+            // If the enemy should not be active, make sure it's not
+            if (!enemyData.isActive && enemy.isActive()) {
+                // Apply enough damage to deactivate it
+                int remainingHealth = enemy.getHealth();
+                for (int i = 0; i < remainingHealth; i++) {
+                    enemy.hit(1);
+                }
             }
 
             return enemy;
@@ -440,6 +469,9 @@ public class GameSaveSystem {
         public boolean isElderBoss;
         public String elderBossState;
         public boolean isBarrierActive;
+        // Add drop state
+        public boolean isDropActive;
+        public String dropType;
 
         public EnemySaveData() {
         }
@@ -453,6 +485,8 @@ public class GameSaveSystem {
             this.isElderBoss = false;
             this.elderBossState = null;
             this.isBarrierActive = false;
+            this.isDropActive = false;
+            this.dropType = null;
         }
     }
 

@@ -61,22 +61,41 @@ public class EnemyController {
         if (App.getGame() != null && App.getGame().getGameTime() > 0) {
             // This is a loaded game - restore saved state
             this.gameTime = App.getGame().getGameTime();
-            this.treesPlaced = true; // Don't place trees again in a loaded game
 
             // Update spawn timers based on loaded game time
             this.lastTentacleSpawnTime = (float) (Math.floor(gameTime / 3.0f) * 3.0f);
             this.lastEyeBatSpawnTime = (float) (Math.floor(gameTime / 10.0f) * 10.0f);
 
+            // Check if Elder Boss should have spawned
+            float halfwayPoint = totalGameTimeLimit / 2.0f;
+            if (gameTime >= halfwayPoint) {
+                elderBossSpawned = true;
+            }
+
             // Restore saved enemies with proper state
             restoreSavedEnemies();
 
+            // Check if trees were restored from saved game
+            boolean treesFound = false;
+            for (Enemy enemy : enemies) {
+                if (enemy.getType() == com.untilDawn.models.enums.EnemyType.TREE) {
+                    treesFound = true;
+                    break;
+                }
+            }
+
+            // Only set treesPlaced to true if trees were actually restored
+            this.treesPlaced = treesFound;
+
             Gdx.app.log("EnemyController", "Restored game state - Time: " + gameTime +
-                ", Enemies: " + enemies.size() + ", Elder Boss: " + elderBossSpawned);
+                ", Enemies: " + enemies.size() + ", Elder Boss: " + elderBossSpawned +
+                ", Trees found: " + treesFound);
         } else {
             // New game - start fresh
             this.enemies = new ArrayList<>();
             this.gameTime = 0;
             this.elderBossSpawned = false;
+            this.treesPlaced = false; // Trees will be placed in update()
 
             Gdx.app.log("EnemyController", "Starting new game");
         }
@@ -89,25 +108,44 @@ public class EnemyController {
         }
 
         this.enemies = new ArrayList<>();
+        int treeCount = 0;
+        int activeEnemyCount = 0;
 
         for (Enemy savedEnemy : App.getGame().getEnemies()) {
-            if (savedEnemy != null && savedEnemy.isActive()) {
-                // Create new enemy instance with proper state restoration
-                Enemy restoredEnemy = restoreEnemyState(savedEnemy);
-                if (restoredEnemy != null) {
-                    this.enemies.add(restoredEnemy);
+            if (savedEnemy != null) {
+                // Always restore trees, regardless of active state
+                boolean isTree = savedEnemy.getType() == com.untilDawn.models.enums.EnemyType.TREE;
 
-                    // Check if this is an Elder Boss
-                    if (restoredEnemy instanceof ElderBoss) {
-                        this.elderBoss = (ElderBoss) restoredEnemy;
-                        this.elderBossSpawned = true;
-                        Gdx.app.log("EnemyController", "Restored Elder Boss");
+                // Create new enemy instance with proper state restoration
+                // For trees or active enemies
+                if (isTree || savedEnemy.isActive()) {
+                    Enemy restoredEnemy = restoreEnemyState(savedEnemy);
+                    if (restoredEnemy != null) {
+                        this.enemies.add(restoredEnemy);
+
+                        if (isTree) {
+                            treeCount++;
+                            Gdx.app.log("EnemyController", "Restored tree at position: (" +
+                                restoredEnemy.getPosX() + ", " + restoredEnemy.getPosY() + ")");
+                        }
+
+                        if (restoredEnemy.isActive()) {
+                            activeEnemyCount++;
+                        }
+
+                        // Check if this is an Elder Boss
+                        if (restoredEnemy instanceof ElderBoss) {
+                            this.elderBoss = (ElderBoss) restoredEnemy;
+                            this.elderBossSpawned = true;
+                            Gdx.app.log("EnemyController", "Restored Elder Boss");
+                        }
                     }
                 }
             }
         }
 
-        Gdx.app.log("EnemyController", "Restored " + enemies.size() + " enemies from save");
+        Gdx.app.log("EnemyController", "Restored " + enemies.size() + " enemies from save " +
+            "(Trees: " + treeCount + ", Active enemies: " + activeEnemyCount + ")");
     }
 
     private Enemy restoreEnemyState(Enemy savedEnemy) {
@@ -117,15 +155,20 @@ public class EnemyController {
             // Create the appropriate enemy type
             if (savedEnemy instanceof ElderBoss) {
                 restoredEnemy = new ElderBoss(savedEnemy.getPosX(), savedEnemy.getPosY(), mapWidth, mapHeight);
-                // Restore Elder Boss specific state if needed
-                ElderBoss elderBoss = (ElderBoss) restoredEnemy;
-                // Additional Elder Boss state restoration can be added here
+                // Mark that Elder Boss has been spawned
+                this.elderBoss = (ElderBoss) restoredEnemy;
+                this.elderBossSpawned = true;
             } else {
                 restoredEnemy = new Enemy(savedEnemy.getType(), savedEnemy.getPosX(), savedEnemy.getPosY());
             }
 
             // Restore common enemy state
             restoreCommonEnemyState(restoredEnemy, savedEnemy);
+
+            // For trees, mark them as already placed
+            if (savedEnemy.getType() == EnemyType.TREE) {
+                this.treesPlaced = true;
+            }
 
             return restoredEnemy;
 
@@ -171,9 +214,33 @@ public class EnemyController {
             App.getGame().setGameTime(gameTime);
         }
 
-        // Only place trees in new games
-        if (!treesPlaced && App.getGame() != null && App.getGame().getGameTime() <= 0) {
-            placeTrees();
+        // Place trees if they haven't been placed yet
+        // This handles both new games and loaded games where trees weren't saved
+        if (!treesPlaced) {
+            // Check if we need to place trees
+            boolean needToPlaceTrees = true;
+
+            // For loaded games, only place trees if we're in the initial state
+            if (App.getGame() != null && App.getGame().getGameTime() > 0.1f) {
+                // Count existing trees
+                int treeCount = 0;
+                for (Enemy enemy : enemies) {
+                    if (enemy.getType() == com.untilDawn.models.enums.EnemyType.TREE) {
+                        treeCount++;
+                    }
+                }
+
+                // If we already have trees, don't place more
+                if (treeCount > 0) {
+                    needToPlaceTrees = false;
+                    treesPlaced = true;
+                    Gdx.app.log("EnemyController", "Trees already exist (" + treeCount + "), not placing new ones");
+                }
+            }
+
+            if (needToPlaceTrees) {
+                placeTrees();
+            }
         }
 
         updateSpawnRate();

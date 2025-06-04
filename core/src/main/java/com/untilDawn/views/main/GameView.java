@@ -48,11 +48,25 @@ public class GameView implements Screen, InputProcessor {
     public GameView(Skin skin) {
         this.skin = skin;
 
-        // Initialize camera
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
         this.controller = new GameController(this);
-        camera.position.set(controller.getPlayerController().getPlayer().getPosX(), controller.getPlayerController().getPlayer().getPosY(), 0);
+
+        if (App.getGame() != null && App.getGame().getGameTime() > 0) {
+            camera.position.set(
+                controller.getPlayerController().getPlayer().getPosX(),
+                controller.getPlayerController().getPlayer().getPosY(),
+                0
+            );
+        } else {
+            camera.position.set(
+                controller.getMapWidth() / 2,
+                controller.getMapHeight() / 2,
+                0
+            );
+        }
+
         camera.update();
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
 

@@ -213,7 +213,7 @@ public class GameController {
                 currentGame.getPlayer().setPosY(playerController.getPlayer().getPosY());
                 currentGame.getPlayer().setPlayerHealth(playerController.getPlayer().getPlayerHealth());
                 currentGame.getPlayer().setMaxHealth(playerController.getPlayer().getMaxHealth());
-                // Copy other player attributes that might have changed
+
                 currentGame.getPlayer().addXP(0); // This will update level if needed
             }
 
@@ -226,9 +226,11 @@ public class GameController {
             currentGame.getEnemies().clear();
             if (enemyController != null && enemyController.getEnemies() != null) {
                 for (Enemy enemy : enemyController.getEnemies()) {
-                    if (enemy.isActive()) {
-                        // Create a copy of the enemy for saving
-                        currentGame.addEnemy(createEnemyCopy(enemy));
+                    // Save all enemies, including trees, regardless of active state
+                    // Create a copy of the enemy for saving
+                    Enemy enemyCopy = createEnemyCopy(enemy);
+                    if (enemyCopy != null) {
+                        currentGame.addEnemy(enemyCopy);
                     }
                 }
             }
@@ -266,10 +268,28 @@ public class GameController {
                 copy = new Enemy(original.getType(), original.getPosX(), original.getPosY());
             }
 
-            // Apply damage to match current health
-            int healthDiff = original.getType().getHealth() - original.getHealth();
-            for (int i = 0; i < healthDiff && copy.isActive(); i++) {
-                copy.hit(1);
+            // Set the position
+            copy.setPosX(original.getPosX());
+            copy.setPosY(original.getPosY());
+
+            // Copy active state
+            if (!original.isActive()) {
+                // If the original is not active, make the copy not active too
+                int healthDiff = original.getType().getHealth();
+                for (int i = 0; i < healthDiff; i++) {
+                    copy.hit(1);
+                }
+            } else {
+                // Apply damage to match current health
+                int healthDiff = original.getType().getHealth() - original.getHealth();
+                for (int i = 0; i < healthDiff && copy.isActive(); i++) {
+                    copy.hit(1);
+                }
+            }
+
+            if (original.getType() == com.untilDawn.models.enums.EnemyType.TREE) {
+                Gdx.app.log("GameController", "Saving tree at position: (" +
+                    original.getPosX() + ", " + original.getPosY() + ")");
             }
 
             return copy;
