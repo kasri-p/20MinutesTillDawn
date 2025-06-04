@@ -1,13 +1,13 @@
 package com.untilDawn.models.utils;
 
+import com.badlogic.gdx.Gdx;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.untilDawn.models.Game;
-import com.untilDawn.models.Player;
-import com.untilDawn.models.User;
+import com.untilDawn.models.*;
 import com.untilDawn.models.enums.Abilities;
 import com.untilDawn.models.enums.Characters;
+import com.untilDawn.models.enums.EnemyType;
 import com.untilDawn.models.enums.Weapons;
 
 import java.io.File;
@@ -46,6 +46,7 @@ public class GameSaveSystem {
             saveData.ammoBonus = player.getAmmoBonus();
             saveData.weaponAmmo = game.getSelectedWeapon().getAmmo();
             saveData.saveTimestamp = System.currentTimeMillis();
+            saveData.kills = player.getKills();
 
             // Save enemies
             if (game.getEnemies() != null) {
@@ -59,6 +60,14 @@ public class GameSaveSystem {
                             enemy.getHealth(),
                             enemy.isActive()
                         );
+
+                        // Save additional data for special enemy types
+                        if (enemy instanceof ElderBoss) {
+                            enemyData.isElderBoss = true;
+                            ElderBoss elder = (ElderBoss) enemy;
+                            enemyData.elderBossState = String.valueOf(elder.getCurrentState());
+                        }
+
                         saveData.enemies.put(enemyId++, enemyData);
                     }
                 }
@@ -172,8 +181,14 @@ public class GameSaveSystem {
         player.setPosX(saveData.playerPosX);
         player.setPosY(saveData.playerPosY);
 
-        for (int i = 0; i < saveData.playerXP; i++) {
-            player.addXP(1);
+        if (saveData.playerXP > 0) {
+            player.addXP(saveData.playerXP);
+        }
+
+        if (saveData.kills > 0) {
+            for (int i = 0; i < saveData.kills; i++) {
+                player.addKill();
+            }
         }
 
         if (saveData.hasRegeneration) {
@@ -216,23 +231,33 @@ public class GameSaveSystem {
 
         game.getSelectedWeapon().setAmmo(saveData.weaponAmmo);
 
-        // Restore enemies
         if (saveData.enemies != null) {
             for (EnemySaveData enemyData : saveData.enemies.values()) {
                 try {
-                    com.untilDawn.models.enums.EnemyType enemyType = com.untilDawn.models.enums.EnemyType.valueOf(enemyData.type);
-                    com.untilDawn.models.Enemy enemy = new com.untilDawn.models.Enemy(enemyType, enemyData.posX, enemyData.posY);
+                    EnemyType enemyType = com.untilDawn.models.enums.EnemyType.valueOf(enemyData.type);
 
-                    // Set enemy health
-                    for (int i = enemy.getHealth(); i > enemyData.health; i--) {
+                    Enemy enemy;
+
+                    // Check if this is an Elder Boss
+                    if (enemyData.isElderBoss && enemyType == com.untilDawn.models.enums.EnemyType.ELDER) {
+                        float mapWidth = 4096f; // Default map width
+                        float mapHeight = 4096f; // Default map height
+                        enemy = new com.untilDawn.models.ElderBoss(enemyData.posX, enemyData.posY, mapWidth, mapHeight);
+                    } else {
+                        enemy = new com.untilDawn.models.Enemy(enemyType, enemyData.posX, enemyData.posY);
+                    }
+
+                    // Restore enemy health by dealing damage
+                    int healthDiff = enemyType.getHealth() - enemyData.health;
+                    for (int i = 0; i < healthDiff; i++) {
                         enemy.hit(1);
                     }
 
-                    if (enemyData.isActive) {
+                    if (enemyData.isActive && enemy.isActive()) {
                         game.addEnemy(enemy);
                     }
                 } catch (IllegalArgumentException e) {
-                    // Skip invalid enemy type
+                    Gdx.app.error("GameSaveSystem", "Failed to restore enemy of type: " + enemyData.type);
                 }
             }
         }
@@ -305,6 +330,7 @@ public class GameSaveSystem {
         public int ammoBonus;
         public int weaponAmmo;
         public long saveTimestamp;
+        public int kills;
 
         // Ability states
         public Map<String, AbilitySaveData> abilityStates;
@@ -324,6 +350,8 @@ public class GameSaveSystem {
         public float posY;
         public int health;
         public boolean isActive;
+        public boolean isElderBoss;
+        public String elderBossState;
 
         public EnemySaveData() {
         }
@@ -334,6 +362,8 @@ public class GameSaveSystem {
             this.posY = posY;
             this.health = health;
             this.isActive = isActive;
+            this.isElderBoss = false;
+            this.elderBossState = null;
         }
     }
 

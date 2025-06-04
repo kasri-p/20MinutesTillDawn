@@ -18,6 +18,7 @@
     "ammoBonus": 0,
     "weaponAmmo": 6,
     "saveTimestamp": 1747996214247,
+    "kills": 0,
     "abilityStates": {
       "SHIELD": {
         "isActive": false,
@@ -89,6 +90,7 @@
     "ammoBonus": 0,
     "weaponAmmo": 6,
     "saveTimestamp": 1748094277772,
+    "kills": 0,
     "abilityStates": {
       "SHIELD": {
         "isActive": false,
@@ -143,15 +145,15 @@
   },
   "Ali": {
     "username": "Ali",
-    "characterName": "Shana",
+    "characterName": "Hastur",
     "weaponName": "Revolver",
     "playerLevel": 1,
     "playerXP": 0,
-    "playerHealth": 4,
-    "maxHealth": 4,
-    "playerPosX": 1568.0,
-    "playerPosY": 340.0,
-    "gameTime": 11.131784,
+    "playerHealth": 6,
+    "maxHealth": 6,
+    "playerPosX": 2340.0,
+    "playerPosY": 868.0,
+    "gameTime": 31.148102,
     "timeLimit": 5,
     "score": 0,
     "hasRegeneration": false,
@@ -159,7 +161,8 @@
     "projectileBonus": 0,
     "ammoBonus": 0,
     "weaponAmmo": 6,
-    "saveTimestamp": 1749054201163,
+    "saveTimestamp": 1749055028003,
+    "kills": 0,
     "abilityStates": {
       "SHIELD": {
         "isActive": false,

@@ -47,8 +47,21 @@ public class GameController {
         playerController.setWeaponController(weaponController);
         this.enemyController = new EnemyController(playerController, weaponController, mapWidth, mapHeight);
 
-        this.playerController.getPlayer().setPosX(mapWidth / 2);
-        this.playerController.getPlayer().setPosY(mapHeight / 2);
+        // Check if this is a loaded game
+        if (App.getGame().getGameTime() > 0) {
+            // This is a loaded game, restore the saved state
+            this.gameTime = App.getGame().getGameTime();
+
+            // Player position is already set in the loaded player object
+            // Just make sure we don't override it
+            Gdx.app.log("GameController", "Restoring saved game - Time: " + gameTime +
+                ", Player pos: (" + playerController.getPlayer().getPosX() +
+                ", " + playerController.getPlayer().getPosY() + ")");
+        } else {
+            
+            this.playerController.getPlayer().setPosX(mapWidth / 2);
+            this.playerController.getPlayer().setPosY(mapHeight / 2);
+        }
     }
 
     public void updateGame() {

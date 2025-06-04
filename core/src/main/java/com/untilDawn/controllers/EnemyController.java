@@ -50,9 +50,38 @@ public class EnemyController {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.currentSpawnRate = initialSpawnRate;
-        this.enemies = App.getGame().getEnemies().isEmpty() ? new ArrayList<>() : App.getGame().getEnemies();
+
+        // Check if we have saved enemies to restore
+        if (App.getGame() != null && App.getGame().getEnemies() != null && !App.getGame().getEnemies().isEmpty()) {
+            // Restore saved enemies
+            this.enemies = new ArrayList<>(App.getGame().getEnemies());
+
+            // Check if we have an Elder Boss in the saved enemies
+            for (Enemy enemy : enemies) {
+                if (enemy instanceof ElderBoss) {
+                    elderBoss = (ElderBoss) enemy;
+                    elderBossSpawned = true;
+                    break;
+                }
+            }
+
+            Gdx.app.log("EnemyController", "Restored " + enemies.size() + " enemies from save");
+        } else {
+            // New game - create empty list
+            this.enemies = new ArrayList<>();
+        }
 
         this.totalGameTimeLimit = App.getGame() != null ? App.getGame().getTimeLimit() * 60 : 300;
+
+        // If this is a loaded game, restore the game time
+        if (App.getGame() != null && App.getGame().getGameTime() > 0) {
+            this.gameTime = App.getGame().getGameTime();
+            this.treesPlaced = true; // Don't place trees again in a loaded game
+
+            // Update spawn timers based on loaded game time
+            this.lastTentacleSpawnTime = (float) (Math.floor(gameTime / 3.0f) * 3.0f);
+            this.lastEyeBatSpawnTime = (float) (Math.floor(gameTime / 10.0f) * 10.0f);
+        }
     }
 
     public void update(float delta) {
