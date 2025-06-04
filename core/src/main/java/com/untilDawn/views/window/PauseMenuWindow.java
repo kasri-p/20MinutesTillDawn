@@ -93,7 +93,7 @@ public class PauseMenuWindow extends Window {
 
         Table root = new Table();
         root.setFillParent(true);
-//        root.center();
+        root.center();
         root.add(contentArea).center().expand();
 
         stage.addActor(root);
@@ -127,18 +127,12 @@ public class PauseMenuWindow extends Window {
     }
 
     private void createMainTitle(Table container, Skin skin) {
-        Label titleLabel = new Label("GAME PAUSED", skin, "title");
-        titleLabel.setAlignment(Align.center);
-        titleLabel.setFontScale(2.2f);
-        titleLabel.setColor(TITLE_COLOR);
-
         Label subtitleLabel = new Label("Game progress is automatically saved", skin);
         subtitleLabel.setAlignment(Align.center);
         subtitleLabel.setFontScale(0.9f);
         subtitleLabel.setColor(TEXT_COLOR);
 
         Table titleTable = new Table();
-        titleTable.add(titleLabel).row();
         titleTable.add(subtitleLabel).padTop(5);
 
         container.add(titleTable).padBottom(SECTION_SPACING).row();

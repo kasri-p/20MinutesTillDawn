@@ -50,6 +50,7 @@ public class EnemyController {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         this.currentSpawnRate = initialSpawnRate;
+        this.enemies = App.getGame().getEnemies().isEmpty() ? new ArrayList<>() : App.getGame().getEnemies();
 
         this.totalGameTimeLimit = App.getGame() != null ? App.getGame().getTimeLimit() * 60 : 300;
     }

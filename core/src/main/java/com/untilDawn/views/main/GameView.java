@@ -129,18 +129,12 @@ public class GameView implements Screen, InputProcessor {
             this::resumeGame
         );
 
-        levelUpWindow.pack();
-        levelUpWindow.layout();
-
         stage.addActor(levelUpWindow);
-
-        Gdx.app.postRunnable(() -> {
-            levelUpWindow.setPosition(
-                (stage.getViewport().getWorldWidth() - levelUpWindow.getWidth()) / 2f,
-                (stage.getViewport().getWorldHeight() - levelUpWindow.getHeight()) / 2f
-            );
-            levelUpWindow.toFront();
-        });
+        levelUpWindow.setPosition(
+            (stage.getWidth() - levelUpWindow.getWidth()) / 2f,
+            (stage.getHeight() - levelUpWindow.getHeight()) / 2f
+        );
+        levelUpWindow.toFront();
 
         controller.getPlayerController().getPlayer().setLevelUpWindowShown();
         Gdx.input.setInputProcessor(stage);
@@ -159,21 +153,12 @@ public class GameView implements Screen, InputProcessor {
             this::saveAndExitGame
         );
 
-        pauseMenuWindow.pack();
-        pauseMenuWindow.layout();
-
-        stage.clear();
+        // This ensures the pause menu fills the screen and centers its content
+        pauseMenuWindow.setFillParent(true);
         stage.addActor(pauseMenuWindow);
+        pauseMenuWindow.toFront();
 
-        Gdx.app.postRunnable(() -> {
-            pauseMenuWindow.setPosition(
-                (stage.getViewport().getWorldWidth() - pauseMenuWindow.getWidth()) / 2f,
-                (stage.getViewport().getWorldHeight() - pauseMenuWindow.getHeight()) / 2f
-            );
-            pauseMenuWindow.toFront();
-            pauseMenuWindow.setZIndex(1000);
-        });
-
+        Main.getBatch().setProjectionMatrix(camera.combined);
         Gdx.input.setInputProcessor(stage);
     }
 
@@ -237,7 +222,6 @@ public class GameView implements Screen, InputProcessor {
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         gameHUD.resize(width, height);
-
         stage.getViewport().update(width, height, true);
     }
 
@@ -274,15 +258,12 @@ public class GameView implements Screen, InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-        // Only process game input if not paused
         if (!gameIsPaused) {
-            // Handle escape key to show pause menu
             if (keycode == com.badlogic.gdx.Input.Keys.ESCAPE) {
                 showPauseMenu();
                 return true;
             }
 
-            // Handle pause key from keybinds
             Map<String, String> keyBinds = App.getKeybinds();
             String pauseKey = keyBinds.get("Pause");
             if (pauseKey != null) {
@@ -312,7 +293,6 @@ public class GameView implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        // Only process game input if not paused
         if (!gameIsPaused) {
             Vector3 worldCoords = new Vector3(screenX, screenY, 0);
             camera.unproject(worldCoords);

@@ -636,6 +636,10 @@ public class ChangeAvatarWindow extends Window {
         // This is where you would handle actual drag-drop functionality
     }
 
+    private void checkDragDropFile() {
+        // TODO
+    }
+
     private static class AvatarOption {
         String filename;
         Texture texture;

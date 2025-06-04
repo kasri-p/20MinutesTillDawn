@@ -18,6 +18,7 @@ public class Game {
         this.level = 1;
         this.difficulty = 1;
         this.timeLimit = timeLimit;
+        this.enemies = new ArrayList<>();
     }
 
     public Game() {
@@ -25,6 +26,7 @@ public class Game {
         this.level = 1;
         this.difficulty = 1;
         this.timeLimit = 5;
+        this.enemies = new ArrayList<>();
     }
 
     public int getScore() {

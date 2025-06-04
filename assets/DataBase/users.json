@@ -22,5 +22,17 @@
     "deaths": 0,
     "kills": 0,
     "survivalTime": 0.0
+  },
+  "Ali": {
+    "username": "Ali",
+    "password": "DV38Rz0hfiUqdAw7U4A5x2K4gHsaWqLJO7EzpdQVz2U\u003d",
+    "SecurityQuestionIndex": 0,
+    "SecurityAnswer": "1",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar6.png",
+    "deaths": 0,
+    "kills": 0,
+    "survivalTime": 0.0
   }
 }

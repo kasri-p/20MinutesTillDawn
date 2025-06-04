@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.kotcrab.vis.ui.VisUI;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
@@ -21,6 +22,7 @@ public class Main extends Game {
     private static SpriteBatch batch;
     private Music menuMusic;
     private Sound clickSound;
+    private DragAndDrop dragAndDrop;
 
     public static SpriteBatch getBatch() {
         return batch;
@@ -47,6 +49,7 @@ public class Main extends Game {
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/effects/click.wav"));
 
         StartMenu startMenu = new StartMenu(GameAssetManager.getGameAssetManager().getSkin());
+        
         setScreen(startMenu);
     }
 

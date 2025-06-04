@@ -138,5 +138,75 @@
         "hasBeenUnlocked": false
       }
     }
+  },
+  "Ali": {
+    "username": "Ali",
+    "characterName": "Hastur",
+    "weaponName": "Revolver",
+    "playerLevel": 1,
+    "playerXP": 0,
+    "playerHealth": 5,
+    "maxHealth": 6,
+    "playerPosX": 1864.0,
+    "playerPosY": 468.0,
+    "gameTime": 10.672741,
+    "timeLimit": 5,
+    "score": 0,
+    "hasRegeneration": false,
+    "damageBonus": 0,
+    "projectileBonus": 0,
+    "ammoBonus": 0,
+    "weaponAmmo": 6,
+    "saveTimestamp": 1749030756423,
+    "abilityStates": {
+      "SHIELD": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "REGENERATION": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      },
+      "MULTISHOT": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "VITALITY": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      },
+      "SPEEDY": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "DAMAGER": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": true
+      },
+      "PROCREASE": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      },
+      "AMOCREASE": {
+        "isActive": false,
+        "remainingDuration": 0.0,
+        "remainingCooldown": 0.0,
+        "hasBeenUnlocked": false
+      }
+    }
   }
 }
