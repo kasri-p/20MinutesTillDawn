@@ -34,7 +34,6 @@ public class EndGameScreen implements Screen {
     private static final Color DEFEAT_COLOR = new Color(0.9f, 0.2f, 0.2f, 1f);
     private static final Color VICTORY_COLOR = new Color(0.2f, 0.9f, 0.2f, 1f);
     private static final Color BUTTON_COLOR = Color.SALMON;
-    private static final Color BUTTON_HOVER_COLOR = new Color(1f, 0.4f, 0.6f, 1f);
 
     private final Skin skin;
     private final User user;
@@ -127,15 +126,14 @@ public class EndGameScreen implements Screen {
     }
 
     private void createTitleSection() {
-        String titleText = "You Died";
+        String titleText = EndGameStatus.DEFEAT.title;
         Color titleColor = DEFEAT_COLOR;
 
         if (status == EndGameStatus.VICTORY) {
-            titleText = "Victory!";
+            titleText = EndGameStatus.VICTORY.title;
             titleColor = VICTORY_COLOR;
         } else if (status == EndGameStatus.GIVE_UP) {
-            titleText = "Gave Up";
-            titleColor = DEFEAT_COLOR;
+            titleText = EndGameStatus.GIVE_UP.title;
         }
 
         titleLabel = new Label(titleText, new Label.LabelStyle(chevyRayFont, titleColor));
@@ -224,7 +222,6 @@ public class EndGameScreen implements Screen {
         TextButton.TextButtonStyle textOnlyStyle = new TextButton.TextButtonStyle();
         textOnlyStyle.font = chevyRayFont;
         textOnlyStyle.fontColor = BUTTON_COLOR;
-//        textOnlyStyle.overFontColor = BUTTON_HOVER_COLOR;
         textOnlyStyle.downFontColor = BUTTON_COLOR.cpy().mul(0.8f);
 
         TextButton tryAgainButton = new TextButton("Try Again", textOnlyStyle);
@@ -238,7 +235,6 @@ public class EndGameScreen implements Screen {
 
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
-                tryAgainButton.getLabel().setColor(BUTTON_HOVER_COLOR);
             }
 
             @Override
@@ -247,7 +243,6 @@ public class EndGameScreen implements Screen {
             }
         });
 
-        // Quit To Menu button
         TextButton quitButton = new TextButton("Quit To Menu", textOnlyStyle);
         quitButton.getLabel().setFontScale(1.8f);
         quitButton.addListener(new ClickListener() {
@@ -259,7 +254,6 @@ public class EndGameScreen implements Screen {
 
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
-                quitButton.getLabel().setColor(BUTTON_HOVER_COLOR);
             }
 
             @Override
@@ -281,8 +275,7 @@ public class EndGameScreen implements Screen {
     }
 
     private int calculateLevelsEarned() {
-        // Calculate based on XP/kills
-        return Math.max(0, kills / 10); // Example: 1 level per 10 kills
+        return Math.max(0, kills / 10);
     }
 
     private void setupAnimations() {

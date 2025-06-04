@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.untilDawn.Main;
 import com.untilDawn.models.App;
+import com.untilDawn.models.Enemy;
+import com.untilDawn.models.Game;
 import com.untilDawn.models.User;
 import com.untilDawn.models.utils.GameAssetManager;
 import com.untilDawn.views.main.EndGameScreen;
@@ -27,16 +29,14 @@ public class GameController {
     public GameController(GameView view) {
         this.view = view;
 
-        // Load map dimensions
         Texture mapTexture = new Texture("Images/map.png");
         this.mapWidth = mapTexture.getWidth();
         this.mapHeight = mapTexture.getHeight();
         mapTexture.dispose();
 
-        // Get time limit from the current game
-        this.timeLimit = App.getGame() != null ? App.getGame().getTimeLimit() : 5; // Default 5 minutes
+        this.timeLimit = App.getGame() != null ? App.getGame().getTimeLimit() : 5;
 
-        // Initialize controllers
+        assert App.getGame() != null;
         this.playerController = new PlayerController(App.getGame().getPlayer());
         this.weaponController = new WeaponController(App.getGame().getSelectedWeapon());
         this.weaponController.setPlayerController(playerController);
@@ -47,7 +47,6 @@ public class GameController {
         playerController.setWeaponController(weaponController);
         this.enemyController = new EnemyController(playerController, weaponController, mapWidth, mapHeight);
 
-        // Set player starting position
         this.playerController.getPlayer().setPosX(mapWidth / 2);
         this.playerController.getPlayer().setPosY(mapHeight / 2);
     }
@@ -55,7 +54,7 @@ public class GameController {
     public void updateGame() {
         if (view != null && !gameOver) {
 
-            float deltaTime = Math.min(0.025f, Gdx.graphics.getDeltaTime()); // Capped at 40 fps for physics stability
+            float deltaTime = Gdx.graphics.getDeltaTime();
             gameTime += deltaTime;
 
             OrthographicCamera camera = view.getCamera();
@@ -173,6 +172,104 @@ public class GameController {
             Gdx.app.log("GameController", "Game time increased by " + seconds + " seconds");
         } else {
             Gdx.app.log("GameController", "Game time reduced by " + Math.abs(seconds) + " seconds");
+        }
+    }
+
+    public void saveGame() {
+        if (gameOver) {
+            return; // Don't save if game is over
+        }
+
+        // Update the game object with current state
+        if (App.getGame() != null) {
+            // Save game time
+            App.getGame().setGameTime(gameTime);
+
+            // Save player position
+            if (playerController != null && playerController.getPlayer() != null) {
+                App.getGame().getPlayer().setPosX(playerController.getPlayer().getPosX());
+                App.getGame().getPlayer().setPosY(playerController.getPlayer().getPosY());
+            }
+
+            // Save enemies
+            App.getGame().getEnemies().clear();
+            if (enemyController != null && enemyController.getEnemies() != null) {
+                for (Enemy enemy : enemyController.getEnemies()) {
+                    if (enemy.isActive()) {
+                        App.getGame().addEnemy(enemy);
+                    }
+                }
+            }
+
+            // Save the game state using GameSaveSystem
+            boolean success = com.untilDawn.models.utils.GameSaveSystem.saveGame(
+                App.getLoggedInUser(),
+                App.getGame(),
+                App.getGame().getPlayer(),
+                gameTime
+            );
+
+            if (success) {
+                Gdx.app.log("GameController", "Game saved successfully");
+            } else {
+                Gdx.app.error("GameController", "Failed to save game");
+            }
+        }
+    }
+
+    public boolean loadGame() {
+        // Load the game save data using GameSaveSystem
+        com.untilDawn.models.utils.GameSaveSystem.GameSaveData saveData =
+            com.untilDawn.models.utils.GameSaveSystem.loadGame(App.getLoggedInUser());
+
+        if (saveData == null) {
+            Gdx.app.log("GameController", "No saved game found");
+            return false;
+        }
+
+        // Restore the game from the save data
+        Game loadedGame = com.untilDawn.models.utils.GameSaveSystem.restoreGameFromSave(saveData);
+        if (loadedGame == null) {
+            Gdx.app.error("GameController", "Failed to restore game from save data");
+            return false;
+        }
+
+        // Set the loaded game as the current game
+        App.setGame(loadedGame);
+
+        // Update game time
+        this.gameTime = loadedGame.getGameTime();
+
+        // Update player position
+        if (playerController != null && loadedGame.getPlayer() != null) {
+            playerController.getPlayer().setPosX(loadedGame.getPlayer().getPosX());
+            playerController.getPlayer().setPosY(loadedGame.getPlayer().getPosY());
+
+            // Update player health and other attributes
+            playerController.getPlayer().setPlayerHealth(loadedGame.getPlayer().getPlayerHealth());
+            playerController.getPlayer().setMaxHealth(loadedGame.getPlayer().getMaxHealth());
+        }
+
+        // Update enemies
+        if (enemyController != null && loadedGame.getEnemies() != null) {
+            enemyController.getEnemies().clear();
+            for (Enemy enemy : loadedGame.getEnemies()) {
+                if (enemy.isActive()) {
+                    enemyController.getEnemies().add(enemy);
+                }
+            }
+        }
+
+        Gdx.app.log("GameController", "Game loaded successfully");
+        return true;
+    }
+
+    public void deleteSavedGame() {
+        boolean success = com.untilDawn.models.utils.GameSaveSystem.deleteSavedGame(App.getLoggedInUser());
+        if (success) {
+            Gdx.app.log("GameController", "Saved game deleted");
+        } else {
+            Gdx.app.error("GameController", "Failed to delete saved game");
         }
     }
 }

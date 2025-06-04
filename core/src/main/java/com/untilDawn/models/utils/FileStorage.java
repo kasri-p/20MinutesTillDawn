@@ -18,6 +18,7 @@ import java.util.Map;
 public class FileStorage {
     private static final String USER_DATA_FILE = "Database/users.json";
     private static final String SETTINGS_DATA_FILE = "DataBase/settings.json";
+    private static final String GAME_SAVE_FILE = "DataBase/gamesave.json";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private static final String DB_URL = "jdbc:sqlite:Database/users.db";
@@ -166,5 +167,45 @@ public class FileStorage {
             Gdx.app.error("FileStorage", "Failed to load settings from database: " + e.getMessage());
             return new HashMap<>();
         }
+    }
+
+    public static boolean saveGameState(com.untilDawn.models.Game game) {
+        try {
+            File file = new File(GAME_SAVE_FILE);
+            file.getParentFile().mkdirs();
+
+            try (FileWriter writer = new FileWriter(file)) {
+                gson.toJson(game, writer);
+                return true;
+            }
+        } catch (IOException e) {
+            Gdx.app.error("FileStorage", "Failed to save game state: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static com.untilDawn.models.Game loadGameState() {
+        File file = new File(GAME_SAVE_FILE);
+        if (!file.exists()) {
+            return null;
+        }
+
+        try (FileReader reader = new FileReader(file)) {
+            com.untilDawn.models.Game game = gson.fromJson(reader, com.untilDawn.models.Game.class);
+            return game;
+        } catch (IOException e) {
+            Gdx.app.error("FileStorage", "Failed to load game state: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static boolean deleteGameSave() {
+        File file = new File(GAME_SAVE_FILE);
+        if (file.exists()) {
+            return file.delete();
+        }
+        return true;
     }
 }

@@ -12,6 +12,7 @@ public class Game {
     private int difficulty;
     private int timeLimit; // in minutes
     private ArrayList<Enemy> enemies;
+    private float gameTime; // current game time in seconds
 
     public Game(int timeLimit) {
         this.score = 0;
@@ -19,6 +20,7 @@ public class Game {
         this.difficulty = 1;
         this.timeLimit = timeLimit;
         this.enemies = new ArrayList<>();
+        this.gameTime = 0;
     }
 
     public Game() {
@@ -27,6 +29,7 @@ public class Game {
         this.difficulty = 1;
         this.timeLimit = 5;
         this.enemies = new ArrayList<>();
+        this.gameTime = 0;
     }
 
     public int getScore() {
@@ -83,5 +86,13 @@ public class Game {
 
     public void addEnemy(Enemy enemy) {
         this.enemies.add(enemy);
+    }
+
+    public float getGameTime() {
+        return gameTime;
+    }
+
+    public void setGameTime(float gameTime) {
+        this.gameTime = gameTime;
     }
 }

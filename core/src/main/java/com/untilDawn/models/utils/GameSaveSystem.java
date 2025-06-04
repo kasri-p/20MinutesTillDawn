@@ -47,6 +47,23 @@ public class GameSaveSystem {
             saveData.weaponAmmo = game.getSelectedWeapon().getAmmo();
             saveData.saveTimestamp = System.currentTimeMillis();
 
+            // Save enemies
+            if (game.getEnemies() != null) {
+                int enemyId = 0;
+                for (com.untilDawn.models.Enemy enemy : game.getEnemies()) {
+                    if (enemy.isActive()) {
+                        EnemySaveData enemyData = new EnemySaveData(
+                            enemy.getType().name(),
+                            enemy.getPosX(),
+                            enemy.getPosY(),
+                            enemy.getHealth(),
+                            enemy.isActive()
+                        );
+                        saveData.enemies.put(enemyId++, enemyData);
+                    }
+                }
+            }
+
             for (Abilities ability : Abilities.values()) {
                 AbilitySaveData abilityData = new AbilitySaveData(
                     ability.isActive(),
@@ -195,8 +212,30 @@ public class GameSaveSystem {
         game.setPlayer(player);
         game.setSelectedWeapon(weapon);
         game.setScore(saveData.score);
+        game.setGameTime(saveData.gameTime);
 
         game.getSelectedWeapon().setAmmo(saveData.weaponAmmo);
+
+        // Restore enemies
+        if (saveData.enemies != null) {
+            for (EnemySaveData enemyData : saveData.enemies.values()) {
+                try {
+                    com.untilDawn.models.enums.EnemyType enemyType = com.untilDawn.models.enums.EnemyType.valueOf(enemyData.type);
+                    com.untilDawn.models.Enemy enemy = new com.untilDawn.models.Enemy(enemyType, enemyData.posX, enemyData.posY);
+
+                    // Set enemy health
+                    for (int i = enemy.getHealth(); i > enemyData.health; i--) {
+                        enemy.hit(1);
+                    }
+
+                    if (enemyData.isActive) {
+                        game.addEnemy(enemy);
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Skip invalid enemy type
+                }
+            }
+        }
 
         return game;
     }
@@ -270,8 +309,31 @@ public class GameSaveSystem {
         // Ability states
         public Map<String, AbilitySaveData> abilityStates;
 
+        // Enemies
+        public Map<Integer, EnemySaveData> enemies;
+
         public GameSaveData() {
             abilityStates = new HashMap<>();
+            enemies = new HashMap<>();
+        }
+    }
+
+    public static class EnemySaveData {
+        public String type;
+        public float posX;
+        public float posY;
+        public int health;
+        public boolean isActive;
+
+        public EnemySaveData() {
+        }
+
+        public EnemySaveData(String type, float posX, float posY, int health, boolean isActive) {
+            this.type = type;
+            this.posX = posX;
+            this.posY = posY;
+            this.health = health;
+            this.isActive = isActive;
         }
     }
 

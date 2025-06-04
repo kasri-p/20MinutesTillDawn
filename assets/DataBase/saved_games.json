@@ -67,7 +67,8 @@
         "remainingCooldown": 0.0,
         "hasBeenUnlocked": false
       }
-    }
+    },
+    "enemies": {}
   },
   "KK": {
     "username": "KK",
@@ -137,19 +138,20 @@
         "remainingCooldown": 0.0,
         "hasBeenUnlocked": false
       }
-    }
+    },
+    "enemies": {}
   },
   "Ali": {
     "username": "Ali",
-    "characterName": "Hastur",
+    "characterName": "Shana",
     "weaponName": "Revolver",
     "playerLevel": 1,
     "playerXP": 0,
-    "playerHealth": 5,
-    "maxHealth": 6,
-    "playerPosX": 1864.0,
-    "playerPosY": 468.0,
-    "gameTime": 10.672741,
+    "playerHealth": 4,
+    "maxHealth": 4,
+    "playerPosX": 1568.0,
+    "playerPosY": 340.0,
+    "gameTime": 11.131784,
     "timeLimit": 5,
     "score": 0,
     "hasRegeneration": false,
@@ -157,7 +159,7 @@
     "projectileBonus": 0,
     "ammoBonus": 0,
     "weaponAmmo": 6,
-    "saveTimestamp": 1749030756423,
+    "saveTimestamp": 1749054201163,
     "abilityStates": {
       "SHIELD": {
         "isActive": false,
@@ -207,6 +209,7 @@
         "remainingCooldown": 0.0,
         "hasBeenUnlocked": false
       }
-    }
+    },
+    "enemies": {}
   }
 }
