@@ -1,8 +1,30 @@
 # 20MinutesTillDawn
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+A survival roguelike shooter game where you must survive for 20 minutes against waves of increasingly difficult enemies.
+Fight against hordes of monsters, level up, gain abilities, and try to survive until dawn!
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+![](assets/Images/screenshot.png)
+
+## Game Description
+
+In 20MinutesTillDawn, you play as a character with unique abilities fighting against waves of enemies. The game
+features:
+
+- **Time-based Survival**: Survive for 20 minutes to win
+- **Multiple Enemy Types**: Face different enemies including EyeBats, TentacleMonsters, Trees, and the powerful
+  ElderBoss
+- **Character Progression**: Level up and gain powerful abilities during gameplay
+- **Weapon System**: Use different weapons with reload mechanics
+- **Special Abilities**: Activate abilities like speed boosts, damage enhancements, shields, and multishot
+
+## How to Play
+
+- **WASD**: Move your character
+- **Mouse**: Aim your weapon
+- **Left Click**: Shoot
+- **R**: Reload your weapon
+- **Number Keys (1-9)**: Activate abilities
+- **ESC**: Pause the game
 
 ## Platforms
 
@@ -29,5 +51,72 @@ Useful Gradle tasks and flags:
 - `lwjgl3:run`: starts the application.
 - `test`: runs unit tests (if any).
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
+Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should
+be replaced with the ID of a specific project.
 For example, `core:clean` removes `build` folder only from the `core` project.
+
+## Installation and Running
+
+### Prerequisites
+
+- Java Development Kit (JDK) 8 or higher
+- Git (optional, for cloning the repository)
+
+### Steps
+
+1. Clone or download this repository:
+   ```
+   git clone https://github.com/yourusername/20MinutesTillDawn.git
+   ```
+   Or download and extract the ZIP file from the repository.
+
+2. Navigate to the project directory:
+   ```
+   cd 20MinutesTillDawn
+   ```
+
+3. Build the project:
+   ```
+   ./gradlew build
+   ```
+   or on Windows:
+   ```
+   gradlew.bat build
+   ```
+
+4. Run the game:
+   ```
+   ./gradlew lwjgl3:run
+   ```
+   or on Windows:
+   ```
+   gradlew.bat lwjgl3:run
+   ```
+
+## Technologies Used
+
+- [libGDX](https://libgdx.com/): A cross-platform Java game development framework
+- [LWJGL3](https://www.lwjgl.org/): Lightweight Java Game Library 3
+- [Gradle](https://gradle.org/): Build automation tool
+
+## Features
+
+- **Save/Load System**: Save your progress and continue later
+- **Multiple Characters**: Choose from different characters with unique abilities
+- **Various Weapons**: Different weapons with unique characteristics
+- **Progressive Difficulty**: Enemies become stronger and more numerous as time passes
+- **Boss Battles**: Face the powerful ElderBoss
+- **Level-Up System**: Gain experience and level up to become stronger
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Credits
+
+- Game developed with libGDX
+- Assets and sound effects created by the development team

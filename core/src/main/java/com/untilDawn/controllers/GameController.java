@@ -59,7 +59,6 @@ public class GameController {
             // This is a loaded game, restore the saved state
             this.gameTime = currentGame.getGameTime();
 
-            // Player position should already be set from the loaded player object
             Gdx.app.log("GameController", "Restoring saved game - Time: " + gameTime +
                 ", Player pos: (" + playerController.getPlayer().getPosX() +
                 ", " + playerController.getPlayer().getPosY() + ")");
@@ -199,25 +198,22 @@ public class GameController {
 
     public void saveGame() {
         if (gameOver) {
-            return; // Don't save if game is over
+            return;
         }
 
         Game currentGame = App.getGame();
         if (currentGame != null) {
-            // Update game time
             currentGame.setGameTime(gameTime);
 
-            // Save player state
             if (playerController != null && playerController.getPlayer() != null) {
                 currentGame.getPlayer().setPosX(playerController.getPlayer().getPosX());
                 currentGame.getPlayer().setPosY(playerController.getPlayer().getPosY());
                 currentGame.getPlayer().setPlayerHealth(playerController.getPlayer().getPlayerHealth());
                 currentGame.getPlayer().setMaxHealth(playerController.getPlayer().getMaxHealth());
 
-                currentGame.getPlayer().addXP(0); // This will update level if needed
+                currentGame.getPlayer().addXP(0);
             }
 
-            // Save weapon state
             if (weaponController != null && weaponController.getWeapon() != null) {
                 currentGame.getSelectedWeapon().setAmmo(weaponController.getWeapon().getAmmo());
             }
@@ -226,8 +222,6 @@ public class GameController {
             currentGame.getEnemies().clear();
             if (enemyController != null && enemyController.getEnemies() != null) {
                 for (Enemy enemy : enemyController.getEnemies()) {
-                    // Save all enemies, including trees, regardless of active state
-                    // Create a copy of the enemy for saving
                     Enemy enemyCopy = createEnemyCopy(enemy);
                     if (enemyCopy != null) {
                         currentGame.addEnemy(enemyCopy);
@@ -235,7 +229,6 @@ public class GameController {
                 }
             }
 
-            // Save using GameSaveSystem
             boolean success = com.untilDawn.models.utils.GameSaveSystem.saveGame(
                 App.getLoggedInUser(),
                 currentGame,
@@ -256,7 +249,7 @@ public class GameController {
         try {
             Enemy copy;
 
-            // Create appropriate enemy type
+            // Create appropriate enemy type with EXACT position
             if (original instanceof com.untilDawn.models.ElderBoss) {
                 copy = new com.untilDawn.models.ElderBoss(
                     original.getPosX(),
@@ -268,29 +261,39 @@ public class GameController {
                 copy = new Enemy(original.getType(), original.getPosX(), original.getPosY());
             }
 
-            // Set the position
             copy.setPosX(original.getPosX());
             copy.setPosY(original.getPosY());
 
-            // Copy active state
             if (!original.isActive()) {
-                // If the original is not active, make the copy not active too
                 int healthDiff = original.getType().getHealth();
                 for (int i = 0; i < healthDiff; i++) {
                     copy.hit(1);
                 }
             } else {
-                // Apply damage to match current health
                 int healthDiff = original.getType().getHealth() - original.getHealth();
                 for (int i = 0; i < healthDiff && copy.isActive(); i++) {
                     copy.hit(1);
                 }
             }
 
-            if (original.getType() == com.untilDawn.models.enums.EnemyType.TREE) {
-                Gdx.app.log("GameController", "Saving tree at position: (" +
-                    original.getPosX() + ", " + original.getPosY() + ")");
+            copy.setPosX(original.getPosX());
+            copy.setPosY(original.getPosY());
+
+            if (copy.getSprite() != null) {
+                copy.getSprite().setPosition(
+                    copy.getPosX() - copy.getSprite().getWidth() / 2,
+                    copy.getPosY() - copy.getSprite().getHeight() / 2
+                );
             }
+
+            if (original.getType() == com.untilDawn.models.enums.EnemyType.TREE) {
+                Gdx.app.log("GameController", String.format("Saving tree at position: (%.2f, %.2f)",
+                    original.getPosX(), original.getPosY()));
+            }
+
+            Gdx.app.log("GameController", String.format("Saved %s: pos(%.2f, %.2f), health(%d/%d), active(%b)",
+                original.getType().getName(), copy.getPosX(), copy.getPosY(),
+                copy.getHealth(), copy.getType().getHealth(), copy.isActive()));
 
             return copy;
 
@@ -301,7 +304,6 @@ public class GameController {
     }
 
     public boolean loadGame() {
-        // Load the game save data using GameSaveSystem
         com.untilDawn.models.utils.GameSaveSystem.GameSaveData saveData =
             com.untilDawn.models.utils.GameSaveSystem.loadGame(App.getLoggedInUser());
 
@@ -310,7 +312,6 @@ public class GameController {
             return false;
         }
 
-        // Restore the game from the save data
         Game loadedGame = com.untilDawn.models.utils.GameSaveSystem.restoreGameFromSave(saveData);
         if (loadedGame == null) {
             Gdx.app.error("GameController", "Failed to restore game from save data");

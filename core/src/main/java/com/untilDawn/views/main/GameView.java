@@ -15,7 +15,6 @@ import com.untilDawn.Main;
 import com.untilDawn.controllers.GameController;
 import com.untilDawn.models.App;
 import com.untilDawn.models.utils.GameAssetManager;
-import com.untilDawn.models.utils.GameSaveSystem;
 import com.untilDawn.models.utils.GrayscaleShader;
 import com.untilDawn.models.utils.LightingManager;
 import com.untilDawn.views.GameHUD;
@@ -209,18 +208,9 @@ public class GameView implements Screen, InputProcessor {
 
     private void saveAndExitGame() {
         if (App.getLoggedInUser() != null && !App.getLoggedInUser().isGuest()) {
-            boolean saved = GameSaveSystem.saveGame(
-                App.getLoggedInUser(),
-                App.getGame(),
-                controller.getPlayerController().getPlayer(),
-                controller.getGameTime()
-            );
+            controller.saveGame();
 
-            if (saved) {
-                Gdx.app.log("GameView", "Game saved successfully");
-            } else {
-                Gdx.app.error("GameView", "Failed to save game");
-            }
+            Gdx.app.log("GameView", "Game saved via GameController");
         }
 
         App.save();

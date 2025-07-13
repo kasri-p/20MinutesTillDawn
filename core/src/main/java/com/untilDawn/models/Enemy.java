@@ -127,7 +127,13 @@ public class Enemy {
         );
     }
 
+    // In Enemy.java - Add position validation to the update method
+
     public void update(float delta, Player player) {
+        // Store current position for validation
+        float currentPosX = this.posX;
+        float currentPosY = this.posY;
+
         // Handle death animation
         if (isDeadAnimationPlaying) {
             deathAnimTimer += delta;
@@ -156,8 +162,8 @@ public class Enemy {
 
         updateBullets(delta);
 
-        sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
-        boundingBox.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
+        // CRITICAL: Always ensure sprite and bounding box match the internal position
+        syncSpriteAndBoundingBoxWithPosition();
 
         updateFlashEffect(delta);
 
@@ -165,6 +171,17 @@ public class Enemy {
             float pulsate = 0.7f + 0.3f * (float) Math.sin(spawnTime * 3);
             dropSprite.setAlpha(pulsate);
             dropSprite.setRotation(dropSprite.getRotation() + 60 * delta);
+        }
+    }
+
+    // Add this helper method to Enemy class
+    private void syncSpriteAndBoundingBoxWithPosition() {
+        if (sprite != null) {
+            sprite.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
+        }
+
+        if (boundingBox != null) {
+            boundingBox.setPosition(posX - sprite.getWidth() / 2, posY - sprite.getHeight() / 2);
         }
     }
 
@@ -445,8 +462,10 @@ public class Enemy {
         return posX;
     }
 
+    // Override setPosX and setPosY to ensure synchronization
     public void setPosX(float posX) {
         this.posX = posX;
+        syncSpriteAndBoundingBoxWithPosition();
     }
 
     public float getPosY() {
@@ -455,7 +474,9 @@ public class Enemy {
 
     public void setPosY(float posY) {
         this.posY = posY;
+        syncSpriteAndBoundingBoxWithPosition();
     }
+
 
     public Rectangle getBoundingBox() {
         return boundingBox;

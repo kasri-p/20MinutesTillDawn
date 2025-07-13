@@ -34,5 +34,53 @@
     "deaths": 0,
     "kills": 0,
     "survivalTime": 0.0
+  },
+  "Hosna": {
+    "username": "Hosna",
+    "password": "WRr0BGFmR4xTIXCe2jpzIn9Bs4Od14khqgs+73mx4Mk\u003d",
+    "SecurityQuestionIndex": 4,
+    "SecurityAnswer": "1",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar5.png",
+    "deaths": 0,
+    "kills": 0,
+    "survivalTime": 0.0
+  },
+  "kas": {
+    "username": "kas",
+    "password": "T4WMExMW+pvbojNUqc1JrRvmoPCzliwEIJ9/3aTK8Dg\u003d",
+    "SecurityQuestionIndex": 0,
+    "SecurityAnswer": "gnr",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar1.png",
+    "deaths": 0,
+    "kills": 0,
+    "survivalTime": 0.0
+  },
+  "kasri": {
+    "username": "kasri",
+    "password": "YalTo+WKsvvrWmXOefgZqlhYAW/cYw+26D+dGT3JkAs\u003d",
+    "SecurityQuestionIndex": 0,
+    "SecurityAnswer": "gnr",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar3.png",
+    "deaths": 0,
+    "kills": 0,
+    "survivalTime": 0.0
+  },
+  "KAS": {
+    "username": "KAS",
+    "password": "7BJaRMxubrb7S9C63q2zkC3iHvODvM2ppmAMOin8HRo\u003d",
+    "SecurityQuestionIndex": 0,
+    "SecurityAnswer": "gnr",
+    "isGuest": false,
+    "score": 0,
+    "avatarPath": "avatar2.png",
+    "deaths": 0,
+    "kills": 0,
+    "survivalTime": 0.0
   }
 }

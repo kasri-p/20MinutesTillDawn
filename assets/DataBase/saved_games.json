@@ -1,168 +1,24 @@
 {
-  "kasra": {
-    "username": "kasra",
-    "characterName": "Shana",
-    "weaponName": "Revolver",
-    "playerLevel": 1,
-    "playerXP": 0,
-    "playerHealth": 3,
-    "maxHealth": 4,
-    "playerPosX": 936.0,
-    "playerPosY": 1376.0,
-    "gameTime": 18.525732,
-    "timeLimit": 5,
-    "score": 0,
-    "hasRegeneration": false,
-    "damageBonus": 0,
-    "projectileBonus": 0,
-    "ammoBonus": 0,
-    "weaponAmmo": 6,
-    "saveTimestamp": 1747996214247,
-    "kills": 0,
-    "abilityStates": {
-      "SHIELD": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "REGENERATION": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      },
-      "MULTISHOT": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "VITALITY": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      },
-      "SPEEDY": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "DAMAGER": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "PROCREASE": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      },
-      "AMOCREASE": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      }
-    },
-    "enemies": {}
-  },
-  "KK": {
-    "username": "KK",
-    "characterName": "Shana",
-    "weaponName": "Revolver",
-    "playerLevel": 1,
-    "playerXP": 6,
-    "playerHealth": 4,
-    "maxHealth": 4,
-    "playerPosX": 548.0,
-    "playerPosY": 836.0,
-    "gameTime": 17.716698,
-    "timeLimit": 5,
-    "score": 0,
-    "hasRegeneration": false,
-    "damageBonus": 0,
-    "projectileBonus": 0,
-    "ammoBonus": 0,
-    "weaponAmmo": 6,
-    "saveTimestamp": 1748094277772,
-    "kills": 0,
-    "abilityStates": {
-      "SHIELD": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "REGENERATION": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      },
-      "MULTISHOT": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "VITALITY": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      },
-      "SPEEDY": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "DAMAGER": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": true
-      },
-      "PROCREASE": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      },
-      "AMOCREASE": {
-        "isActive": false,
-        "remainingDuration": 0.0,
-        "remainingCooldown": 0.0,
-        "hasBeenUnlocked": false
-      }
-    },
-    "enemies": {}
-  },
-  "Ali": {
-    "username": "Ali",
+  "KAS": {
+    "username": "KAS",
     "characterName": "Hastur",
     "weaponName": "Revolver",
     "playerLevel": 1,
-    "playerXP": 0,
-    "playerHealth": 3,
+    "playerXP": 6,
+    "playerHealth": 6,
     "maxHealth": 6,
-    "playerPosX": 1084.0,
-    "playerPosY": 186.0,
-    "gameTime": 30.436289,
+    "playerPosX": 1256.0,
+    "playerPosY": 2164.0,
+    "gameTime": 15.166424,
     "timeLimit": 5,
     "score": 0,
     "hasRegeneration": false,
     "damageBonus": 0,
     "projectileBonus": 0,
     "ammoBonus": 0,
-    "weaponAmmo": 6,
-    "saveTimestamp": 1749056881812,
-    "kills": 0,
+    "weaponAmmo": 0,
+    "saveTimestamp": 1751824456699,
+    "kills": 2,
     "abilityStates": {
       "SHIELD": {
         "isActive": false,
@@ -213,6 +69,337 @@
         "hasBeenUnlocked": false
       }
     },
-    "enemies": {}
+    "enemies": {
+      "0": {
+        "type": "TREE",
+        "posX": 379.18204,
+        "posY": 252.58955,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "1": {
+        "type": "TREE",
+        "posX": 2119.0115,
+        "posY": 708.87646,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "2": {
+        "type": "TREE",
+        "posX": 1890.5938,
+        "posY": 440.39215,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "3": {
+        "type": "TREE",
+        "posX": 2371.215,
+        "posY": 974.0105,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "4": {
+        "type": "TREE",
+        "posX": 2581.9666,
+        "posY": 1117.6938,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "5": {
+        "type": "TREE",
+        "posX": 165.37868,
+        "posY": 948.1523,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "6": {
+        "type": "TREE",
+        "posX": 1309.4375,
+        "posY": 193.02441,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "7": {
+        "type": "TREE",
+        "posX": 725.59033,
+        "posY": 532.9729,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "8": {
+        "type": "TREE",
+        "posX": 327.24976,
+        "posY": 1373.2517,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "9": {
+        "type": "TREE",
+        "posX": 2483.0042,
+        "posY": 500.86356,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "10": {
+        "type": "TREE",
+        "posX": 595.6509,
+        "posY": 2246.3228,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "11": {
+        "type": "TREE",
+        "posX": 223.12845,
+        "posY": 1774.9784,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "12": {
+        "type": "TREE",
+        "posX": 187.75215,
+        "posY": 1114.0613,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "13": {
+        "type": "TREE",
+        "posX": 892.96497,
+        "posY": 2215.5159,
+        "health": 960,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "14": {
+        "type": "TREE",
+        "posX": 172.69296,
+        "posY": 1333.709,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "15": {
+        "type": "TREE",
+        "posX": 2518.5544,
+        "posY": 1600.3936,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "16": {
+        "type": "TREE",
+        "posX": 2478.9263,
+        "posY": 210.31447,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "17": {
+        "type": "TREE",
+        "posX": 2323.5615,
+        "posY": 1256.4645,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "18": {
+        "type": "TREE",
+        "posX": 1663.2097,
+        "posY": 222.65378,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "19": {
+        "type": "TREE",
+        "posX": 449.28073,
+        "posY": 1015.7883,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "20": {
+        "type": "TREE",
+        "posX": 213.176,
+        "posY": 168.83046,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "21": {
+        "type": "TREE",
+        "posX": 1763.9011,
+        "posY": 1453.6703,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "22": {
+        "type": "TREE",
+        "posX": 961.291,
+        "posY": 940.8757,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "23": {
+        "type": "TREE",
+        "posX": 366.11325,
+        "posY": 816.1373,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "24": {
+        "type": "TREE",
+        "posX": 1182.1781,
+        "posY": 545.4717,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "25": {
+        "type": "TREE",
+        "posX": 2029.4507,
+        "posY": 1611.8192,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "26": {
+        "type": "TREE",
+        "posX": 275.29565,
+        "posY": 2173.6228,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "27": {
+        "type": "TREE",
+        "posX": 352.97748,
+        "posY": 1591.5374,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "28": {
+        "type": "TREE",
+        "posX": 1530.0817,
+        "posY": 1944.1893,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "29": {
+        "type": "TREE",
+        "posX": 561.57874,
+        "posY": 164.59113,
+        "health": 1000,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "30": {
+        "type": "TENTACLE",
+        "posX": 2172.6316,
+        "posY": 718.9646,
+        "health": 25,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "31": {
+        "type": "TENTACLE",
+        "posX": 431.68552,
+        "posY": 1406.714,
+        "health": 25,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      },
+      "32": {
+        "type": "TENTACLE",
+        "posX": 59.93421,
+        "posY": 2011.3507,
+        "health": 25,
+        "isActive": true,
+        "isElderBoss": false,
+        "isBarrierActive": false,
+        "isDropActive": false
+      }
+    }
   }
 }

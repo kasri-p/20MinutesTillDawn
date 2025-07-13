@@ -148,6 +148,8 @@ public class EnemyController {
             "(Trees: " + treeCount + ", Active enemies: " + activeEnemyCount + ")");
     }
 
+    // In EnemyController.java - Update the restoreEnemyState method
+
     private Enemy restoreEnemyState(Enemy savedEnemy) {
         try {
             Enemy restoredEnemy;
@@ -155,20 +157,38 @@ public class EnemyController {
             // Create the appropriate enemy type
             if (savedEnemy instanceof ElderBoss) {
                 restoredEnemy = new ElderBoss(savedEnemy.getPosX(), savedEnemy.getPosY(), mapWidth, mapHeight);
-                // Mark that Elder Boss has been spawned
                 this.elderBoss = (ElderBoss) restoredEnemy;
                 this.elderBossSpawned = true;
             } else {
                 restoredEnemy = new Enemy(savedEnemy.getType(), savedEnemy.getPosX(), savedEnemy.getPosY());
             }
 
-            // Restore common enemy state
+            // CRITICAL: Restore exact position BEFORE any other operations
+            restoredEnemy.setPosX(savedEnemy.getPosX());
+            restoredEnemy.setPosY(savedEnemy.getPosY());
+
+            // Update sprite position immediately to match the restored position
+            if (restoredEnemy.getSprite() != null) {
+                restoredEnemy.getSprite().setPosition(
+                    restoredEnemy.getPosX() - restoredEnemy.getSprite().getWidth() / 2,
+                    restoredEnemy.getPosY() - restoredEnemy.getSprite().getHeight() / 2
+                );
+            }
+
+            // Update bounding box to match position
+            if (restoredEnemy.getBoundingBox() != null) {
+                restoredEnemy.getBoundingBox().setPosition(
+                    restoredEnemy.getPosX() - restoredEnemy.getSprite().getWidth() / 2,
+                    restoredEnemy.getPosY() - restoredEnemy.getSprite().getHeight() / 2
+                );
+            }
+
+            // Restore health state AFTER position is set
             restoreCommonEnemyState(restoredEnemy, savedEnemy);
 
-            // For trees, mark them as already placed
-            if (savedEnemy.getType() == EnemyType.TREE) {
-                this.treesPlaced = true;
-            }
+            // Log position restoration for debugging
+            Gdx.app.log("EnemyController", String.format("Restored %s at exact position: (%.2f, %.2f)",
+                savedEnemy.getType().getName(), restoredEnemy.getPosX(), restoredEnemy.getPosY()));
 
             return restoredEnemy;
 
@@ -178,20 +198,27 @@ public class EnemyController {
         }
     }
 
+    // Update the restoreCommonEnemyState method to ensure position integrity
     private void restoreCommonEnemyState(Enemy newEnemy, Enemy savedEnemy) {
-        // Apply damage to match saved health
+        // Apply damage to match saved health (but don't kill the enemy yet)
         int healthDiff = savedEnemy.getType().getHealth() - savedEnemy.getHealth();
         for (int i = 0; i < healthDiff && newEnemy.isActive(); i++) {
             newEnemy.hit(1); // Apply damage without killing
         }
 
-        // Restore position (should already be set, but ensure it's exact)
+        // Ensure position remains exactly as saved (in case hit() method affects position)
         newEnemy.setPosX(savedEnemy.getPosX());
         newEnemy.setPosY(savedEnemy.getPosY());
 
-        // Update sprite position to match
         if (newEnemy.getSprite() != null) {
             newEnemy.getSprite().setPosition(
+                newEnemy.getPosX() - newEnemy.getSprite().getWidth() / 2,
+                newEnemy.getPosY() - newEnemy.getSprite().getHeight() / 2
+            );
+        }
+
+        if (newEnemy.getBoundingBox() != null) {
+            newEnemy.getBoundingBox().setPosition(
                 newEnemy.getPosX() - newEnemy.getSprite().getWidth() / 2,
                 newEnemy.getPosY() - newEnemy.getSprite().getHeight() / 2
             );
