@@ -112,10 +112,6 @@ For example, `core:clean` removes `build` folder only from the `core` project.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Credits
 
 - Game developed with libGDX
