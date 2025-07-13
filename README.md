@@ -108,11 +108,7 @@ For example, `core:clean` removes `build` folder only from the `core` project.
 - **Boss Battles**: Face the powerful ElderBoss
 - **Level-Up System**: Gain experience and level up to become stronger
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ## Credits
 
 - Game developed with libGDX
-- Assets and sound effects created by the development team
+- Assets and sound effects imported from the original game
